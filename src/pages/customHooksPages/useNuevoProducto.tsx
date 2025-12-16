@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getErrorHttpMessage } from "../../utils";
 import { useIntl } from "react-intl";
 import { useFormik } from "formik";
+import { StoreType } from "../../types/genericTypes";
 import * as Yup from "yup";
 import { getProveedoresHttp } from "actions/proveedores";
 import { getCategoriasHttp } from "actions/categorias";
-import { crearProductoHttp } from "actions/productos";
+import { crearProductoHttp, verificarSkuDisponibleHttp } from "actions/productos";
+import { setAuth } from "actions/auth";
 
 export const useNuevoProducto = () => {
   const dispatch = useDispatch();
@@ -15,6 +17,7 @@ export const useNuevoProducto = () => {
   const navigate = useNavigate();
   const [procesando, setProcesando] = useState<boolean>(false);
   const [procesandoProducto, setProcesandoProducto] = useState<boolean>(false);
+  const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [mensajeAlert, setMensajeAlert] = useState("");
   const [errorLogin, setErrorLogin] = useState(false);
@@ -23,6 +26,10 @@ export const useNuevoProducto = () => {
 
   const [proveedores, setProveedores] = useState<any[]>([]);
   const [categorias, setCategorias] = useState<any[]>([]);
+
+  useEffect(() => {
+    setAuth(token);
+  }, [token]);
 
   const formik = useFormik({
     initialValues: {
@@ -53,7 +60,28 @@ export const useNuevoProducto = () => {
       ),
       descripcion: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
       marca: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
-      sku: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      sku: Yup.string()
+        .required(intl.formatMessage({ id: "input_validation_requerido" }))
+        .test("sku-disponible", "Este SKU ya está registrado", async function (value) {
+          if (!value) return true;
+
+          try {
+            const response: any = await verificarSkuDisponibleHttp(value);
+
+            if (!response.disponible) {
+              return this.createError({
+                message: `Este SKU ya está registrado para el producto: ${
+                  response.producto_existente?.nombre || "existente"
+                }`,
+              });
+            }
+
+            return true;
+          } catch (error) {
+            console.error("Error al validar SKU:", error);
+            return true;
+          }
+        }),
       color: Yup.string(),
       id_proveedor: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
       id_catalogo: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),

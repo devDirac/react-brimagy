@@ -98,6 +98,7 @@ const textosMx = {
   proveedor_creado_error: "Error al crear el proveedor",
   categoria_creada_correctamente: "Categoría creada correctamente",
   categoria_creada_error: "Error al crear la categoría",
+  input_buscador: "Buscar producto",
 };
 
 export default textosMx;

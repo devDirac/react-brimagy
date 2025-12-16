@@ -10,6 +10,7 @@ import {
   editarProductoHttp,
   eliminarProductoHttp,
   getCatalogoProductosHttp,
+  verificarSkusHttp,
 } from "actions/productos";
 import { numericFormatter } from "react-number-format";
 import moment from "moment";
@@ -408,6 +409,7 @@ export const useListaProductos = (tipoUsuario: number) => {
           factor: Number(getValueByHeader(row, "factor") || 0),
           proveedor_valido: !!proveedorObj,
           categoria_valida: !!categoriaObj,
+          sku_duplicado: false,
         };
 
         // Solo agregar si tiene al menos nombre y SKU
@@ -415,6 +417,34 @@ export const useListaProductos = (tipoUsuario: number) => {
           datosFormateados.push(producto);
         }
       });
+
+      // Verificar SKUs duplicados en la BD
+      const skus = datosFormateados.map((p) => p.sku).filter(Boolean);
+
+      if (skus.length > 0) {
+        try {
+          const skusExistentesResponse = await verificarSkusHttp(skus);
+          const skusExistentes = skusExistentesResponse?.skus_existentes || [];
+
+          // Marcar productos con SKU duplicado
+          datosFormateados.forEach((producto) => {
+            if (skusExistentes.includes(producto.sku)) {
+              producto.sku_duplicado = true;
+            }
+          });
+
+          // Mostrar alerta si hay SKUs duplicados
+          const cantidadDuplicados = datosFormateados.filter((p) => p.sku_duplicado).length;
+          if (cantidadDuplicados > 0) {
+            setMensajeAlert(
+              `⚠️ Se encontraron ${cantidadDuplicados} producto(s) con SKU existente. Estos productos se actualizarán en lugar de crearse nuevos.`
+            );
+            handleisAlertOpen();
+          }
+        } catch (error) {
+          console.error("Error al verificar SKUs:", error);
+        }
+      }
 
       setExcelData(datosFormateados);
       handleisAlertOpenSubirExcel();
@@ -532,6 +562,7 @@ export const useListaProductos = (tipoUsuario: number) => {
       setProcesandoExcel(true);
 
       let exitosos = 0;
+      let actualizados = 0;
       let fallidos = 0;
       const errores: string[] = [];
 
@@ -563,8 +594,13 @@ export const useListaProductos = (tipoUsuario: number) => {
             tipo_registro: "excel",
           };
 
-          await crearProductoHttp(datos);
-          exitosos++;
+          const response: any = await crearProductoHttp(datos);
+
+          if (response.data?.actualizado) {
+            actualizados++;
+          } else {
+            exitosos++;
+          }
         } catch (error) {
           fallidos++;
           errores.push(`SKU ${producto.sku}: ${getErrorHttpMessage(error)}`);
@@ -575,7 +611,10 @@ export const useListaProductos = (tipoUsuario: number) => {
       setProcesandoExcel(false);
       handleisAlerCloseSubirExcel();
 
-      let mensaje = `✓ Productos guardados: ${exitosos}`;
+      let mensaje = `✓ Nuevos productos: ${exitosos}`;
+      if (actualizados > 0) {
+        mensaje += ` | 🔄 Actualizados: ${actualizados}`;
+      }
       if (fallidos > 0) {
         mensaje += ` | ✗ Fallidos: ${fallidos}`;
       }

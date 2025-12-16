@@ -87,6 +87,7 @@ import AddMultiplesUsuarios from "pages/addMultiplesUsuarios";
 import NuevoProducto from "pages/NuevoProducto";
 import CatalogoProductos from "pages/CatalogoProductos";
 import CategoriasProveedores from "pages/CategoriasProveedores";
+import ListaProductos from "pages/ListaProductos";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
@@ -236,7 +237,7 @@ export default function App() {
             <Route path="/nuevo-usuario" element={<NuevoUsuario />} />
             {/* PRODUCTOS */}
             <Route path="/nuevo-producto" element={<NuevoProducto />} />
-            <Route path="/catalogo-productos" element={<CatalogoProductos />} />
+            <Route path="/catalogo-productos" element={<ListaProductos />} />
             <Route path="/categorias-proveedores" element={<CategoriasProveedores />} />
           </Route>
           {/* inicia pagina no encontrada */}

@@ -73,6 +73,9 @@ const DinamicTableMejorada: React.FC<DinamicTableProps> = (props: DinamicTablePr
     if (params.node?.data?.selected) {
       return { background: "#68aad4" };
     }
+    if (params.node?.data?.sku_duplicado) {
+      return { background: "#fff3cd" };
+    }
     if (params.node?.data?.estado === "cancelada" || params.node?.data?.status === "desactivado") {
       return { background: "#f78c8c" };
     }

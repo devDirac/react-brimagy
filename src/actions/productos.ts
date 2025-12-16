@@ -14,15 +14,6 @@ export const crearProductoHttp = async (data: any) => {
     return promise;
   }
 };
-/*export const getCatalogoProductosHttp = async () => {
-  try {
-    const response = await axios.get(`${env.API_URL}${"/getCatalogoProductos"}`);
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
-};*/
 export const getCatalogoProductosHttp = async (search?: string) => {
   try {
     let url = `${env.API_URL}/getCatalogoProductos`;
@@ -33,6 +24,26 @@ export const getCatalogoProductosHttp = async (search?: string) => {
 
     const response = await axios.get(url);
     return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const verificarSkusHttp = async (skus: string[]) => {
+  try {
+    const response = await axios.post(`${env.API_URL}/verificarSkus`, { skus });
+    return response?.data || { skus_existentes: [] };
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const verificarSkuDisponibleHttp = async (sku: string) => {
+  try {
+    const response = await axios.post(`${env.API_URL}/verificarSkuDisponible`, { sku });
+    return response?.data || { disponible: true };
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));
     return promise;

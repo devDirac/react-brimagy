@@ -81,6 +81,8 @@ import DinamicTableMejorada from "components/DinamicTable/DinamicTable";
 import SaveIcon from "@mui/icons-material/Save";
 import EditIcon from "@mui/icons-material/Edit";
 import InventoryIcon from "@mui/icons-material/Inventory";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
+import SimCardDownloadIcon from "@mui/icons-material/SimCardDownload";
 
 function ListaProductos(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -89,7 +91,7 @@ function ListaProductos(): JSX.Element {
 
   // Estados para la paginación
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(8);
+  const [rowsPerPage, setRowsPerPage] = useState(6);
 
   const {
     isSuperAdmin,
@@ -231,29 +233,29 @@ function ListaProductos(): JSX.Element {
       <Header tipoUsuario={tipoUsuario} nombreUsuario={userName} fotoPerfil={fotoUser} />
       <MDBox py={3} mb={20}>
         <Grid container spacing={2} mb={2}>
-          <Grid
-            item
-            xs={5}
-            sm={6}
-            sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
-          >
-            {/*{isSuperAdmin || isPromotor || isAgente ? (
-              <Button
-                sx={{ color: "#fff", background: "#084d6e" }}
-                variant="contained"
-                endIcon={<AddIcon />}
-                disabled={productosSeleccionados.length === 0}
-                onClick={(e) => {
-                  handleisAlertOpenAsignar();
-                }}
-              >
-                {intl.formatMessage({ id: "asignar_informacion_seleccionadas" })}
-              </Button>
-            ) : null}*/}
+          <Grid item xs={6}>
+            <Button
+              variant="contained"
+              component="label"
+              startIcon={<UploadFileIcon />}
+              sx={{ background: "#084d6e", color: "#fff", mr: 2 }}
+            >
+              Subir Excel
+              <input type="file" hidden accept=".xlsx, .xls" onChange={handleFileUpload} />
+            </Button>
+
+            <Button
+              variant="outlined"
+              startIcon={<SimCardDownloadIcon />}
+              onClick={descargarPlantillaExcel}
+              sx={{ borderColor: "#084d6e", color: "#084d6e" }}
+            >
+              Descargar Plantilla
+            </Button>
           </Grid>
           <Grid
             item
-            xs={7}
+            xs={6}
             sm={6}
             sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
           >
@@ -390,7 +392,23 @@ function ListaProductos(): JSX.Element {
                           </Tooltip>*/}
 
                           {isSuperAdmin ? (
-                            <Tooltip title="Eliminar PDF">
+                            <Tooltip title="Editar producto">
+                              <IconButton
+                                aria-label="editar"
+                                size="small"
+                                color="warning"
+                                onClick={() => {
+                                  setProductoEditar(p);
+                                  handleisAlertOpenEditarProducto();
+                                }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          ) : null}
+
+                          {isSuperAdmin ? (
+                            <Tooltip title="Eliminar producto">
                               <IconButton
                                 aria-label="eliminar"
                                 size="small"
@@ -443,25 +461,6 @@ function ListaProductos(): JSX.Element {
                             <MDTypography variant="caption" display="block" color="text" noWrap>
                               <strong>Color:</strong> {p.color ?? "N/A"}
                             </MDTypography>
-                            {/*<MDTypography variant="caption" display="block" color="text" noWrap>
-                              <strong>Aseguradora:</strong> {p.nombre_aseguradora ?? "N/A"}
-                            </MDTypography>*/}
-                            {/*<MDTypography
-                              variant="caption"
-                              display="block"
-                              sx={{
-                                mt: 0.5,
-                                color:
-                                  p.estado === "pagada"
-                                    ? "success.main"
-                                    : p.estado === "cancelada"
-                                    ? "error.main"
-                                    : "warning.main",
-                                fontWeight: 600,
-                              }}
-                            >
-                              <strong>Estado:</strong> {p.estado ?? "Sin estado"}
-                            </MDTypography>*/}
                             {p.prima_asegurada && (
                               <MDTypography
                                 variant="caption"
@@ -521,7 +520,7 @@ function ListaProductos(): JSX.Element {
                 rowsPerPage={rowsPerPage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
                 rowsPerPageOptions={[4, 8, 12, 16]}
-                labelRowsPerPage="Pólizas por página:"
+                labelRowsPerPage="Productos por página:"
                 labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
                 sx={{
                   direction: "ltr",
@@ -986,12 +985,13 @@ function ListaProductos(): JSX.Element {
                   ...p,
                   proveedor_status: p.proveedor_valido ? "✓ " + p.proveedor : "✗ " + p.proveedor,
                   catalogo_status: p.categoria_valida ? "✓ " + p.catalogo : "✗ " + p.catalogo,
+                  sku_status: p.sku_duplicado ? "🔄 " + p.sku + " (Existente)" : p.sku,
                 }))}
                 columnsToShow={[
                   "nombre_producto",
                   "descripcion",
                   "marca",
-                  "sku",
+                  "sku_status",
                   "color",
                   "proveedor_status",
                   "catalogo_status",
@@ -1031,10 +1031,20 @@ function ListaProductos(): JSX.Element {
             <Button
               variant="outlined"
               onClick={handleisAlerCloseSubirExcel}
+              sx={{ color: "#084d6e" }}
               disabled={procesandoExcel}
             >
               Cancelar
             </Button>
+          </Grid>
+        </Grid>
+      </ModalComponent>
+      <ModalComponent handleClose={handleisAlerClose} isOpen={isAlertOpen} key={"alerta"}>
+        <Grid container spacing={2} style={{ textAlign: "center" }}>
+          <Grid item xs={12}>
+            <br />
+            <br />
+            <p>{mensajeAlert}</p>
           </Grid>
         </Grid>
       </ModalComponent>
