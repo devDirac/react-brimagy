@@ -1,0 +1,84 @@
+@import "~bootstrap/scss/bootstrap";
+
+/*@font-face {
+  font-family: "MiFuente";
+  src: url("./assets/Fonts/fonnts.com-Korolev_Condensed_Medium.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}*/
+
+body {
+  font-family: "MiFuente", sans-serif;
+}
+
+.principalText {
+  text-align: center;
+}
+
+.titlePages {
+  font-weight: 600;
+  color: rgb(67 76 209) !important;
+}
+
+.colorOrange {
+  color: orange;
+}
+
+.bordersContainers {
+  border-radius: 5px;
+}
+
+.MuiAvatar-img {
+  height: 100% !important;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: var(--lightestgrey);
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #c2c7ce;
+  border-radius: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #c2c7ce;
+}
+
+.AvatarUser {
+  height: 100% important;
+}
+
+.color-primary {
+  color: "#e91e63";
+}
+
+.color-secondary {
+  color: "#7b809a";
+}
+.color-info {
+  color: "#1A73E8";
+}
+.color-success {
+  color: "#4CAF50";
+}
+.color-warning {
+  color: "#fb8c00";
+}
+.color-error {
+  color: "#f44335";
+}
+.color-light {
+  color: "#f0f2f5";
+}
+.color-dark {
+  color: "#344767";
+}

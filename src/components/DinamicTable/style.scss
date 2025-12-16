@@ -1,0 +1,52 @@
+@use "../../App.scss";
+
+.ag-theme-alpine .ag-cell {
+  user-select: text;
+}
+
+.ag-theme-alpine .ag-header-cell-label {
+  font-size: 13px;
+}
+
+.ag-theme-alpine .ag-cell {
+  font-size: 13px;
+}
+
+.ag-cell {
+  white-space: pre-line;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  display: inline-block;
+  word-spacing: 0;
+  letter-spacing: normal;
+  line-height: 1.4;
+}
+
+.ag-cell-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important; /* Asegúrate de que el padding no interfiera */
+}
+
+.ag-selection-checkbox {
+  display: inline-block;
+  height: 15px;
+  width: 15px;
+  margin: 0; /* Asegura que no haya desplazamientos */
+  padding: 0; /* Remueve espacio extra */
+  position: relative;
+
+  cursor: pointer;
+  padding: 5px; /* Expande el área activa */
+  box-sizing: content-box;
+}
+
+input[type="checkbox"] {
+  /* Doble-tamaño Checkboxes */
+  -ms-transform: scale(3); /* IE */
+  -moz-transform: scale(3); /* FF */
+  -webkit-transform: scale(3); /* Safari y Chrome */
+  -o-transform: scale(3); /* Opera */
+  padding: 0px;
+}

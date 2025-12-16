@@ -1,0 +1,62 @@
+import { GeneralHttpResponse } from "../types/genericTypes";
+import axios from "axios";
+import env from "react-dotenv";
+
+export const crearProductoHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.post(
+      `${env.API_URL}${"/crearProducto"}`,
+      data
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+/*export const getCatalogoProductosHttp = async () => {
+  try {
+    const response = await axios.get(`${env.API_URL}${"/getCatalogoProductos"}`);
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};*/
+export const getCatalogoProductosHttp = async (search?: string) => {
+  try {
+    let url = `${env.API_URL}/getCatalogoProductos`;
+
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
+
+    const response = await axios.get(url);
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const editarProductoHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.put(`${env.API_URL}/editarProducto`, data);
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const eliminarProductoHttp = async (id: number) => {
+  try {
+    const response: GeneralHttpResponse = await axios.delete(
+      `${env.API_URL}${"/eliminarProducto"}?id_producto=${id}`
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
