@@ -1,4 +1,4 @@
-import logo from "assets/images/logo.png";
+import logo from "assets/images/profile_icon.png";
 
 // Material Dashboard 2 PRO React TS components
 import MDBox from "components/MDBox";

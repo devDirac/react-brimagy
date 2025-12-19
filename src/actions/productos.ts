@@ -19,10 +19,25 @@ export const getCatalogoProductosHttp = async (search?: string) => {
     let url = `${env.API_URL}/getCatalogoProductos`;
 
     if (search) {
-      url += `&search=${encodeURIComponent(search)}`;
+      url += `?search=${encodeURIComponent(search)}`;
     }
 
     const response = await axios.get(url);
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const getBusquedaInteligenteHttp = async (datos?: any) => {
+  try {
+    const response = await axios.get(`${env.API_URL}/busquedaInteligenteBrimagy`, {
+      params: {
+        puntos: datos.puntos,
+        categoria: datos.categoria,
+      },
+    });
     return response?.data || [];
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));

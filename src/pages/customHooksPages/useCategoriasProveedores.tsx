@@ -57,6 +57,8 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
 
   const [nombreEditar, setNombreEditar] = useState("");
   const [descripcionEditar, setDescripcionEditar] = useState("");
+  const [telefonoEditar, setTelefonoEditar] = useState("");
+  const [correoEditar, setCorreoEditar] = useState("");
   const [tipoEditando, setTipoEditando] = useState("");
 
   /* seccion de confirmación eliminar póliza */
@@ -71,14 +73,29 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
     setAuth(token);
   }, [token]);
 
+  useEffect(() => {
+    if (generalEditar && tipoEditando === "proveedor") {
+      setNombreEditar(generalEditar.nombre || "");
+      setDescripcionEditar(generalEditar.descripcion || "");
+    } else if (generalEditar && tipoEditando === "categoria") {
+      setNombreEditar(generalEditar.desc || "");
+    }
+  }, [generalEditar]);
+
   const formik = useFormik({
     initialValues: {
       nombre: "",
       descripcion: "",
+      telefono: "",
+      correo: "",
     },
     validationSchema: Yup.object({
       nombre: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
-      descripcion: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      descripcion: Yup.string(),
+      telefono: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      correo: Yup.string()
+        .email(intl.formatMessage({ id: "input_validation_email_invalido" }))
+        .required(intl.formatMessage({ id: "input_validation_requerido" })),
     }),
     onSubmit: async (values) => {
       console.log("Formulario enviado:", values);
@@ -88,11 +105,9 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
   const formikCategoria = useFormik({
     initialValues: {
       nombre: "",
-      descripcion: "",
     },
     validationSchema: Yup.object({
       nombre: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
-      descripcion: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
     }),
     onSubmit: async (values) => {
       console.log("Formulario enviado:", values);
@@ -219,6 +234,10 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
   }, [getProveedores, getCategorias]);
 
   return {
+    telefonoEditar,
+    setTelefonoEditar,
+    correoEditar,
+    setCorreoEditar,
     setTipoEditando,
     tipoEditando,
     eliminarGeneral,

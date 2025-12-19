@@ -30,7 +30,7 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Icon from "@mui/material/Icon";
-import logo from "assets/images/logo.png";
+import logo from "assets/images/profile_icon.png";
 
 // Material Dashboard 2 PRO React TS components
 import MDBox from "./components/MDBox";
@@ -69,6 +69,7 @@ import { IntlProvider, ReactIntlErrorCode } from "react-intl";
 import { setAuth } from "./actions/auth";
 
 // Images
+import brandBrimagy from "./assets/images/Brimagy-Logo-Verde.svg";
 import brandWhite from "./assets/images/logo-ct.png";
 import brandDark from "./assets/images/logo-ct-dark.png";
 import PublicRouter from "./hocs/PublicRouter";
@@ -105,7 +106,7 @@ export default function App() {
   const { pathname } = useLocation();
   const inSession = useSelector((state: StoreType) => state?.app?.user?.token || false);
   const userName = useSelector((state: StoreType) => state?.app?.user?.data?.name || false);
-  const fotoUser: any = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
+  const fotoUser = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || []);
   const ruta = useSelector((state: StoreType) => state?.app?.ruta || null);
   const local = useSelector((state: StoreType) => state?.app?.idioma || "mx");
@@ -189,8 +190,10 @@ export default function App() {
             <Sidenav
               key={""}
               color={sidenavColor}
-              brand={(transparentSidenav && !darkMode) || whiteSidenav ? brandDark : brandWhite}
-              brandName="Esqueleto"
+              brand={
+                (transparentSidenav && !darkMode) || whiteSidenav ? brandBrimagy : brandBrimagy
+              }
+              //brandName=""
               routes={routes
                 .filter((r: any) => (r?.allow || []).includes(tipoUsuario))
                 .map((a: any, key: any) => {

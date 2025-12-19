@@ -32,7 +32,7 @@ import MDButton from "components/MDButton";
 // Material Dashboard 2 PRO React TS examples components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import logo from "assets/images/logo.png";
+import logo from "assets/images/profile_icon.png";
 import Footer from "examples/Footer";
 
 // NewUser page components

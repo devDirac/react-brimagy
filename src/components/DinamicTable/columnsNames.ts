@@ -17,4 +17,6 @@ export const columnsNames = [
   { id: "total_format", value: "Estatus" },
   { id: "puntos_format", value: "Estatus" },
   { id: "factor_format", value: "Factor" },
+
+  { id: "desc", value: "Nombre" },
 ];

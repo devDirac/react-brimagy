@@ -9,6 +9,7 @@ import {
   crearProductoHttp,
   editarProductoHttp,
   eliminarProductoHttp,
+  getBusquedaInteligenteHttp,
   getCatalogoProductosHttp,
   verificarSkusHttp,
 } from "actions/productos";
@@ -88,6 +89,21 @@ export const useListaProductos = (tipoUsuario: number) => {
 
   const [buscador, setBuscador] = useState("");
   const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  //Ver datos del producto
+  const [verProducto, setVerProducto] = useState<any>(null);
+  const [isAlertOpenVerDatos, setIsAlertOpenVerDatos] = useState(false);
+  const handleisAlertOpenVerDatos = () => setIsAlertOpenVerDatos(true);
+  const handleisAlertCloseVerDatos = () => setIsAlertOpenVerDatos(false);
+
+  //Búsqueda intelimagy
+  const [procesandoBusquedaMagica, setProcesandoBusquedaMagica] = useState<boolean>(false);
+  const [isAlertOpenBI, setIsAlertOpenBI] = useState(false);
+  const handleisAlertOpenBI = () => setIsAlertOpenBI(true);
+  const handleisAlertCloseBI = () => setIsAlertOpenBI(false);
+
+  const [buscarPorPuntos, setBuscarPorPuntos] = useState("");
+  const [categoriaBuscar, setCategoriaBuscar] = useState("");
 
   useEffect(() => {
     setAuth(token);
@@ -332,6 +348,7 @@ export const useListaProductos = (tipoUsuario: number) => {
       }
 
       const datosFormateados: any[] = [];
+      const erroresValidacion: string[] = [];
 
       // Leer los headers (primera fila)
       const headers: { [key: number]: string } = {};
@@ -352,6 +369,72 @@ export const useListaProductos = (tipoUsuario: number) => {
         return "";
       };
 
+      const limpiarNumero = (valor: any): number => {
+        if (valor === null || valor === undefined || valor === "") return 0;
+
+        let valorLimpio = String(valor)
+          .replace(/\$/g, "")
+          .replace(/,/g, "")
+          .replace(/\s/g, "")
+          .trim();
+
+        const numero = parseFloat(valorLimpio);
+
+        return isNaN(numero) ? 0 : numero;
+      };
+
+      // Función para limpiar SKU - solo permite números y letras
+      const limpiarSku = (valor: any): string => {
+        if (valor === null || valor === undefined) return "";
+
+        return String(valor)
+          .toUpperCase() // Convertir a mayúsculas (opcional, depende de tu estándar)
+          .normalize("NFD") // Normalizar para separar acentos
+          .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
+          .replace(/[^A-Z0-9]/g, "") // Solo letras y números
+          .trim();
+      };
+
+      // Función para limpiar texto con caracteres permitidos -_',
+      const limpiarTextoConCaracteres = (valor: any): string => {
+        if (valor === null || valor === undefined) return "";
+
+        return String(valor)
+          .replace(/[^a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑüÜ\-_',()]/g, "") // Solo letras, números, espacios, acentos y -_',()
+          .trim();
+      };
+
+      const limpiarTexto = (valor: any): string => {
+        if (valor === null || valor === undefined) return "";
+        return String(valor).trim();
+      };
+
+      // Función para validar que solo contenga números
+      const esNumeroValido = (valor: any): boolean => {
+        if (valor === null || valor === undefined || valor === "") return true;
+
+        const valorLimpio = String(valor)
+          .replace(/\$/g, "")
+          .replace(/,/g, "")
+          .replace(/\s/g, "")
+          .trim();
+
+        return !isNaN(parseFloat(valorLimpio)) && isFinite(parseFloat(valorLimpio));
+      };
+
+      // Función para validar caracteres especiales en texto
+      const tieneCaracteresNoPermitidos = (valor: string, tipo: "texto" | "sku"): boolean => {
+        if (!valor) return false;
+
+        if (tipo === "sku") {
+          // SKU: solo letras y números
+          return !/^[A-Z0-9]+$/i.test(valor);
+        } else {
+          // Texto: letras, números, espacios, acentos y -_',()
+          return /[^a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑüÜ\-_',()]/.test(valor);
+        }
+      };
+
       // Leer datos desde la fila 2 (después del header)
       worksheet.eachRow((row, rowNumber) => {
         if (rowNumber === 1) return;
@@ -365,48 +448,109 @@ export const useListaProductos = (tipoUsuario: number) => {
             ""
         ).trim();
 
+        const nombre_producto = limpiarTextoConCaracteres(getValueByHeader(row, "nombre"));
+        const descripcion = limpiarTextoConCaracteres(
+          getValueByHeader(row, "descripción") || getValueByHeader(row, "descripcion")
+        );
+        const marca = limpiarTextoConCaracteres(getValueByHeader(row, "marca"));
+        const sku = limpiarSku(getValueByHeader(row, "sku"));
+        const color = limpiarTexto(getValueByHeader(row, "color"));
+
+        // Validaciones de campos de texto
+        if (nombre_producto && tieneCaracteresNoPermitidos(nombre_producto, "texto")) {
+          erroresValidacion.push(
+            `Fila ${rowNumber}: El nombre del producto contiene caracteres especiales no permitidos (solo se permite: -_',())`
+          );
+        }
+
+        if (marca && tieneCaracteresNoPermitidos(marca, "texto")) {
+          erroresValidacion.push(
+            `Fila ${rowNumber}: La marca contiene caracteres especiales no permitidos (solo se permite: -_',())`
+          );
+        }
+
+        if (sku && tieneCaracteresNoPermitidos(sku, "sku")) {
+          erroresValidacion.push(
+            `Fila ${rowNumber}: El SKU solo puede contener letras y números (sin espacios ni caracteres especiales)`
+          );
+        }
+
+        // Obtener y validar valores numéricos
+        const costoConIvaRaw = getValueByHeader(row, "costo con iva");
+        const costoSinIvaRaw = getValueByHeader(row, "costo sin iva");
+        const costoPuntosConIvaRaw = getValueByHeader(row, "costo puntos con iva");
+        const costoPuntosSinIvaRaw = getValueByHeader(row, "costo puntos sin iva");
+        const feeBrimagyRaw = getValueByHeader(row, "fee brimagy") || getValueByHeader(row, "fee");
+        const subtotalRaw = getValueByHeader(row, "subtotal");
+        const envioBaseRaw =
+          getValueByHeader(row, "envío base") || getValueByHeader(row, "envio base");
+        const costoCajaRaw = getValueByHeader(row, "costo caja");
+        const envioExtraRaw =
+          getValueByHeader(row, "envío extra") || getValueByHeader(row, "envio extra");
+        const totalEnvioRaw =
+          getValueByHeader(row, "total envío") || getValueByHeader(row, "total envio");
+        const totalRaw = getValueByHeader(row, "total");
+        const puntosRaw = getValueByHeader(row, "puntos");
+        const factorRaw = getValueByHeader(row, "factor");
+
+        // Validar que los campos numéricos sean válidos
+        const camposNumericos = [
+          { nombre: "Costo con IVA", valor: costoConIvaRaw },
+          { nombre: "Costo sin IVA", valor: costoSinIvaRaw },
+          { nombre: "Costo puntos con IVA", valor: costoPuntosConIvaRaw },
+          { nombre: "Costo puntos sin IVA", valor: costoPuntosSinIvaRaw },
+          { nombre: "Fee Brimagy", valor: feeBrimagyRaw },
+          { nombre: "Subtotal", valor: subtotalRaw },
+          { nombre: "Envío base", valor: envioBaseRaw },
+          { nombre: "Costo caja", valor: costoCajaRaw },
+          { nombre: "Envío extra", valor: envioExtraRaw },
+          { nombre: "Total envío", valor: totalEnvioRaw },
+          { nombre: "Total", valor: totalRaw },
+          { nombre: "Puntos", valor: puntosRaw },
+          { nombre: "Factor", valor: factorRaw },
+        ];
+
+        camposNumericos.forEach((campo) => {
+          if (!esNumeroValido(campo.valor)) {
+            erroresValidacion.push(
+              `Fila ${rowNumber}: ${campo.nombre} debe ser un número válido (valor actual: ${campo.valor})`
+            );
+          }
+        });
+
         // Buscar IDs de proveedor y categoría
         const proveedorObj = proveedores?.find(
           (p) => p.nombre.toLowerCase() === proveedor.toLowerCase()
         );
         const categoriaObj = categorias?.find(
-          (c) => c.nombre.toLowerCase() === categoria.toLowerCase()
+          (c) => c.desc.toLowerCase() === categoria.toLowerCase()
         );
 
         const producto = {
           id: rowNumber - 1,
-          nombre_producto: String(getValueByHeader(row, "nombre") || "").trim(),
-          descripcion: String(
-            getValueByHeader(row, "descripción") || getValueByHeader(row, "descripcion") || ""
-          ).trim(),
-          marca: String(getValueByHeader(row, "marca") || "").trim(),
-          sku: String(getValueByHeader(row, "sku") || "").trim(),
-          color: String(getValueByHeader(row, "color") || "").trim(),
-          proveedor: proveedor,
+          fila: rowNumber,
+          id_catalogo: categoriaObj?.id || null,
+          nombre_producto,
+          descripcion,
+          marca,
+          sku,
+          color,
+          proveedor,
           catalogo: categoria,
           id_proveedor: proveedorObj?.id || null,
-          id_catalogo: categoriaObj?.id || null,
-          costo_con_iva: Number(getValueByHeader(row, "costo con iva") || 0),
-          costo_sin_iva: Number(getValueByHeader(row, "costo sin iva") || 0),
-          costo_puntos_con_iva: Number(getValueByHeader(row, "costo puntos con iva") || 0),
-          costo_puntos_sin_iva: Number(getValueByHeader(row, "costo puntos sin iva") || 0),
-          fee_brimagy: Number(
-            getValueByHeader(row, "fee brimagy") || getValueByHeader(row, "fee") || 0
-          ),
-          subtotal: Number(getValueByHeader(row, "subtotal") || 0),
-          envio_base: Number(
-            getValueByHeader(row, "envío base") || getValueByHeader(row, "envio base") || 0
-          ),
-          costo_caja: Number(getValueByHeader(row, "costo caja") || 0),
-          envio_extra: Number(
-            getValueByHeader(row, "envío extra") || getValueByHeader(row, "envio extra") || 0
-          ),
-          total_envio: Number(
-            getValueByHeader(row, "total envío") || getValueByHeader(row, "total envio") || 0
-          ),
-          total: Number(getValueByHeader(row, "total") || 0),
-          puntos: Number(getValueByHeader(row, "puntos") || 0),
-          factor: Number(getValueByHeader(row, "factor") || 0),
+          costo_con_iva: Math.round(limpiarNumero(costoConIvaRaw)),
+          costo_sin_iva: Math.round(limpiarNumero(costoSinIvaRaw)),
+          costo_puntos_con_iva: Math.round(limpiarNumero(costoPuntosConIvaRaw)),
+          costo_puntos_sin_iva: Math.round(limpiarNumero(costoPuntosSinIvaRaw)),
+          fee_brimagy: Math.round(limpiarNumero(feeBrimagyRaw)),
+          subtotal: Math.round(limpiarNumero(subtotalRaw)),
+          envio_base: Math.round(limpiarNumero(envioBaseRaw)),
+          costo_caja: Math.round(limpiarNumero(costoCajaRaw)),
+          envio_extra: Math.round(limpiarNumero(envioExtraRaw)),
+          total_envio: Math.round(limpiarNumero(totalEnvioRaw)),
+          total: Math.round(limpiarNumero(totalRaw)),
+          puntos: Math.round(limpiarNumero(puntosRaw)),
+          factor: Math.round(limpiarNumero(factorRaw)),
           proveedor_valido: !!proveedorObj,
           categoria_valida: !!categoriaObj,
           sku_duplicado: false,
@@ -417,6 +561,21 @@ export const useListaProductos = (tipoUsuario: number) => {
           datosFormateados.push(producto);
         }
       });
+
+      // Si hay errores de validación, mostrarlos y no continuar
+      if (erroresValidacion.length > 0) {
+        setProcesando(false);
+        setMensajeAlert(
+          `Se encontraron ${
+            erroresValidacion.length
+          } error(es) de validación:\n\n${erroresValidacion.slice(0, 5).join("\n")}${
+            erroresValidacion.length > 5 ? `\n... y ${erroresValidacion.length - 5} más` : ""
+          }`
+        );
+        handleisAlertOpen();
+        event.target.value = "";
+        return;
+      }
 
       // Verificar SKUs duplicados en la BD
       const skus = datosFormateados.map((p) => p.sku).filter(Boolean);
@@ -467,13 +626,13 @@ export const useListaProductos = (tipoUsuario: number) => {
 
       // Definir columnas con formato
       worksheet.columns = [
+        { header: "Categoría", key: "categoria", width: 25 },
         { header: "Nombre Producto", key: "nombre_producto", width: 30 },
         { header: "Descripción", key: "descripcion", width: 40 },
         { header: "Marca", key: "marca", width: 20 },
         { header: "SKU", key: "sku", width: 20 },
         { header: "Color", key: "color", width: 15 },
         { header: "Proveedor", key: "proveedor", width: 25 },
-        { header: "Categoría", key: "categoria", width: 25 },
         { header: "Costo con IVA", key: "costo_con_iva", width: 15 },
         { header: "Costo sin IVA", key: "costo_sin_iva", width: 15 },
         { header: "Costo Puntos con IVA", key: "costo_puntos_con_iva", width: 20 },
@@ -519,7 +678,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         total_envio: 60,
         total: 150,
         puntos: 150,
-        factor: 1.5,
+        factor: 15,
       });
 
       // Agregar hoja con lista de proveedores
@@ -569,6 +728,7 @@ export const useListaProductos = (tipoUsuario: number) => {
       for (const producto of excelData) {
         try {
           const datos = {
+            id_catalogo: producto.id_catalogo,
             nombre_producto: producto.nombre_producto,
             descripcion: producto.descripcion,
             marca: producto.marca,
@@ -577,7 +737,6 @@ export const useListaProductos = (tipoUsuario: number) => {
             proveedor: producto.proveedor,
             catalogo: producto.catalogo,
             id_proveedor: producto.id_proveedor,
-            id_catalogo: producto.id_catalogo,
             costo_con_iva: producto.costo_con_iva,
             costo_sin_iva: producto.costo_sin_iva,
             costo_puntos_con_iva: producto.costo_puntos_con_iva,
@@ -629,7 +788,118 @@ export const useListaProductos = (tipoUsuario: number) => {
     }
   };
 
+  //Búsqueda inteligente
+  const busquedaInteligenteBrimagy = useCallback(async (datos?: any) => {
+    try {
+      setProcesandoBusquedaMagica(true);
+      const busqueda = await getBusquedaInteligenteHttp(datos);
+      // Formatear los datos igual que en getProductosCatalogo
+      const datosFormateados = busqueda.map((e: any) => {
+        return {
+          ...e,
+          ...{
+            costo_con_iva_format: numericFormatter(e?.costo_con_iva + "", {
+              thousandSeparator: ",",
+              decimalScale: 2,
+              fixedDecimalScale: true,
+              prefix: "$",
+            }),
+            costo_sin_iva_format: numericFormatter(e?.costo_sin_iva + "", {
+              thousandSeparator: ",",
+              decimalScale: 2,
+              fixedDecimalScale: true,
+              prefix: "$",
+            }),
+            costo_puntos_con_iva_format: numericFormatter(e?.costo_puntos_con_iva + "", {
+              thousandSeparator: ",",
+              decimalScale: 2,
+              fixedDecimalScale: true,
+              prefix: "$",
+            }),
+            costo_puntos_sin_iva_format: numericFormatter(e?.costo_puntos_sin_iva + "", {
+              thousandSeparator: ",",
+              decimalScale: 2,
+              fixedDecimalScale: true,
+              prefix: "$",
+            }),
+            subtotal_format: numericFormatter(e?.subtotal + "", {
+              thousandSeparator: ",",
+              decimalScale: 2,
+              fixedDecimalScale: true,
+              prefix: "$",
+            }),
+            envio_base_format: numericFormatter(e?.envio_base + "", {
+              thousandSeparator: ",",
+              decimalScale: 2,
+              fixedDecimalScale: true,
+              prefix: "$",
+            }),
+            costo_caja_format: numericFormatter(e?.costo_caja + "", {
+              thousandSeparator: ",",
+              decimalScale: 2,
+              fixedDecimalScale: true,
+              prefix: "$",
+            }),
+            envio_extra_format: numericFormatter(e?.envio_extra + "", {
+              thousandSeparator: ",",
+              decimalScale: 2,
+              fixedDecimalScale: true,
+              prefix: "$",
+            }),
+            total_envio_format: numericFormatter(e?.total_envio + "", {
+              thousandSeparator: ",",
+              decimalScale: 2,
+              fixedDecimalScale: true,
+              prefix: "$",
+            }),
+            total_format: numericFormatter(e?.total + "", {
+              thousandSeparator: ",",
+              decimalScale: 2,
+              fixedDecimalScale: true,
+              prefix: "$",
+            }),
+            fee_brimagy_format: numericFormatter(e?.fee_brimagy + "", {
+              thousandSeparator: ",",
+              decimalScale: 2,
+              fixedDecimalScale: true,
+              prefix: "$",
+            }),
+            puntos_format: numericFormatter(e?.puntos + "", {
+              thousandSeparator: ",",
+              decimalScale: 2,
+              fixedDecimalScale: true,
+              prefix: "",
+            }),
+            factor_format: numericFormatter(e?.factor + "", {
+              thousandSeparator: ",",
+              decimalScale: 2,
+              fixedDecimalScale: true,
+              prefix: "",
+            }),
+            fecha_creacion: moment(e?.fecha_ejecucion).format("DD-MM-YYYY"),
+          },
+        };
+      });
+      setProductos(datosFormateados);
+      setProcesandoBusquedaMagica(false);
+      handleisAlertCloseBI();
+      setMensajeAlert(`Se encontraron ${datosFormateados.length} productos relacionados`);
+      handleisAlertOpen();
+    } catch (error) {
+      setProcesandoBusquedaMagica(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+      handleisAlertOpen();
+    }
+  }, []);
+
   return {
+    busquedaInteligenteBrimagy,
+    verProducto,
+    setVerProducto,
+    isAlertOpenVerDatos,
+    handleisAlertCloseVerDatos,
+    handleisAlertOpenVerDatos,
     isSuperAdmin,
     handleBuscadorChange,
     buscador,
@@ -713,5 +983,14 @@ export const useListaProductos = (tipoUsuario: number) => {
     guardarProductosExcel,
     procesandoExcel,
     descargarPlantillaExcel,
+    //Búsqueda intelimagy
+    isAlertOpenBI,
+    handleisAlertOpenBI,
+    handleisAlertCloseBI,
+    buscarPorPuntos,
+    setBuscarPorPuntos,
+    categoriaBuscar,
+    setCategoriaBuscar,
+    procesandoBusquedaMagica,
   };
 };

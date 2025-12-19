@@ -54,14 +54,15 @@ import {
   setSidenavColor,
 } from "context";
 import ModalComponent from "components/Modal";
-import { Grid, SpeedDial } from "@mui/material";
+import { Avatar, Grid, SpeedDial } from "@mui/material";
 import MenuHome from "components/MenuHome/MenuHome";
+import logoIcono from "assets/images/logo_icono-sf.png";
 
 // Declaring props types for Sidenav
 interface Props {
   color?: "primary" | "secondary" | "info" | "success" | "warning" | "error" | "dark";
   brand?: string;
-  brandName: string;
+  brandName?: string;
   routes: {
     [key: string]:
       | ReactNode
@@ -361,16 +362,36 @@ function Sidenav({ color, brand, brandName, routes, ...rest }: Props): JSX.Eleme
                 <Icon sx={{ fontWeight: "bold" }}>close</Icon>
               </MDTypography>
             </MDBox>
-            <MDBox component={NavLink} to="/" display="flex" alignItems="center">
-              {brand && <MDBox component="img" src={brand} alt="Brand" width="2rem" />}
-              <MDBox
-                width={!brandName ? "100%" : undefined}
-                sx={(theme: any) => sidenavLogoLabel(theme, { miniSidenav })}
-              >
-                <MDTypography component="h6" variant="button" fontWeight="medium" color={textColor}>
-                  {brandName}
-                </MDTypography>
-              </MDBox>
+            <MDBox
+              component={NavLink}
+              to="/"
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+            >
+              {brand && (
+                <MDBox
+                  component="img"
+                  src={brand}
+                  alt="Brimagy"
+                  width={!brandName ? "60%" : undefined}
+                />
+              )}
+              {brandName && (
+                <MDBox
+                  width={!brandName ? "100%" : undefined}
+                  sx={(theme: any) => sidenavLogoLabel(theme, { miniSidenav })}
+                >
+                  <MDTypography
+                    component="h6"
+                    variant="button"
+                    fontWeight="medium"
+                    color={textColor}
+                  >
+                    {brandName}
+                  </MDTypography>
+                </MDBox>
+              )}
             </MDBox>
           </MDBox>
           <Divider
@@ -408,15 +429,17 @@ function Sidenav({ color, brand, brandName, routes, ...rest }: Props): JSX.Eleme
         }}
         FabProps={{
           sx: {
-            bgcolor: "#084d6e",
+            bgcolor: "#2f2f2f",
             "&:hover": {
-              bgcolor: "#2d789c",
+              bgcolor: "#171717",
             },
           },
         }}
         ariaLabel="SpeedDial basic example"
         sx={{ position: "fixed", bottom: "95px", right: "10px", width: "100px" }}
-        icon={<AppsIcon fontSize="medium" />}
+        icon={
+          <Avatar src={logoIcono} alt="Icon" sx={{ width: 32, height: 32 }} />
+        } /*<AppsIcon fontSize="medium" />*/
       />
     </>
   );

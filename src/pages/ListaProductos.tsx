@@ -28,7 +28,7 @@ import MDBox from "components/MDBox";
 // Material Dashboard 2 PRO React TS examples components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import logo from "assets/images/logo.png";
+import logo from "assets/images/profile_icon.png";
 import Footer from "examples/Footer";
 
 import { useSelector } from "react-redux";
@@ -39,6 +39,7 @@ import {
   Button,
   CardContent,
   Checkbox,
+  Chip,
   CircularProgress,
   Divider,
   FormControlLabel,
@@ -54,25 +55,13 @@ import ModalComponent from "components/Modal";
 import Header from "components/Header";
 import MDTypography from "components/MDTypography";
 import TablePagination from "@mui/material/TablePagination";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { grey, pink } from "@mui/material/colors";
 import DeleteIcon from "@mui/icons-material/Delete";
-import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
-import RadioButtonUncheckedOutlinedIcon from "@mui/icons-material/RadioButtonUncheckedOutlined";
-import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
-import AddIcon from "@mui/icons-material/Add";
-import { FormikProvider } from "formik";
-import SendIcon from "@mui/icons-material/Send";
 import { Spinner } from "react-bootstrap";
 import ModalConfirm from "components/ModalConfirm/ModalConfirm";
-import MDButton from "components/MDButton";
-import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
-import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
 
-import { MuiFileInput } from "mui-file-input";
 import { styled } from "@mui/material/styles";
 import Badge, { BadgeProps } from "@mui/material/Badge";
 import { numericFormatter } from "react-number-format";
@@ -83,6 +72,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import SimCardDownloadIcon from "@mui/icons-material/SimCardDownload";
+import TipsAndUpdatesIcon from "@mui/icons-material/TipsAndUpdates";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 
 function ListaProductos(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -94,6 +86,12 @@ function ListaProductos(): JSX.Element {
   const [rowsPerPage, setRowsPerPage] = useState(6);
 
   const {
+    busquedaInteligenteBrimagy,
+    verProducto,
+    setVerProducto,
+    isAlertOpenVerDatos,
+    handleisAlertCloseVerDatos,
+    handleisAlertOpenVerDatos,
     isSuperAdmin,
     handleBuscadorChange,
     buscador,
@@ -177,6 +175,15 @@ function ListaProductos(): JSX.Element {
     guardarProductosExcel,
     procesandoExcel,
     descargarPlantillaExcel,
+    //Búsqueda intelimagy
+    isAlertOpenBI,
+    handleisAlertOpenBI,
+    handleisAlertCloseBI,
+    buscarPorPuntos,
+    setBuscarPorPuntos,
+    categoriaBuscar,
+    setCategoriaBuscar,
+    procesandoBusquedaMagica,
   } = useListaProductos(tipoUsuario);
 
   const independiente = () => {
@@ -233,7 +240,7 @@ function ListaProductos(): JSX.Element {
       <Header tipoUsuario={tipoUsuario} nombreUsuario={userName} fotoPerfil={fotoUser} />
       <MDBox py={3} mb={20}>
         <Grid container spacing={2} mb={2}>
-          <Grid item xs={6}>
+          <Grid item xs={8}>
             <Button
               variant="contained"
               component="label"
@@ -252,11 +259,35 @@ function ListaProductos(): JSX.Element {
             >
               Descargar Plantilla
             </Button>
+
+            <Button
+              variant="contained"
+              component="label"
+              startIcon={<AutoAwesomeIcon />}
+              endIcon={<AutoAwesomeIcon />}
+              sx={{
+                background: "#a5eb2f",
+                color: "#2f2f2f",
+                ml: 2,
+                "&:hover": {
+                  background: "#2f2f2f",
+                  color: "#fff",
+                },
+                "&:focus:not(:hover)": {
+                  background: "#a5eb2f",
+                },
+              }}
+              onClick={() => {
+                handleisAlertOpenBI();
+              }}
+            >
+              Búsqueda Intelimagy
+            </Button>
           </Grid>
           <Grid
             item
-            xs={6}
-            sm={6}
+            xs={4}
+            sm={4}
             sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
           >
             <TextField
@@ -282,7 +313,7 @@ function ListaProductos(): JSX.Element {
             <Grid container spacing={2}>
               {productosPaginados.map((p: any, key: number) => {
                 return (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={p.id || key}>
+                  <Grid item xs={12} sm={6} md={4} lg={4} key={p.id || key}>
                     <Card
                       sx={{
                         border: productosSeleccionados.includes(p.id)
@@ -299,6 +330,27 @@ function ListaProductos(): JSX.Element {
                         },
                       }}
                     >
+                      {/*<Chip
+                        icon={<TipsAndUpdatesIcon />}
+                        label="Sugerencia"
+                        sx={{
+                          position: "absolute",
+                          top: 0,
+                          right: 0,
+                          flexDirection: "row",
+                          bgcolor: pink[50],
+                          p: 1,
+                          fontWeight: 500,
+                          borderRadius: "0 0 0 20px",
+                          background: `${pink[300]}`,
+                          "& .MuiChip-icon": {
+                            color: "#FFF9C4 !important",
+                            fontSize: "20px !important",
+                            width: "20px !important",
+                            height: "20px !important",
+                          },
+                        }}
+                      />*/}
                       {/* Fila superior*/}
                       <Box
                         sx={{
@@ -369,27 +421,19 @@ function ListaProductos(): JSX.Element {
                             borderColor: "grey.200",
                           }}
                         >
-                          {/*<Tooltip title="Vista Previa">
+                          <Tooltip title="Vista Previa">
                             <IconButton
                               aria-label="ver"
                               size="small"
                               color="default"
-                              onClick={() => vistaPreviaPoliza(p)
+                              onClick={() => {
+                                setVerProducto(p);
+                                handleisAlertOpenVerDatos();
+                              }}
                             >
                               <VisibilityIcon fontSize="small" />
                             </IconButton>
-                          </Tooltip>*/}
-
-                          {/*<Tooltip title="Descargar PDF">
-                            <IconButton
-                              aria-label="descargar"
-                              size="small"
-                              color="info"
-                              onClick={() => descargarPoliza(p.id)
-                            >
-                              <CloudDownloadIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>*/}
+                          </Tooltip>
 
                           {isSuperAdmin ? (
                             <Tooltip title="Editar producto">
@@ -461,6 +505,12 @@ function ListaProductos(): JSX.Element {
                             <MDTypography variant="caption" display="block" color="text" noWrap>
                               <strong>Color:</strong> {p.color ?? "N/A"}
                             </MDTypography>
+                            <MDTypography variant="caption" display="block" color="text" noWrap>
+                              <strong>Categoría:</strong> {p.catalogo ?? "N/A"}
+                            </MDTypography>
+                            <MDTypography variant="caption" display="block" color="text" noWrap>
+                              <strong>Proveedor:</strong> {p.proveedor ?? "N/A"}
+                            </MDTypography>
                             {p.prima_asegurada && (
                               <MDTypography
                                 variant="caption"
@@ -519,7 +569,7 @@ function ListaProductos(): JSX.Element {
                 onPageChange={handleChangePage}
                 rowsPerPage={rowsPerPage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
-                rowsPerPageOptions={[4, 8, 12, 16]}
+                rowsPerPageOptions={[3, 6, 9, 12]}
                 labelRowsPerPage="Productos por página:"
                 labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
                 sx={{
@@ -545,7 +595,7 @@ function ListaProductos(): JSX.Element {
               xs={12}
               style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
             >
-              <h3>{intl.formatMessage({ id: "sin_polizas_registradas" })}</h3>
+              <h3>{intl.formatMessage({ id: "sin_productos_registrados" })}</h3>
             </Grid>
           </Grid>
         ) : null}
@@ -971,6 +1021,7 @@ function ListaProductos(): JSX.Element {
         handleClose={handleisAlerCloseSubirExcel}
         isOpen={isAlertOpenSubirExcel}
         key={"alertaSubirExcel"}
+        esFullScreen
       >
         <Grid container spacing={2}>
           <Grid item xs={12} style={{ textAlign: "center" }}>
@@ -981,6 +1032,7 @@ function ListaProductos(): JSX.Element {
           <Grid item xs={12} style={{ maxHeight: "500px", overflow: "auto" }}>
             {excelData.length > 0 ? (
               <DinamicTableMejorada
+                esListaProductosExcel
                 data={excelData.map((p) => ({
                   ...p,
                   proveedor_status: p.proveedor_valido ? "✓ " + p.proveedor : "✗ " + p.proveedor,
@@ -1035,6 +1087,357 @@ function ListaProductos(): JSX.Element {
               disabled={procesandoExcel}
             >
               Cancelar
+            </Button>
+          </Grid>
+        </Grid>
+      </ModalComponent>
+      {/* VISUALIZAR DATOS DEL PRODUCTO */}
+      <ModalComponent
+        handleClose={handleisAlertCloseVerDatos}
+        isOpen={isAlertOpenVerDatos}
+        key={"alertaVerDatos"}
+      >
+        <Grid container spacing={2} style={{ textAlign: "center" }}>
+          {verProducto ? (
+            <>
+              <Grid item xs={12} mt={1}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "16px", fontWeight: 600 }}
+                >
+                  {verProducto?.nombre_producto}
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Divider />
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Descripción
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.descripcion}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Marca
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.marca}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  SKU
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.sku}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Color
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.color}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Proveedor
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.proveedor}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Categoría
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.catalogo}
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Divider />
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Costo sin IVA
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.costo_sin_iva_format}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Costo con IVA
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.costo_con_iva_format}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Fee Bimagy
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.fee_brimagy}
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Divider />
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Costo puntos sin IVA
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.costo_puntos_sin_iva_format}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Costo puntos con IVA
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.costo_puntos_con_iva_format}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Subtotal
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.subtotal_format}
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Divider />
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Envío base
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.envio_base_format}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Costo caja
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.costo_caja_format}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Total envío
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.total_envio_format}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Envio extra
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.envio_extra_format}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Total
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.total_format}
+                </Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography
+                  variant="button"
+                  gutterBottom
+                  sx={{ fontSize: "14px", fontWeight: 600 }}
+                >
+                  Puntos
+                </Typography>
+                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                  {verProducto?.puntos_format}
+                </Typography>
+              </Grid>
+            </>
+          ) : null}
+        </Grid>
+      </ModalComponent>
+      <ModalComponent handleClose={handleisAlertCloseBI} isOpen={isAlertOpenBI} key={"alertaBI"}>
+        <Grid container spacing={2} style={{ textAlign: "center" }}>
+          <Grid item xs={12} m={2}>
+            <Typography variant="button" gutterBottom sx={{ fontSize: "18px", fontWeight: 600 }}>
+              Búsqueda inteli<b style={{ color: "#a5eb2f" }}>magy</b>
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              id="buscarPorPuntos"
+              fullWidth
+              label={`${intl.formatMessage({ id: "input_buscar_por_puntos" })}`}
+              variant="standard"
+              name="buscarPorPuntos"
+              value={buscarPorPuntos || ""}
+              onChange={(e) => {
+                const value = e.target.value;
+                setBuscarPorPuntos(value);
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="medium" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              id="categoriaBuscar"
+              select
+              fullWidth
+              label={`${intl.formatMessage({ id: "select_categoria_producto" })} *`}
+              variant="standard"
+              name="categoriaBuscar"
+              value={categoriaBuscar || ""}
+              disabled={!categorias || categorias.length === 0}
+              helperText={
+                !categorias || categorias.length === 0
+                  ? intl.formatMessage({ id: "sin_categorias_registradas" })
+                  : ""
+              }
+              onChange={(e) => {
+                const value = e.target.value;
+                setCategoriaBuscar(value);
+              }}
+              InputProps={{
+                style: { padding: "5px" },
+              }}
+            >
+              {categorias?.map((option) => (
+                <MenuItem key={option.id} value={option.id}>
+                  {option.desc}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+          <Grid item xs={12} sm={4} display="flex" alignContent="center" justifyContent="center">
+            <Button
+              variant="contained"
+              endIcon={<AutoFixHighIcon />}
+              disabled={procesandoBusquedaMagica}
+              onClick={(e: any) => {
+                const datos = {
+                  puntos: buscarPorPuntos,
+                  categoria: categoriaBuscar,
+                };
+                busquedaInteligenteBrimagy(datos);
+              }}
+              sx={{
+                background: "#a5eb2f",
+                color: "#2f2f2f",
+                ml: 2,
+                "&:hover": {
+                  background: "#2f2f2f",
+                  color: "#fff",
+                },
+                "&:focus:not(:hover)": {
+                  background: "#a5eb2f",
+                },
+              }}
+            >
+              {procesandoBusquedaMagica ? (
+                <>
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                  {intl.formatMessage({ id: "realizando_busqueda" })}...{" "}
+                </>
+              ) : (
+                intl.formatMessage({ id: "realizar_busqueda_magica" })
+              )}
             </Button>
           </Grid>
         </Grid>

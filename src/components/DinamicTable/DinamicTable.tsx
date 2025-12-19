@@ -73,6 +73,12 @@ const DinamicTableMejorada: React.FC<DinamicTableProps> = (props: DinamicTablePr
     if (params.node?.data?.selected) {
       return { background: "#68aad4" };
     }
+    if (
+      (props?.esListaProductosExcel && !params.node?.data?.proveedor_valido) ||
+      (props?.esListaProductosExcel && !params.node?.data?.categoria_valida)
+    ) {
+      return { background: "#FF2C00" };
+    }
     if (params.node?.data?.sku_duplicado) {
       return { background: "#fff3cd" };
     }

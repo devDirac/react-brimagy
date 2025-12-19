@@ -1,4 +1,4 @@
-import logo from "assets/images/logo.png";
+import logo from "assets/images/profile_icon.png";
 
 // Material Dashboard 2 PRO React TS components
 import MDBox from "components/MDBox";
@@ -321,7 +321,7 @@ function NuevoProducto(): JSX.Element {
                   >
                     {categorias?.map((option) => (
                       <MenuItem key={option.id} value={option.id}>
-                        {option.nombre}
+                        {option.desc}
                       </MenuItem>
                     ))}
                   </TextField>

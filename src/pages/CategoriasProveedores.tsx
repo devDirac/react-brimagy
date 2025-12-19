@@ -21,7 +21,7 @@ import MDBox from "components/MDBox";
 // Material Dashboard 2 PRO React TS examples components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import logo from "assets/images/logo.png";
+import logo from "assets/images/profile_icon.png";
 import Footer from "examples/Footer";
 
 import { useSelector } from "react-redux";
@@ -52,6 +52,10 @@ function CategoriasProveedores(): JSX.Element {
   const fotoUser: any = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
 
   const {
+    telefonoEditar,
+    setTelefonoEditar,
+    correoEditar,
+    setCorreoEditar,
     setTipoEditando,
     tipoEditando,
     eliminarGeneral,
@@ -208,6 +212,69 @@ function CategoriasProveedores(): JSX.Element {
                       }}
                     />
                   </Grid>
+                  <Grid item xs={6} sm={6}>
+                    <TextField
+                      id="telefono"
+                      fullWidth
+                      label={`${intl.formatMessage({ id: "input_telefono" })} *`}
+                      variant="standard"
+                      name="telefono"
+                      type="number"
+                      value={formik.values.telefono || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        formik.setFieldValue("telefono", value);
+                      }}
+                      onBlur={formik.handleBlur}
+                      error={formik.touched.telefono && Boolean(formik.errors.telefono)}
+                      helperText={formik.touched.telefono && formik.errors.telefono}
+                      sx={{
+                        "& .MuiInputLabel-root": {
+                          color: getFieldColor("telefono"),
+                        },
+                        "& .MuiInput-underline:after": {
+                          borderBottomColor: getFieldColor("telefono"),
+                        },
+                        "& .MuiInput-underline:before": {
+                          borderBottomColor: getFieldColor("telefono"),
+                        },
+                        "& .MuiInputBase-input": {
+                          color: getFieldColor("telefono"),
+                        },
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6} sm={6}>
+                    <TextField
+                      id="correo"
+                      fullWidth
+                      label={`${intl.formatMessage({ id: "input_correo" })} *`}
+                      variant="standard"
+                      name="correo"
+                      value={formik.values.correo || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        formik.setFieldValue("correo", value);
+                      }}
+                      onBlur={formik.handleBlur}
+                      error={formik.touched.correo && Boolean(formik.errors.correo)}
+                      helperText={formik.touched.correo && formik.errors.correo}
+                      sx={{
+                        "& .MuiInputLabel-root": {
+                          color: getFieldColor("correo"),
+                        },
+                        "& .MuiInput-underline:after": {
+                          borderBottomColor: getFieldColor("correo"),
+                        },
+                        "& .MuiInput-underline:before": {
+                          borderBottomColor: getFieldColor("correo"),
+                        },
+                        "& .MuiInputBase-input": {
+                          color: getFieldColor("correo"),
+                        },
+                      }}
+                    />
+                  </Grid>
                   <Grid
                     item
                     xs={12}
@@ -225,6 +292,8 @@ function CategoriasProveedores(): JSX.Element {
                         const datos = {
                           nombre: formik.values.nombre,
                           descripcion: formik.values.descripcion,
+                          telefono: formik.values.telefono,
+                          correo: formik.values.correo,
                         };
                         crearProveedor(datos);
                       }}
@@ -252,7 +321,7 @@ function CategoriasProveedores(): JSX.Element {
                       {intl.formatMessage({ id: "categorias" })}
                     </Typography>
                   </Grid>
-                  <Grid item xs={6} sm={6}>
+                  <Grid item xs={12} sm={12}>
                     <TextField
                       id="nombre"
                       fullWidth
@@ -285,7 +354,7 @@ function CategoriasProveedores(): JSX.Element {
                       }}
                     />
                   </Grid>
-                  <Grid item xs={6} sm={6}>
+                  {/*<Grid item xs={6} sm={6}>
                     <TextField
                       id="descripcion"
                       fullWidth
@@ -320,7 +389,7 @@ function CategoriasProveedores(): JSX.Element {
                         },
                       }}
                     />
-                  </Grid>
+                  </Grid>*/}
                   <Grid
                     item
                     xs={12}
@@ -337,7 +406,6 @@ function CategoriasProveedores(): JSX.Element {
                       onClick={(e: any) => {
                         const datos = {
                           nombre: formikCategoria.values.nombre,
-                          descripcion: formikCategoria.values.descripcion,
                         };
                         crearCategoria(datos);
                       }}
@@ -386,7 +454,7 @@ function CategoriasProveedores(): JSX.Element {
                       actions
                       key={tableKeyCategoria}
                       //sinBusqueda
-                      columnsToShow={["nombre", "descripcion"]}
+                      columnsToShow={["desc"]}
                       sinExport
                       esListaCategorias
                       //showCheckBox
@@ -433,27 +501,60 @@ function CategoriasProveedores(): JSX.Element {
                   label={intl.formatMessage({ id: "input_nombre" })}
                   variant="standard"
                   name="nombreEditar"
-                  value={nombreEditar || generalEditar?.nombre}
+                  value={nombreEditar}
                   onChange={(e) => {
                     const value = e.target.value;
                     setNombreEditar(e.target.value);
                   }}
                 />
               </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="descripcionEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_descripcion" })}
-                  variant="standard"
-                  name="descripcionEditar"
-                  value={descripcionEditar || generalEditar?.descripcion}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setDescripcionEditar(e.target.value);
-                  }}
-                />
-              </Grid>
+              {tipoEditando === "proveedor" ? (
+                <>
+                  <Grid item xs={6} sm={4}>
+                    <TextField
+                      id="descripcionEditar"
+                      fullWidth
+                      label={intl.formatMessage({ id: "input_descripcion" })}
+                      variant="standard"
+                      name="descripcionEditar"
+                      value={descripcionEditar}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setDescripcionEditar(e.target.value);
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6} sm={4}>
+                    <TextField
+                      id="telefonoEditar"
+                      fullWidth
+                      label={intl.formatMessage({ id: "input_telefono" })}
+                      variant="standard"
+                      name="telefonoEditar"
+                      value={telefonoEditar}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setTelefonoEditar(e.target.value);
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6} sm={4}>
+                    <TextField
+                      id="correoEditar"
+                      fullWidth
+                      label={intl.formatMessage({ id: "input_correo" })}
+                      variant="standard"
+                      name="correoEditar"
+                      value={correoEditar}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setCorreoEditar(e.target.value);
+                      }}
+                    />
+                  </Grid>
+                </>
+              ) : null}
+
               <Grid item xs={12} md={4}>
                 <Button
                   sx={{ color: "#fff", background: "#084d6e" }}
@@ -461,11 +562,23 @@ function CategoriasProveedores(): JSX.Element {
                   endIcon={<EditIcon />}
                   disabled={procesando}
                   onClick={(e: any) => {
-                    const datos = {
-                      id: generalEditar?.id,
-                      nombre: nombreEditar,
-                      descripcion: descripcionEditar,
-                    };
+                    let datos;
+                    if (tipoEditando === "proveedor") {
+                      datos = {
+                        id: generalEditar?.id,
+                        nombre: nombreEditar,
+                        descripcion: descripcionEditar,
+                        telefono: telefonoEditar,
+                        correo: correoEditar,
+                      };
+                    } else if (tipoEditando === "categoria") {
+                      datos = {
+                        id: generalEditar?.id,
+                        desc: nombreEditar,
+                      };
+                    }
+                    console.log(datos);
+
                     editaGeneral(datos);
                   }}
                 >

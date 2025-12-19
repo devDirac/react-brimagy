@@ -21,7 +21,7 @@ import MDBox from "components/MDBox";
 // Material Dashboard 2 PRO React TS examples components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import logo from "assets/images/logo.png";
+import logo from "assets/images/profile_icon.png";
 import Footer from "examples/Footer";
 
 import { useSelector } from "react-redux";
@@ -30,7 +30,6 @@ import { Backdrop, Button, CircularProgress, MenuItem, TextField } from "@mui/ma
 import ModalComponent from "components/Modal";
 import Header from "components/Header";
 import DinamicTable from "components/DinamicTable/DinamicTable";
-import CampoAvatar from "components/CampoAvatar";
 import { Spinner } from "react-bootstrap";
 import { useCatalogoProductos } from "./customHooksPages/useCatalogoProductos";
 import EditIcon from "@mui/icons-material/Edit";
@@ -168,6 +167,15 @@ function CatalogoProductos(): JSX.Element {
                   sx={{ borderColor: "#084d6e", color: "#084d6e" }}
                 >
                   Descargar Plantilla
+                </Button>
+
+                <Button
+                  variant="contained"
+                  component="label"
+                  startIcon={<UploadFileIcon />}
+                  sx={{ background: "#084d6e", color: "#fff", mr: 2 }}
+                >
+                  Búsqueda personalizada
                 </Button>
               </Grid>
             </Grid>

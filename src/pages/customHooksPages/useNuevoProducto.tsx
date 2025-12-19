@@ -118,7 +118,6 @@ export const useNuevoProducto = () => {
     },
   });
 
-  // Funciones auxiliares para validaciones visuales
   const isFieldValid = (fieldName: keyof typeof formik.values) => {
     return (
       formik.touched[fieldName] &&

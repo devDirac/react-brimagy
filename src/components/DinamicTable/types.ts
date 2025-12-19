@@ -24,6 +24,7 @@ export interface DinamicTableProps {
   esListaProveedores?: boolean;
   esListaProductos?: boolean;
   esListaCategorias?: boolean;
+  esListaProductosExcel?: boolean;
   onImageClick?: (imageUrl: string) => void;
 }
 interface DataRow {
@@ -51,4 +52,5 @@ export interface AccionesTableProps {
   esListaProveedores?: boolean;
   esListaProductos?: boolean;
   esListaCategorias?: boolean;
+  esListaProductosExcel?: boolean;
 }

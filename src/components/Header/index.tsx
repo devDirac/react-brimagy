@@ -29,9 +29,9 @@ import MDAvatar from "components/MDAvatar";
 import breakpoints from "assets/theme/base/breakpoints";
 
 // Images
-import burceMars from "assets/images/bruce-mars.jpg";
-import backgroundImage from "assets/images/bg-profile.jpeg";
-import logo from "assets/images/logo.png";
+import logoPerfil from "assets/images/profile_icon.png";
+import backgroundImage from "assets/images/fondo2-brimagy.jpg";
+import logo from "assets/images/profile_icon.png";
 import { Avatar } from "@mui/material";
 
 const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
@@ -112,7 +112,7 @@ const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
             <Avatar
               className="AvatarUser"
               alt={props?.nombreUsuario || ""}
-              src={props?.fotoPerfil || logo}
+              src={props?.fotoPerfil || logoPerfil}
             />
           </Grid>
           <Grid item>

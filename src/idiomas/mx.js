@@ -99,6 +99,11 @@ const textosMx = {
   categoria_creada_correctamente: "Categoría creada correctamente",
   categoria_creada_error: "Error al crear la categoría",
   input_buscador: "Buscar producto",
+  input_email_descripcion: "Ingresa el correo",
+  sin_productos_registrados: "Sin productos registrados",
+  input_buscar_por_puntos: "Buscar por puntos",
+  realizando_busqueda: "Realizando búsqueda",
+  realizar_busqueda_magica: "Realizar búsqueda",
 };
 
 export default textosMx;
