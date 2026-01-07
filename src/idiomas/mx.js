@@ -104,6 +104,14 @@ const textosMx = {
   input_buscar_por_puntos: "Buscar por puntos",
   realizando_busqueda: "Realizando búsqueda",
   realizar_busqueda_magica: "Realizar búsqueda",
+  sin_canjes_registrados: "Sin canjes registrados",
+  generar_pdf_input: "Generar PDF",
+  validar_identidad_input: "Validar identidad del cliente",
+  validacion_enviada_correctamente: "Validación enviada correctamente al cliente",
+  validacion_enviada_error: "Error al enviar la validación al cliente",
+  codigo_enviado_whatsapp_correctamente: "Código enviado correctamente por WhatsApp",
+  solicitar_codigo_input: "Solicitar código de verificación",
+  identidad_validada_correctamente: "Identidad validada correctamente",
 };
 
 export default textosMx;

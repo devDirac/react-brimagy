@@ -85,6 +85,23 @@ const routes = [
       },
     ],
   },
+  {
+    type: "collapse",
+    name: "Canjes",
+    key: "canjes",
+    icon: <ShoppingBagIcon />,
+    allow: [1, 2, 3, 4, 5, 6],
+    collapse: [
+      {
+        name: "Catálogo de Canjes",
+        key: "catalogo-canjes",
+        icon: "ShoppingBagIcon",
+        route: "/catalogo-canjes",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6],
+      },
+    ],
+  },
 ];
 
 export default routes;

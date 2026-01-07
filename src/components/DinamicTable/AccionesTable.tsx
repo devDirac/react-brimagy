@@ -53,6 +53,8 @@ const AccionesTable: React.FC<AccionesTableProps> = (props: AccionesTableProps) 
                 ? props?.enAccion("editar_proveedor")
                 : props?.esListaCategorias
                 ? props?.enAccion("editar_categoria")
+                : props?.esListaUsuarios
+                ? props?.enAccion("editar_usuario")
                 : props?.enAccion("editar")
             }
             sx={{ color: darkMode ? "#fff" : "#f5a64c", padding: "0" }}

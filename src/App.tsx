@@ -1,18 +1,3 @@
-/**
-=========================================================
-* Material Dashboard 2 PRO React TS - v1.0.2
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-2-pro-react-ts
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
 import {
   useState,
   useEffect,
@@ -89,6 +74,8 @@ import NuevoProducto from "pages/NuevoProducto";
 import CatalogoProductos from "pages/CatalogoProductos";
 import CategoriasProveedores from "pages/CategoriasProveedores";
 import ListaProductos from "pages/ListaProductos";
+import ListaCanjeos from "pages/ListaCanjeos";
+import ValidarIdentidad from "pages/ValidarIdentidad";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
@@ -213,6 +200,8 @@ export default function App() {
         )}
         <Routes>
           {/* inicia rutas publicas */}
+          <Route path="/validar-canje/:codigo" element={<ValidarIdentidad />} />
+
           <Route path="/login" element={<PublicRouter />}>
             <Route path="/login" element={<LoginPageIlustrator />} />
           </Route>
@@ -242,6 +231,8 @@ export default function App() {
             <Route path="/nuevo-producto" element={<NuevoProducto />} />
             <Route path="/catalogo-productos" element={<ListaProductos />} />
             <Route path="/categorias-proveedores" element={<CategoriasProveedores />} />
+            {/* CANJES */}
+            <Route path="/catalogo-canjes" element={<ListaCanjeos />} />
           </Route>
           {/* inicia pagina no encontrada */}
           <Route path="*" element={<NotFoundPage />} />

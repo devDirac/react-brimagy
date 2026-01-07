@@ -24,7 +24,13 @@ import MDBox from "components/MDBox";
 // Material Dashboard 2 PRO React context
 import { useMaterialUIController, setLayout } from "context";
 
-function DashboardLayout({ children }: { children: ReactNode }): JSX.Element {
+function DashboardLayout({
+  children,
+  withSidebar = true,
+}: {
+  children: ReactNode;
+  withSidebar?: boolean;
+}): JSX.Element {
   const [controller, dispatch] = useMaterialUIController();
   const { miniSidenav } = controller;
   const { pathname } = useLocation();
@@ -40,7 +46,7 @@ function DashboardLayout({ children }: { children: ReactNode }): JSX.Element {
         position: "relative",
 
         [breakpoints.up("xl")]: {
-          marginLeft: miniSidenav ? pxToRem(120) : pxToRem(274),
+          marginLeft: withSidebar ? (miniSidenav ? pxToRem(120) : pxToRem(274)) : 0,
           transition: transitions.create(["margin-left", "margin-right"], {
             easing: transitions.easing.easeInOut,
             duration: transitions.duration.standard,
