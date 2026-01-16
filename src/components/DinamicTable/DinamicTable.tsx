@@ -9,7 +9,7 @@ import useDinamicTableMejorada from "./useDinamicTable";
 import SimCardDownloadIcon from "@mui/icons-material/SimCardDownload";
 import "./style.scss";
 import SearchFiltro from "../../components/SearchFiltro/SearchFiltro";
-import { themeQuartz } from "ag-grid-community";
+import { themeQuartz, iconSetAlpine } from "ag-grid-community";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -49,10 +49,18 @@ const DinamicTableMejorada: React.FC<DinamicTableProps> = (props: DinamicTablePr
     }),
     []
   );
-  const myTheme = themeQuartz.withParams({
+  /*const myTheme = themeQuartz.withParams({
     accentColor: "#4CAF50",
     backgroundColor: darkMode ? "#1e1e1e" : "#ffffff",
     foregroundColor: darkMode ? "#ffffff" : "#000000",
+  });*/
+  const myTheme = themeQuartz.withPart(iconSetAlpine).withParams({
+    accentColor: "#A5EB2F",
+    browserColorScheme: "light",
+    foregroundColor: "#2F2F2F",
+    headerBackgroundColor: "#F0FCDC",
+    headerFontSize: 14,
+    headerTextColor: "#2F2F2F",
   });
 
   const onSelectionChanged = (event: any) => {
@@ -69,29 +77,39 @@ const DinamicTableMejorada: React.FC<DinamicTableProps> = (props: DinamicTablePr
     });
   }, []);
 
-  const getRowStyle = (params: any) => {
-    if (params.node?.data?.selected) {
-      return { background: "#68aad4" };
-    }
-    if (
-      (props?.esListaProductosExcel && !params.node?.data?.proveedor_valido) ||
-      (props?.esListaProductosExcel && !params.node?.data?.categoria_valida)
-    ) {
-      return { background: "#FF2C00" };
-    }
-    if (params.node?.data?.sku_duplicado) {
-      return { background: "#fff3cd" };
-    }
-    if (params.node?.data?.estado === "cancelada" || params.node?.data?.status === "desactivado") {
-      return { background: "#f78c8c" };
-    }
-    if (params.node?.data?.estado === "pendiente") {
-      return { background: "#ffd966" };
-    }
-    if (params.node?.data?.estado === "resuelta") {
-      return { background: "#6aa84f" };
-    }
-  };
+  const getRowStyle = useCallback(
+    (params: any) => {
+      if (params.node?.data?.selected) {
+        return { background: "#68aad4" };
+      }
+      if (props?.esListaProductosExcel && params.node?.data?.sku_vacio) {
+        return { background: "#fff9c4" };
+      }
+      if (
+        (props?.esListaProductosExcel && !params.node?.data?.proveedor_valido) ||
+        (props?.esListaProductosExcel && !params.node?.data?.categoria_valida)
+      ) {
+        return { background: "#FF2C00" };
+      }
+      if (params.node?.data?.sku_duplicado) {
+        return { background: "#fff3cd" };
+      }
+      if (
+        params.node?.data?.estado === "cancelada" ||
+        params.node?.data?.status === "desactivado"
+      ) {
+        return { background: "#f78c8c" };
+      }
+      if (params.node?.data?.estado === "pendiente") {
+        return { background: "#ffd966" };
+      }
+      if (params.node?.data?.estado === "resuelta") {
+        return { background: "#6aa84f" };
+      }
+      return undefined;
+    },
+    [props?.esListaProductosExcel]
+  );
 
   const barraBusqueda = useMemo(() => {
     if (!props?.sinFiltro) {
@@ -143,7 +161,7 @@ const DinamicTableMejorada: React.FC<DinamicTableProps> = (props: DinamicTablePr
           <Grid
             item
             xs={12}
-            md={8}
+            md={6}
             style={{
               textAlign: "center",
               padding: 0,

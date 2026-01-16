@@ -1,6 +1,7 @@
 import LockIcon from "@mui/icons-material/Lock";
 import PeopleIcon from "@mui/icons-material/People";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
+import ViewListIcon from "@mui/icons-material/ViewList";
 
 const routes = [
   {
@@ -97,6 +98,23 @@ const routes = [
         key: "catalogo-canjes",
         icon: "ShoppingBagIcon",
         route: "/catalogo-canjes",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6],
+      },
+    ],
+  },
+  {
+    type: "collapse",
+    name: "Ordenes de Compras",
+    key: "ordenes-de-compras",
+    icon: <ViewListIcon />,
+    allow: [1, 2, 3, 4, 5, 6],
+    collapse: [
+      {
+        name: "Generar Orden de Compra",
+        key: "generar-orden-de-compra",
+        icon: "ShoppingBagIcon",
+        route: "/generar-orden-de-compra",
         component: null,
         allow: [1, 2, 3, 4, 5, 6],
       },

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
@@ -56,6 +56,8 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
   const handleisAlerCloseEditarUsuario = () => setIsAlertOpenEditarUsuario(false);
 
   const [nombreEditar, setNombreEditar] = useState("");
+  const [razonSocialEditar, setRazonSocialEditar] = useState("");
+  const [nombreContactoEditar, setNombreContactoEditar] = useState("");
   const [descripcionEditar, setDescripcionEditar] = useState("");
   const [telefonoEditar, setTelefonoEditar] = useState("");
   const [correoEditar, setCorreoEditar] = useState("");
@@ -69,6 +71,12 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
   const [generalEditar, setGeneralEditar] = useState<any>(null);
   const [generalId, setGeneralId] = useState("");
 
+  const [valueTab, setValueTab] = useState(0);
+
+  const handleChangeTab = useCallback((event: React.SyntheticEvent, newValue: number) => {
+    setValueTab(newValue);
+  }, []);
+
   useEffect(() => {
     setAuth(token);
   }, [token]);
@@ -76,22 +84,48 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
   useEffect(() => {
     if (generalEditar && tipoEditando === "proveedor") {
       setNombreEditar(generalEditar.nombre || "");
+      setRazonSocialEditar(generalEditar.razon_social || "");
       setDescripcionEditar(generalEditar.descripcion || "");
+      setNombreContactoEditar(generalEditar.nombre_contacto || "");
+      setTelefonoEditar(generalEditar.telefono || "");
+      setCorreoEditar(generalEditar.correo || "");
     } else if (generalEditar && tipoEditando === "categoria") {
       setNombreEditar(generalEditar.desc || "");
     }
   }, [generalEditar]);
 
+  const tabsStyles = useMemo(
+    () => ({
+      background: "#F0FCDC",
+      borderRadius: "10px 10px 0 0",
+      "& .MuiTab-root": {
+        transition: "none",
+      },
+      "& .Mui-selected": {
+        background: "#a5eb2f !important",
+        color: "#2F2F2F !important",
+        fontWeight: 600,
+      },
+    }),
+    []
+  );
+
   const formik = useFormik({
     initialValues: {
       nombre: "",
+      razon_social: "",
       descripcion: "",
+      nombre_contacto: "",
       telefono: "",
       correo: "",
     },
     validationSchema: Yup.object({
       nombre: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      razon_social: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
       descripcion: Yup.string(),
+      nombre_contacto: Yup.string().required(
+        intl.formatMessage({ id: "input_validation_requerido" })
+      ),
       telefono: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
       correo: Yup.string()
         .email(intl.formatMessage({ id: "input_validation_email_invalido" }))
@@ -113,20 +147,6 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
       console.log("Formulario enviado:", values);
     },
   });
-
-  // Funciones auxiliares para validaciones visuales
-  const isFieldValid = (fieldName: keyof typeof formik.values) => {
-    return (
-      formik.touched[fieldName] &&
-      !formik.errors[fieldName] &&
-      formik.values[fieldName] &&
-      formik.values[fieldName] !== ""
-    );
-  };
-
-  const getFieldColor = (fieldName: keyof typeof formik.values) => {
-    return isFieldValid(fieldName) ? "#00AB16" : undefined;
-  };
 
   const getProveedores = useCallback(async () => {
     try {
@@ -228,12 +248,44 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
     }
   };
 
+  const handleAccionCallback = useCallback((accion: string, row: any) => {
+    switch (accion) {
+      case "eliminar_proveedor":
+        setTipoEditando("proveedor");
+        setGeneralId(row?.id);
+        handleisAlertOpenConfirm();
+        break;
+      case "eliminar_categoria":
+        setTipoEditando("categoria");
+        setGeneralId(row?.id);
+        handleisAlertOpenConfirm();
+        break;
+      case "editar_proveedor":
+        setTipoEditando("proveedor");
+        setGeneralEditar(row);
+        handleisAlertOpenEditarUsuario();
+        break;
+      case "editar_categoria":
+        setTipoEditando("categoria");
+        setGeneralEditar(row);
+        handleisAlertOpenEditarUsuario();
+        break;
+      default:
+        break;
+    }
+  }, []);
+
   useEffect(() => {
     getProveedores();
     getCategorias();
   }, [getProveedores, getCategorias]);
 
   return {
+    tabsStyles,
+    handleAccionCallback,
+    valueTab,
+    setValueTab,
+    handleChangeTab,
     telefonoEditar,
     setTelefonoEditar,
     correoEditar,
@@ -258,7 +310,6 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
     categorias,
     proveedores,
     procesandoCategoria,
-    getFieldColor,
     formik,
     formikCategoria,
     procesandoEditar,

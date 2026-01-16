@@ -112,6 +112,23 @@ const textosMx = {
   codigo_enviado_whatsapp_correctamente: "Código enviado correctamente por WhatsApp",
   solicitar_codigo_input: "Solicitar código de verificación",
   identidad_validada_correctamente: "Identidad validada correctamente",
+  input_razon_social: "Razón social",
+  input_nombre_contacto: "Nombre del contacto",
+  select_tipo_producto: "Selecciona el tipo de producto",
+  reenviar_codigo_verificacion: "Reenviar código",
+  enviar_a_otro_proveedor: "Enviar a otro proveedor",
+  marcar_como_compra_digital: "Marcar como compra digital",
+  producto_compra_digital_confirmar: "¿Deseas marcar el producto como una compra digital?",
+  enviar_a_proveedor: "Enviar a proveedor",
+  generar_orden_compra: "Generar orden de compra",
+  exito_enviar_orden_proveedor: "Se ha enviado la cotización al proveedor",
+  exito_enviar_cotizacion_proveedor: "Cotización enviada con éxito al proveedor",
+  validar_producto: "Aceptar producto",
+  rechazar_producto: "Rechazar producto",
+  producto_aceptado_correctamente: "Producto aceptado correctamente",
+  producto_aceptado_error: "Error al aceptar el producto",
+  producto_rechazado_correctamente: "Producto rechazado correctamente",
+  producto_rechazado_error: "Error al rechazar el producto",
 };
 
 export default textosMx;

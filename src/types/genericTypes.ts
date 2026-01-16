@@ -30,3 +30,9 @@ export interface AppType {
 export interface StoreType {
   app: AppType;
 }
+
+export interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}

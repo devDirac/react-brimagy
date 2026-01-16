@@ -76,6 +76,8 @@ import CategoriasProveedores from "pages/CategoriasProveedores";
 import ListaProductos from "pages/ListaProductos";
 import ListaCanjeos from "pages/ListaCanjeos";
 import ValidarIdentidad from "pages/ValidarIdentidad";
+import GenerarOrdenCompra from "pages/GenerarOrdenCompra";
+import ValidarOrdenCompra from "pages/ValidarOrdenCompra";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
@@ -201,6 +203,7 @@ export default function App() {
         <Routes>
           {/* inicia rutas publicas */}
           <Route path="/validar-canje/:codigo" element={<ValidarIdentidad />} />
+          <Route path="/validar-ordencompra/:id_ordencompra" element={<ValidarOrdenCompra />} />
 
           <Route path="/login" element={<PublicRouter />}>
             <Route path="/login" element={<LoginPageIlustrator />} />
@@ -233,6 +236,8 @@ export default function App() {
             <Route path="/categorias-proveedores" element={<CategoriasProveedores />} />
             {/* CANJES */}
             <Route path="/catalogo-canjes" element={<ListaCanjeos />} />
+            {/* ORDENES DE COMPRA */}
+            <Route path="/generar-orden-de-compra" element={<GenerarOrdenCompra />} />
           </Route>
           {/* inicia pagina no encontrada */}
           <Route path="*" element={<NotFoundPage />} />

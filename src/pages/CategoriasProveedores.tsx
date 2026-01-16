@@ -13,6 +13,7 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 // @mui material components
+import React from "react";
 import Grid from "@mui/material/Grid";
 
 // Material Dashboard 2 PRO React TS components
@@ -23,15 +24,19 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import logo from "assets/images/profile_icon.png";
 import Footer from "examples/Footer";
+import { grey, pink } from "@mui/material/colors";
 
 import { useSelector } from "react-redux";
-import { StoreType } from "../types/genericTypes";
+import { StoreType, TabPanelProps } from "../types/genericTypes";
 import {
   Backdrop,
+  Box,
   Button,
   Card,
   CardContent,
   CircularProgress,
+  Tab,
+  Tabs,
   TextField,
   Typography,
 } from "@mui/material";
@@ -45,6 +50,22 @@ import { FormikProvider } from "formik";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import EditIcon from "@mui/icons-material/Edit";
 import ModalConfirm from "components/ModalConfirm/ModalConfirm";
+import { TextFieldValidado } from "components/TextFieldValidado/TextFieldValidado";
+
+function CustomTabPanel({ children, value, index, ...other }: TabPanelProps) {
+  if (value !== index) return null;
+
+  return (
+    <div
+      role="tabpanel"
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      <Box sx={{ p: 3 }}>{children}</Box>
+    </div>
+  );
+}
 
 function CategoriasProveedores(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -52,6 +73,11 @@ function CategoriasProveedores(): JSX.Element {
   const fotoUser: any = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
 
   const {
+    tabsStyles,
+    handleAccionCallback,
+    valueTab,
+    setValueTab,
+    handleChangeTab,
     telefonoEditar,
     setTelefonoEditar,
     correoEditar,
@@ -76,7 +102,6 @@ function CategoriasProveedores(): JSX.Element {
     categorias,
     proveedores,
     procesandoCategoria,
-    getFieldColor,
     formik,
     formikCategoria,
     procesandoEditar,
@@ -105,372 +130,225 @@ function CategoriasProveedores(): JSX.Element {
     ) : null;
   };
 
-  const handleAccion = (accion: string, row: any) => {
-    switch (accion) {
-      case "desactivar":
-        //desactivaUsuario(row);
-        break;
-      case "eliminar_proveedor":
-        setTipoEditando("proveedor");
-        setGeneralId(row?.id);
-        handleisAlertOpenConfirm();
-        break;
-      case "eliminar_categoria":
-        setTipoEditando("categoria");
-        setGeneralId(row?.id);
-        handleisAlertOpenConfirm();
-        break;
-      case "editar_proveedor":
-        setTipoEditando("proveedor");
-        setGeneralEditar(row);
-        handleisAlertOpenEditarUsuario();
-        break;
-      case "editar_categoria":
-        setTipoEditando("categoria");
-        setGeneralEditar(row);
-        handleisAlertOpenEditarUsuario();
-        break;
-      default:
-        break;
-    }
-  };
+  function tabProps(index: number) {
+    return {
+      id: `simple-tab-${index}`,
+      "aria-controls": `simple-tabpanel-${index}`,
+    };
+  }
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <Header tipoUsuario={tipoUsuario} nombreUsuario={userName} fotoPerfil={fotoUser} />
       <MDBox py={3} mb={20}>
-        <FormikProvider value={formik!}>
-          <Card>
-            <CardContent>
-              <Grid container spacing={2}>
-                <Grid item xs={6} container spacing={2} alignItems="flex-start">
-                  <Grid item xs={12} sm={12}>
-                    <Typography variant="h5" gutterBottom>
-                      {intl.formatMessage({ id: "proveedores" })}
-                    </Typography>
-                  </Grid>
-
-                  <Grid item xs={6} sm={6}>
-                    <TextField
-                      id="nombre"
-                      fullWidth
-                      label={`${intl.formatMessage({ id: "input_nombre" })} *`}
-                      variant="standard"
-                      name="nombre"
-                      value={formik.values.nombre || ""}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        formik.setFieldValue("nombre", value);
-                      }}
-                      onBlur={formik.handleBlur}
-                      error={formik.touched.nombre && Boolean(formik.errors.nombre)}
-                      helperText={formik.touched.nombre && formik.errors.nombre}
-                      sx={{
-                        "& .MuiInputLabel-root": {
-                          color: getFieldColor("nombre"),
-                        },
-                        "& .MuiInput-underline:after": {
-                          borderBottomColor: getFieldColor("nombre"),
-                        },
-                        "& .MuiInput-underline:before": {
-                          borderBottomColor: getFieldColor("nombre"),
-                        },
-                        "& .MuiInputBase-input": {
-                          color: getFieldColor("nombre"),
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={6} sm={6}>
-                    <TextField
-                      id="descripcion"
-                      fullWidth
-                      label={`${intl.formatMessage({ id: "input_descripcion" })} *`}
-                      variant="standard"
-                      name="descripcion"
-                      value={formik.values.descripcion || ""}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        formik.setFieldValue("descripcion", value);
-                      }}
-                      onBlur={formik.handleBlur}
-                      error={formik.touched.descripcion && Boolean(formik.errors.descripcion)}
-                      helperText={formik.touched.descripcion && formik.errors.descripcion}
-                      sx={{
-                        "& .MuiInputLabel-root": {
-                          color: getFieldColor("descripcion"),
-                        },
-                        "& .MuiInput-underline:after": {
-                          borderBottomColor: getFieldColor("descripcion"),
-                        },
-                        "& .MuiInput-underline:before": {
-                          borderBottomColor: getFieldColor("descripcion"),
-                        },
-                        "& .MuiInputBase-input": {
-                          color: getFieldColor("descripcion"),
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={6} sm={6}>
-                    <TextField
-                      id="telefono"
-                      fullWidth
-                      label={`${intl.formatMessage({ id: "input_telefono" })} *`}
-                      variant="standard"
-                      name="telefono"
-                      type="number"
-                      value={formik.values.telefono || ""}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        formik.setFieldValue("telefono", value);
-                      }}
-                      onBlur={formik.handleBlur}
-                      error={formik.touched.telefono && Boolean(formik.errors.telefono)}
-                      helperText={formik.touched.telefono && formik.errors.telefono}
-                      sx={{
-                        "& .MuiInputLabel-root": {
-                          color: getFieldColor("telefono"),
-                        },
-                        "& .MuiInput-underline:after": {
-                          borderBottomColor: getFieldColor("telefono"),
-                        },
-                        "& .MuiInput-underline:before": {
-                          borderBottomColor: getFieldColor("telefono"),
-                        },
-                        "& .MuiInputBase-input": {
-                          color: getFieldColor("telefono"),
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={6} sm={6}>
-                    <TextField
-                      id="correo"
-                      fullWidth
-                      label={`${intl.formatMessage({ id: "input_correo" })} *`}
-                      variant="standard"
-                      name="correo"
-                      value={formik.values.correo || ""}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        formik.setFieldValue("correo", value);
-                      }}
-                      onBlur={formik.handleBlur}
-                      error={formik.touched.correo && Boolean(formik.errors.correo)}
-                      helperText={formik.touched.correo && formik.errors.correo}
-                      sx={{
-                        "& .MuiInputLabel-root": {
-                          color: getFieldColor("correo"),
-                        },
-                        "& .MuiInput-underline:after": {
-                          borderBottomColor: getFieldColor("correo"),
-                        },
-                        "& .MuiInput-underline:before": {
-                          borderBottomColor: getFieldColor("correo"),
-                        },
-                        "& .MuiInputBase-input": {
-                          color: getFieldColor("correo"),
-                        },
-                      }}
-                    />
-                  </Grid>
-                  <Grid
-                    item
-                    xs={12}
-                    sm={12}
-                    display="flex"
-                    alignContent="center"
-                    justifyContent="center"
-                  >
-                    <Button
-                      sx={{ color: "#fff", background: "#084d6e" }}
-                      variant="contained"
-                      endIcon={<AddCircleIcon />}
-                      disabled={procesando || !formik.dirty || !formik.isValid}
-                      onClick={(e: any) => {
-                        const datos = {
-                          nombre: formik.values.nombre,
-                          descripcion: formik.values.descripcion,
-                          telefono: formik.values.telefono,
-                          correo: formik.values.correo,
-                        };
-                        crearProveedor(datos);
-                      }}
+        <Card>
+          <CardContent>
+            <Box sx={{ width: "100%" }}>
+              <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+                <Tabs
+                  value={valueTab}
+                  onChange={handleChangeTab}
+                  aria-label="tabs categorias y proveedores"
+                  sx={tabsStyles}
+                >
+                  <Tab label={intl.formatMessage({ id: "proveedores" })} {...tabProps(0)} />
+                  <Tab label={intl.formatMessage({ id: "categorias" })} {...tabProps(1)} />
+                </Tabs>
+              </Box>
+              <CustomTabPanel value={valueTab} index={0}>
+                <FormikProvider value={formik!}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6} sm={6}>
+                      <TextFieldValidado
+                        id="nombre"
+                        fullWidth
+                        label={`${intl.formatMessage({ id: "input_nombre" })} *`}
+                        variant="standard"
+                        name="nombre"
+                      />
+                    </Grid>
+                    <Grid item xs={6} sm={6}>
+                      <TextFieldValidado
+                        id="razon_social"
+                        fullWidth
+                        label={`${intl.formatMessage({ id: "input_razon_social" })} *`}
+                        variant="standard"
+                        name="razon_social"
+                      />
+                    </Grid>
+                    <Grid item xs={6} sm={6}>
+                      <TextFieldValidado
+                        id="descripcion"
+                        fullWidth
+                        label={`${intl.formatMessage({ id: "input_descripcion" })} *`}
+                        variant="standard"
+                        name="descripcion"
+                      />
+                    </Grid>
+                    <Grid item xs={6} sm={6}>
+                      <TextFieldValidado
+                        id="nombre_contacto"
+                        fullWidth
+                        label={`${intl.formatMessage({ id: "input_nombre_contacto" })} *`}
+                        variant="standard"
+                        name="nombre_contacto"
+                      />
+                    </Grid>
+                    <Grid item xs={6} sm={6}>
+                      <TextFieldValidado
+                        id="telefono"
+                        fullWidth
+                        label={`${intl.formatMessage({ id: "input_telefono" })} *`}
+                        variant="standard"
+                        name="telefono"
+                      />
+                    </Grid>
+                    <Grid item xs={6} sm={6}>
+                      <TextFieldValidado
+                        id="correo"
+                        fullWidth
+                        label={`${intl.formatMessage({ id: "input_correo" })} *`}
+                        variant="standard"
+                        name="correo"
+                      />
+                    </Grid>
+                    <Grid
+                      item
+                      xs={12}
+                      sm={12}
+                      display="flex"
+                      alignContent="center"
+                      justifyContent="center"
                     >
-                      {procesandoProveedor ? (
-                        <>
-                          <Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            role="status"
-                            aria-hidden="true"
-                          />
-                          {intl.formatMessage({ id: "general_añadiendo" })}...{" "}
-                        </>
+                      <Button
+                        sx={{ color: "#fff", background: "#084d6e" }}
+                        variant="contained"
+                        endIcon={<AddCircleIcon />}
+                        disabled={procesando || !formik.dirty || !formik.isValid}
+                        onClick={(e: any) => {
+                          const datos = {
+                            nombre: formik.values.nombre,
+                            razon_social: formik.values.razon_social,
+                            descripcion: formik.values.descripcion,
+                            nombre_contacto: formik.values.nombre_contacto,
+                            telefono: formik.values.telefono,
+                            correo: formik.values.correo,
+                          };
+                          crearProveedor(datos);
+                        }}
+                      >
+                        {procesandoProveedor ? (
+                          <>
+                            <Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              role="status"
+                              aria-hidden="true"
+                            />
+                            {intl.formatMessage({ id: "general_añadiendo" })}...{" "}
+                          </>
+                        ) : (
+                          intl.formatMessage({ id: "set_añadir" })
+                        )}
+                      </Button>
+                    </Grid>
+                    <Grid item xs={12} sm={12} mt={4}>
+                      {proveedores.length && !procesando ? (
+                        <DinamicTable
+                          actions
+                          //key={tabableKeyProveedor}
+                          //sinBusqueda
+                          columnsToShow={["nombre", "descripcion"]}
+                          sinExport
+                          esListaProveedores
+                          //showCheckBox
+                          data={proveedores}
+                          enAccion={(accion, row) => {
+                            handleAccionCallback(accion, row);
+                          }}
+                        />
                       ) : (
-                        intl.formatMessage({ id: "set_añadir" })
+                        independiente()
                       )}
-                    </Button>
+                    </Grid>
                   </Grid>
-                </Grid>
-                <Grid item xs={6} container spacing={2} alignItems="flex-start">
-                  <Grid item xs={12} sm={12}>
-                    <Typography variant="h5" gutterBottom>
-                      {intl.formatMessage({ id: "categorias" })}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={12}>
-                    <TextField
-                      id="nombre"
-                      fullWidth
-                      label={`${intl.formatMessage({ id: "input_nombre" })} *`}
-                      variant="standard"
-                      name="nombre"
-                      value={formikCategoria.values.nombre || ""}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        formikCategoria.setFieldValue("nombre", value);
-                      }}
-                      onBlur={formikCategoria.handleBlur}
-                      error={
-                        formikCategoria.touched.nombre && Boolean(formikCategoria.errors.nombre)
-                      }
-                      helperText={formikCategoria.touched.nombre && formikCategoria.errors.nombre}
-                      sx={{
-                        "& .MuiInputLabel-root": {
-                          color: getFieldColor("nombre"),
-                        },
-                        "& .MuiInput-underline:after": {
-                          borderBottomColor: getFieldColor("nombre"),
-                        },
-                        "& .MuiInput-underline:before": {
-                          borderBottomColor: getFieldColor("nombre"),
-                        },
-                        "& .MuiInputBase-input": {
-                          color: getFieldColor("nombre"),
-                        },
-                      }}
-                    />
-                  </Grid>
-                  {/*<Grid item xs={6} sm={6}>
-                    <TextField
-                      id="descripcion"
-                      fullWidth
-                      label={`${intl.formatMessage({ id: "input_descripcion" })} *`}
-                      variant="standard"
-                      name="descripcion"
-                      value={formikCategoria.values.descripcion || ""}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        formikCategoria.setFieldValue("descripcion", value);
-                      }}
-                      onBlur={formikCategoria.handleBlur}
-                      error={
-                        formikCategoria.touched.descripcion &&
-                        Boolean(formikCategoria.errors.descripcion)
-                      }
-                      helperText={
-                        formikCategoria.touched.descripcion && formikCategoria.errors.descripcion
-                      }
-                      sx={{
-                        "& .MuiInputLabel-root": {
-                          color: getFieldColor("descripcion"),
-                        },
-                        "& .MuiInput-underline:after": {
-                          borderBottomColor: getFieldColor("descripcion"),
-                        },
-                        "& .MuiInput-underline:before": {
-                          borderBottomColor: getFieldColor("descripcion"),
-                        },
-                        "& .MuiInputBase-input": {
-                          color: getFieldColor("descripcion"),
-                        },
-                      }}
-                    />
-                  </Grid>*/}
-                  <Grid
-                    item
-                    xs={12}
-                    sm={12}
-                    display="flex"
-                    alignContent="center"
-                    justifyContent="center"
-                  >
-                    <Button
-                      sx={{ color: "#fff", background: "#084d6e" }}
-                      variant="contained"
-                      endIcon={<AddCircleIcon />}
-                      disabled={procesando || !formikCategoria.dirty || !formikCategoria.isValid}
-                      onClick={(e: any) => {
-                        const datos = {
-                          nombre: formikCategoria.values.nombre,
-                        };
-                        crearCategoria(datos);
-                      }}
+                </FormikProvider>
+              </CustomTabPanel>
+              <CustomTabPanel value={valueTab} index={1}>
+                <FormikProvider value={formikCategoria!}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={12}>
+                      <TextFieldValidado
+                        id="nombre"
+                        fullWidth
+                        label={`${intl.formatMessage({ id: "input_nombre" })} *`}
+                        variant="standard"
+                        name="nombre"
+                      />
+                    </Grid>
+                    <Grid
+                      item
+                      xs={12}
+                      sm={12}
+                      display="flex"
+                      alignContent="center"
+                      justifyContent="center"
                     >
-                      {procesandoCategoria ? (
-                        <>
-                          <Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            role="status"
-                            aria-hidden="true"
-                          />
-                          {intl.formatMessage({ id: "general_añadiendo" })}...{" "}
-                        </>
+                      <Button
+                        sx={{ color: "#fff", background: "#084d6e" }}
+                        variant="contained"
+                        endIcon={<AddCircleIcon />}
+                        disabled={procesando || !formikCategoria.dirty || !formikCategoria.isValid}
+                        onClick={(e: any) => {
+                          const datos = {
+                            nombre: formikCategoria.values.nombre,
+                          };
+                          crearCategoria(datos);
+                        }}
+                      >
+                        {procesandoCategoria ? (
+                          <>
+                            <Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              role="status"
+                              aria-hidden="true"
+                            />
+                            {intl.formatMessage({ id: "general_añadiendo" })}...{" "}
+                          </>
+                        ) : (
+                          intl.formatMessage({ id: "set_añadir" })
+                        )}
+                      </Button>
+                    </Grid>
+                    <Grid item xs={12} sm={12} mt={2}>
+                      {categorias.length && !procesando ? (
+                        <DinamicTable
+                          actions
+                          //key={tableKeyCategoria}
+                          //sinBusqueda
+                          columnsToShow={["desc"]}
+                          sinExport
+                          esListaCategorias
+                          //showCheckBox
+                          data={categorias}
+                          enAccion={(accion, row) => {
+                            handleAccionCallback(accion, row);
+                          }}
+                        />
                       ) : (
-                        intl.formatMessage({ id: "set_añadir" })
+                        independiente()
                       )}
-                    </Button>
+                    </Grid>
                   </Grid>
-                </Grid>
-              </Grid>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} mt={5}>
-                  {proveedores.length && !procesando ? (
-                    <DinamicTable
-                      actions
-                      key={tabableKeyProveedor}
-                      //sinBusqueda
-                      columnsToShow={["nombre", "descripcion"]}
-                      sinExport
-                      esListaProveedores
-                      //showCheckBox
-                      data={proveedores}
-                      enAccion={(accion, row) => {
-                        handleAccion(accion, row);
-                      }}
-                    />
-                  ) : (
-                    independiente()
-                  )}
-                </Grid>
-                <Grid item xs={12} sm={6} mt={5}>
-                  {categorias.length && !procesando ? (
-                    <DinamicTable
-                      actions
-                      key={tableKeyCategoria}
-                      //sinBusqueda
-                      columnsToShow={["desc"]}
-                      sinExport
-                      esListaCategorias
-                      //showCheckBox
-                      data={categorias}
-                      enAccion={(accion, row) => {
-                        handleAccion(accion, row);
-                      }}
-                    />
-                  ) : (
-                    independiente()
-                  )}
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </FormikProvider>
+                </FormikProvider>
+              </CustomTabPanel>
+            </Box>
+          </CardContent>
+        </Card>
       </MDBox>
       <Footer />
       <Backdrop

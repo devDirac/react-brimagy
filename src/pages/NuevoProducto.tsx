@@ -32,6 +32,7 @@ function NuevoProducto(): JSX.Element {
   const fotoUser: any = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
 
   const {
+    tipoProductoArray,
     crearProducto,
     procesandoProducto,
     categorias,
@@ -234,7 +235,7 @@ function NuevoProducto(): JSX.Element {
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     id="id_proveedor"
                     select
@@ -280,7 +281,7 @@ function NuevoProducto(): JSX.Element {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     id="id_catalogo"
                     select
@@ -752,6 +753,52 @@ function NuevoProducto(): JSX.Element {
                     }}
                   />
                 </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    id="tipo_producto"
+                    select
+                    fullWidth
+                    label={`${intl.formatMessage({ id: "select_tipo_producto" })} *`}
+                    variant="standard"
+                    name="tipo_producto"
+                    value={formik.values.tipo_producto || ""}
+                    disabled={!categorias || categorias.length === 0}
+                    helperText={
+                      !categorias || categorias.length === 0
+                        ? intl.formatMessage({ id: "sin_categorias_registradas" })
+                        : formik.touched.tipo_producto && formik.errors.tipo_producto
+                    }
+                    error={formik.touched.tipo_producto && Boolean(formik.errors.tipo_producto)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      formik.setFieldValue("tipo_producto", value);
+                    }}
+                    InputProps={{
+                      style: { padding: "5px" },
+                    }}
+                    onBlur={formik.handleBlur}
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: getFieldColor("tipo_producto"),
+                      },
+                      "& .MuiInput-underline:after": {
+                        borderBottomColor: getFieldColor("tipo_producto"),
+                      },
+                      "& .MuiInput-underline:before": {
+                        borderBottomColor: getFieldColor("tipo_producto"),
+                      },
+                      "& .MuiInputBase-input": {
+                        color: getFieldColor("tipo_producto"),
+                      },
+                    }}
+                  >
+                    {tipoProductoArray?.map((option) => (
+                      <MenuItem key={option.id} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
                 <Grid
                   item
                   xs={12}
@@ -788,6 +835,7 @@ function NuevoProducto(): JSX.Element {
                         puntos: formik.values.puntos,
                         factor: formik.values.factor,
                         tipo_registro: "individual",
+                        tipo_producto: formik.values.tipo_producto,
                       };
                       crearProducto(datos);
                     }}

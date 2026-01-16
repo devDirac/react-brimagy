@@ -30,7 +30,7 @@ export const useValidarIdentidad = () => {
 
   const [showInput, setShowInput] = useState(false);
 
-  const cargarCanjePorId = useCallback(async (id_canje: number) => {
+  const cargarCanjePorId = useCallback(async (id_canje: string) => {
     try {
       setProcesando(true);
       const response = await getCanjeByIdHttp(id_canje);
@@ -44,7 +44,7 @@ export const useValidarIdentidad = () => {
     }
   }, []);
 
-  const cargarCodigoVerificacionPorId = useCallback(async (id_canje: number) => {
+  const cargarCodigoVerificacionPorId = useCallback(async (id_canje: string) => {
     try {
       setProcesando(true);
       const response = await getCodigoVerificacionByIdHttp(id_canje);
@@ -105,8 +105,8 @@ export const useValidarIdentidad = () => {
 
   useEffect(() => {
     if (codigo) {
-      cargarCanjePorId(Number(codigo));
-      cargarCodigoVerificacionPorId(Number(codigo));
+      cargarCanjePorId(codigo);
+      cargarCodigoVerificacionPorId(codigo);
     }
   }, [codigo]);
 

@@ -184,6 +184,13 @@ function ListaProductos(): JSX.Element {
     categoriaBuscar,
     setCategoriaBuscar,
     procesandoBusquedaMagica,
+    //insertar proveedores y categorias automaticamente
+    procesandoRegistroFaltantes,
+    registrarProveedoresYCategoriasFaltantes,
+    obtenerCategoriasFaltantes,
+    obtenerProveedoresFaltantes,
+    hayProductosValidos,
+    hayFaltantes,
   } = useListaProductos(tipoUsuario);
 
   const independiente = () => {
@@ -762,7 +769,7 @@ function ListaProductos(): JSX.Element {
                 >
                   {categorias?.map((option) => (
                     <MenuItem key={option.id} value={option.id}>
-                      {option.nombre}
+                      {option.desc}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -1024,20 +1031,122 @@ function ListaProductos(): JSX.Element {
         esFullScreen
       >
         <Grid container spacing={2}>
-          <Grid item xs={12} style={{ textAlign: "center" }}>
+          <Grid item xs={12} style={{ textAlign: "center" }} mt={2}>
             <h5>Vista previa de productos del Excel</h5>
             <p>Total de productos: {excelData.length}</p>
           </Grid>
 
-          <Grid item xs={12} style={{ maxHeight: "500px", overflow: "auto" }}>
+          {/* Resumen de validación */}
+          {excelData && excelData.length > 0 && (
+            <Grid item xs={12}>
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Box sx={{ p: 2, bgcolor: "#e8f5e9", borderRadius: 1 }}>
+                    <Typography variant="h6" color="success.main">
+                      ✓ Productos válidos:{" "}
+                      {
+                        excelData.filter(
+                          (p) => p?.proveedor_valido && p?.categoria_valida && !p?.sku_vacio
+                        ).length
+                      }
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={6}>
+                  <Box sx={{ p: 2, bgcolor: "#ffebee", borderRadius: 1 }}>
+                    <Typography variant="h6" color="error.main">
+                      ✗ Productos inválidos:{" "}
+                      {
+                        excelData.filter(
+                          (p) => !p?.proveedor_valido || !p?.categoria_valida || p?.sku_vacio
+                        ).length
+                      }
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Grid>
+          )}
+
+          {/* Sección de Proveedores faltantes */}
+          {obtenerProveedoresFaltantes().length > 0 && (
+            <Grid item xs={6}>
+              <Box sx={{ p: 2, bgcolor: "#fff3e0", borderRadius: 1, border: "2px solid #ff9800" }}>
+                <Typography variant="h6" fontWeight="bold" color="warning.main" gutterBottom>
+                  ⚠️ Proveedores no encontrados ({obtenerProveedoresFaltantes().length}):
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 2 }}>
+                  {obtenerProveedoresFaltantes().join(", ")}
+                </Typography>
+              </Box>
+            </Grid>
+          )}
+
+          {/* Sección de Categorías faltantes */}
+          {obtenerCategoriasFaltantes().length > 0 && (
+            <Grid item xs={6}>
+              <Box sx={{ p: 2, bgcolor: "#fff3e0", borderRadius: 1, border: "2px solid #ff9800" }}>
+                <Typography variant="h6" fontWeight="bold" color="warning.main" gutterBottom>
+                  ⚠️ Categorías no encontradas ({obtenerCategoriasFaltantes().length}):
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 2 }}>
+                  {obtenerCategoriasFaltantes().join(", ")}
+                </Typography>
+              </Box>
+            </Grid>
+          )}
+
+          {/* Botón para registrar faltantes */}
+          {hayFaltantes() && (
+            <Grid item xs={12} style={{ textAlign: "center" }}>
+              <Button
+                variant="contained"
+                color="warning"
+                startIcon={<SaveIcon />}
+                onClick={registrarProveedoresYCategoriasFaltantes}
+                disabled={procesandoRegistroFaltantes || procesandoExcel}
+                sx={{
+                  background: "#ff9800",
+                  color: "#fff",
+                  "&:hover": {
+                    background: "#f57c00",
+                  },
+                }}
+              >
+                {procesandoRegistroFaltantes ? (
+                  <>
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                    Registrando proveedores y categorías...
+                  </>
+                ) : (
+                  `Registrar ${obtenerProveedoresFaltantes().length} proveedor(es) y ${
+                    obtenerCategoriasFaltantes().length
+                  } categoría(s) faltantes`
+                )}
+              </Button>
+            </Grid>
+          )}
+
+          <Grid item xs={12} style={{ maxHeight: "500px", overflow: "auto" }} mt={2}>
             {excelData.length > 0 ? (
               <DinamicTableMejorada
                 esListaProductosExcel
+                sinExport
                 data={excelData.map((p) => ({
                   ...p,
                   proveedor_status: p.proveedor_valido ? "✓ " + p.proveedor : "✗ " + p.proveedor,
                   catalogo_status: p.categoria_valida ? "✓ " + p.catalogo : "✗ " + p.catalogo,
-                  sku_status: p.sku_duplicado ? "🔄 " + p.sku + " (Existente)" : p.sku,
+                  sku_status: p.sku_vacio
+                    ? "⚠️ SKU VACÍO"
+                    : p.sku_duplicado
+                    ? "🔄 " + p.sku + " (Existente)"
+                    : p.sku,
                 }))}
                 columnsToShow={[
                   "nombre_producto",
@@ -1062,7 +1171,13 @@ function ListaProductos(): JSX.Element {
               variant="contained"
               startIcon={<SaveIcon />}
               onClick={guardarProductosExcel}
-              disabled={procesandoExcel || excelData.length === 0}
+              disabled={
+                procesandoExcel ||
+                procesandoRegistroFaltantes ||
+                !excelData ||
+                excelData.length === 0 ||
+                !hayProductosValidos()
+              }
               sx={{ background: "#084d6e", color: "#fff", mr: 2 }}
             >
               {procesandoExcel ? (
@@ -1077,7 +1192,11 @@ function ListaProductos(): JSX.Element {
                   Guardando productos...
                 </>
               ) : (
-                `Guardar ${excelData.length} productos`
+                `Guardar ${
+                  excelData?.filter(
+                    (p) => p?.proveedor_valido && p?.categoria_valida && !p?.sku_vacio
+                  ).length || 0
+                } productos válidos`
               )}
             </Button>
             <Button
@@ -1089,6 +1208,19 @@ function ListaProductos(): JSX.Element {
               Cancelar
             </Button>
           </Grid>
+          {/* Mensaje informativo si no hay productos válidos */}
+          {!hayProductosValidos() && excelData.length > 0 && (
+            <Grid item xs={12}>
+              <Box sx={{ p: 2, bgcolor: "#e3f2fd", borderRadius: 1, textAlign: "center" }}>
+                <Typography variant="body1" color="info.main">
+                  ℹ️{" "}
+                  {hayFaltantes()
+                    ? "Registra primero los proveedores y categorías faltantes para habilitar el guardado de productos."
+                    : "No hay productos válidos para guardar. Verifica los datos del Excel."}
+                </Typography>
+              </Box>
+            </Grid>
+          )}
         </Grid>
       </ModalComponent>
       {/* VISUALIZAR DATOS DEL PRODUCTO */}

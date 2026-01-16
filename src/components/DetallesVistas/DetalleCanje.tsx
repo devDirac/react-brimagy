@@ -148,7 +148,8 @@ const DetallesCanjeModal = ({
               isCompras ||
               isAuditor ||
               isInternauta ||
-              verCanje.estado_canje === "INACTIVE"
+              verCanje.estado_canje === "INACTIVE" ||
+              verCanje.estado_validacion === "identidad_validada"
             }
             onClick={(e: any) => {
               validarIdentidad(verCanje);

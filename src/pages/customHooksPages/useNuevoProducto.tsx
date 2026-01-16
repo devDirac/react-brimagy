@@ -31,6 +31,11 @@ export const useNuevoProducto = () => {
     setAuth(token);
   }, [token]);
 
+  const tipoProductoArray = [
+    { id: 0, label: "Físico", value: "fisico" },
+    { id: 1, label: "Digital", value: "digital" },
+  ];
+
   const formik = useFormik({
     initialValues: {
       nombre_producto: "",
@@ -53,6 +58,7 @@ export const useNuevoProducto = () => {
       total: "",
       puntos: "",
       factor: "",
+      tipo_producto: "",
     },
     validationSchema: Yup.object({
       nombre_producto: Yup.string().required(
@@ -112,6 +118,9 @@ export const useNuevoProducto = () => {
         .min(1, intl.formatMessage({ id: "debe_ser_mayor_cero" })),
       puntos: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
       factor: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      tipo_producto: Yup.string().required(
+        intl.formatMessage({ id: "input_validation_requerido" })
+      ),
     }),
     onSubmit: async (values) => {
       console.log("Formulario enviado:", values);
@@ -181,6 +190,7 @@ export const useNuevoProducto = () => {
   }, []);
 
   return {
+    tipoProductoArray,
     crearProducto,
     procesandoProducto,
     categorias,

@@ -15,8 +15,8 @@ import {
 } from "actions/productos";
 import { numericFormatter } from "react-number-format";
 import moment from "moment";
-import { getProveedoresHttp } from "actions/proveedores";
-import { getCategoriasHttp } from "actions/categorias";
+import { crearProveedorHttp, getProveedoresHttp } from "actions/proveedores";
+import { crearCategoriaHttp, getCategoriasHttp } from "actions/categorias";
 import ExcelJS from "exceljs";
 
 export const useListaProductos = (tipoUsuario: number) => {
@@ -72,6 +72,7 @@ export const useListaProductos = (tipoUsuario: number) => {
   const [totalEditar, setTotalEditar] = useState("");
   const [puntosEditar, setPuntosEditar] = useState("");
   const [factorEditar, setFactorEditar] = useState("");
+  const [tipoProductoEditar, setTipoProductoEditar] = useState("");
   const [productoId, setProductoId] = useState("");
 
   const [proveedores, setProveedores] = useState<any[]>([]);
@@ -105,6 +106,135 @@ export const useListaProductos = (tipoUsuario: number) => {
   const [buscarPorPuntos, setBuscarPorPuntos] = useState("");
   const [categoriaBuscar, setCategoriaBuscar] = useState("");
 
+  //Registrar automaticamente proveedores y categorias
+  const [procesandoRegistroFaltantes, setProcesandoRegistroFaltantes] = useState(false);
+
+  //Categorías que no están registradas
+  const obtenerCategoriasFaltantes = useCallback(() => {
+    const categoriasFaltantes = Array.from(
+      new Set(excelData.filter((p) => !p.categoria_valida).map((p) => p.catalogo))
+    );
+    return categoriasFaltantes.filter(Boolean);
+  }, [excelData]);
+
+  //Obtiene los proveedores únicos que no están registrados
+  const obtenerProveedoresFaltantes = useCallback(() => {
+    const proveedoresFaltantes = Array.from(
+      new Set(excelData.filter((p) => !p.proveedor_valido).map((p) => p.proveedor))
+    );
+    return proveedoresFaltantes.filter(Boolean);
+  }, [excelData]);
+
+  //Registra proveedores y categorías faltantes
+  const registrarProveedoresYCategoriasFaltantes = async () => {
+    try {
+      setProcesandoRegistroFaltantes(true);
+
+      const categoriasFaltantes = obtenerCategoriasFaltantes();
+      const proveedoresFaltantes = obtenerProveedoresFaltantes();
+
+      let categoriasCreadas = 0;
+      let proveedoresCreados = 0;
+      const errores: string[] = [];
+
+      // Registrar categorías faltantes
+      for (const nombreCategoria of categoriasFaltantes) {
+        try {
+          await crearCategoriaHttp({
+            nombre: nombreCategoria,
+          });
+          categoriasCreadas++;
+        } catch (error) {
+          console.error(`Error al crear categoría "${nombreCategoria}":`, error);
+          errores.push(`Categoría "${nombreCategoria}": ${getErrorHttpMessage(error)}`);
+        }
+      }
+
+      // Registrar proveedores faltantes
+      for (const nombreProveedor of proveedoresFaltantes) {
+        try {
+          await crearProveedorHttp({
+            nombre: nombreProveedor,
+            razon_social: null,
+            descripcion: "Proveedor registrado desde Excel",
+            nombre_contacto: null,
+            telefono: null,
+            correo: null,
+          });
+          proveedoresCreados++;
+        } catch (error) {
+          console.error(`Error al crear proveedor "${nombreProveedor}":`, error);
+          errores.push(`Proveedor "${nombreProveedor}": ${getErrorHttpMessage(error)}`);
+        }
+      }
+
+      // Recargar proveedores y categorías desde el servidor
+      const [nuevosProveedores, nuevasCategorias] = await Promise.all([
+        getProveedoresHttp(),
+        getCategoriasHttp(),
+      ]);
+
+      // Actualizar el estado con los nuevos datos
+      setProveedores(nuevosProveedores);
+      setCategorias(nuevasCategorias);
+
+      // Revalidar productos con los nuevos proveedores y categorías
+      const datosActualizados = excelData.map((producto) => {
+        const proveedorObj = nuevosProveedores?.find(
+          (p: any) => p.nombre.toLowerCase().trim() === producto.proveedor.toLowerCase().trim()
+        );
+        const categoriaObj = nuevasCategorias?.find(
+          (c: any) => c.desc.toLowerCase().trim() === producto.catalogo.toLowerCase().trim()
+        );
+
+        return {
+          ...producto,
+          id_proveedor: proveedorObj?.id || producto.id_proveedor,
+          id_catalogo: categoriaObj?.id || producto.id_catalogo,
+          proveedor_valido: !!proveedorObj,
+          categoria_valida: !!categoriaObj,
+        };
+      });
+
+      setExcelData(datosActualizados);
+      setProcesandoRegistroFaltantes(false);
+
+      // Mensaje de resultado
+      let mensaje = `✓ Proceso completado:\n`;
+      if (categoriasCreadas > 0) {
+        mensaje += `Categorías creadas: ${categoriasCreadas}\n`;
+      }
+      if (proveedoresCreados > 0) {
+        mensaje += `Proveedores creados: ${proveedoresCreados}\n`;
+      }
+      if (errores.length > 0) {
+        mensaje += `\n⚠️ Errores (${errores.length}):\n${errores.slice(0, 3).join("\n")}`;
+        if (errores.length > 3) {
+          mensaje += `\n... y ${errores.length - 3} más`;
+        }
+      }
+
+      setMensajeAlert(mensaje);
+      handleisAlertOpen();
+    } catch (error) {
+      //console.error("Error general al registrar proveedores y categorías:", error);
+      setProcesandoRegistroFaltantes(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || "Error al registrar proveedores y categorías");
+      handleisAlertOpen();
+    }
+  };
+
+  //Verificar si hay productos válidos para guardar
+  const hayProductosValidos = useCallback(() => {
+    return excelData.some((p) => p.proveedor_valido && p.categoria_valida && !p.sku_vacio);
+  }, [excelData]);
+
+  //Verificar si hay proveedores o categorías faltantes
+  const hayFaltantes = useCallback(() => {
+    return obtenerCategoriasFaltantes().length > 0 || obtenerProveedoresFaltantes().length > 0;
+  }, [obtenerCategoriasFaltantes, obtenerProveedoresFaltantes]);
+
   useEffect(() => {
     setAuth(token);
   }, [token]);
@@ -112,7 +242,7 @@ export const useListaProductos = (tipoUsuario: number) => {
   useEffect(() => {
     if (productoEditar && proveedores && categorias) {
       const proveedorEncontrado = proveedores.find((p) => p.nombre === productoEditar.proveedor);
-      const categoriaEncontrada = categorias.find((p) => p.nombre === productoEditar.catalogo);
+      const categoriaEncontrada = categorias.find((p) => p.desc === productoEditar.catalogo);
       setNombreProductoEditar(productoEditar.nombre_producto || "");
       setDescripcionEditar(productoEditar.descripcion || "");
       setMarcaEditar(productoEditar.marca || "");
@@ -133,6 +263,7 @@ export const useListaProductos = (tipoUsuario: number) => {
       setTotalEditar(productoEditar.total || "");
       setPuntosEditar(productoEditar.puntos || "");
       setFactorEditar(productoEditar.factor || "");
+      setTipoProductoEditar(productoEditar.tipo_producto || "");
     }
   }, [productoEditar]);
 
@@ -435,6 +566,18 @@ export const useListaProductos = (tipoUsuario: number) => {
         }
       };
 
+      const valoresVacios = (valor: string, tipo: "texto" | "sku"): boolean => {
+        if (!valor) return false;
+
+        if (tipo === "sku") {
+          // SKU: solo letras y números
+          return !/^[A-Z0-9]+$/i.test(valor);
+        } else {
+          // Texto: letras, números, espacios, acentos y -_',()
+          return /[^a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑüÜ\-_',()]/.test(valor);
+        }
+      };
+
       // Leer datos desde la fila 2 (después del header)
       worksheet.eachRow((row, rowNumber) => {
         if (rowNumber === 1) return;
@@ -454,6 +597,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         );
         const marca = limpiarTextoConCaracteres(getValueByHeader(row, "marca"));
         const sku = limpiarSku(getValueByHeader(row, "sku"));
+        const skuVacio = !sku || sku.trim() === "";
         const color = limpiarTexto(getValueByHeader(row, "color"));
 
         // Validaciones de campos de texto
@@ -475,6 +619,10 @@ export const useListaProductos = (tipoUsuario: number) => {
           );
         }
 
+        /*if (skuVacio) {
+          erroresValidacion.push(`Fila ${rowNumber}: El SKU no puede estar vacío`);
+        }*/
+
         // Obtener y validar valores numéricos
         const costoConIvaRaw = getValueByHeader(row, "costo con iva");
         const costoSinIvaRaw = getValueByHeader(row, "costo sin iva");
@@ -492,6 +640,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         const totalRaw = getValueByHeader(row, "total");
         const puntosRaw = getValueByHeader(row, "puntos");
         const factorRaw = getValueByHeader(row, "factor");
+        const tipoProductoRaw = getValueByHeader(row, "tipo producto");
 
         // Validar que los campos numéricos sean válidos
         const camposNumericos = [
@@ -523,7 +672,7 @@ export const useListaProductos = (tipoUsuario: number) => {
           (p) => p.nombre.toLowerCase() === proveedor.toLowerCase()
         );
         const categoriaObj = categorias?.find(
-          (c) => c.desc.toLowerCase() === categoria.toLowerCase()
+          (c) => c.desc.toLowerCase().trim() === categoria.toLowerCase().trim()
         );
 
         const producto = {
@@ -551,9 +700,11 @@ export const useListaProductos = (tipoUsuario: number) => {
           total: Math.round(limpiarNumero(totalRaw)),
           puntos: Math.round(limpiarNumero(puntosRaw)),
           factor: Math.round(limpiarNumero(factorRaw)),
+          tipo_producto: tipoProductoRaw,
           proveedor_valido: !!proveedorObj,
           categoria_valida: !!categoriaObj,
           sku_duplicado: false,
+          sku_vacio: skuVacio,
         };
 
         // Solo agregar si tiene al menos nombre y SKU
@@ -646,6 +797,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         { header: "Total", key: "total", width: 15 },
         { header: "Puntos", key: "puntos", width: 15 },
         { header: "Factor", key: "factor", width: 15 },
+        { header: "Tipo Producto", key: "tipo_producto", width: 15 },
       ];
 
       // Estilo para el header
@@ -679,14 +831,15 @@ export const useListaProductos = (tipoUsuario: number) => {
         total: 150,
         puntos: 150,
         factor: 15,
+        tipo_producto: "fisico",
       });
 
       // Agregar hoja con lista de proveedores
       const proveedoresSheet = workbook.addWorksheet("Proveedores");
       proveedoresSheet.addRow(["Proveedores Disponibles"]);
       proveedoresSheet.getRow(1).font = { bold: true };
-      proveedores?.forEach((p) => {
-        proveedoresSheet.addRow([p.nombre]);
+      categorias?.forEach((c) => {
+        categoriasSheet.addRow([c.desc]);
       });
 
       // Agregar hoja con lista de categorías
@@ -715,10 +868,16 @@ export const useListaProductos = (tipoUsuario: number) => {
     }
   };
 
-  // Función para guardar productos (igual que antes)
+  // Función para guardar productos
   const guardarProductosExcel = async () => {
     try {
       setProcesandoExcel(true);
+
+      const productosValidos = excelData.filter(
+        (p) => !p.sku_vacio && p.proveedor_valido && p.categoria_valida
+      );
+
+      const productosInvalidos = excelData.length - productosValidos.length;
 
       let exitosos = 0;
       let actualizados = 0;
@@ -750,6 +909,7 @@ export const useListaProductos = (tipoUsuario: number) => {
             total: producto.total,
             puntos: producto.puntos,
             factor: producto.factor,
+            tipo_producto: producto.tipo_producto,
             tipo_registro: "excel",
           };
 
@@ -776,6 +936,10 @@ export const useListaProductos = (tipoUsuario: number) => {
       }
       if (fallidos > 0) {
         mensaje += ` | ✗ Fallidos: ${fallidos}`;
+      }
+
+      if (productosInvalidos > 0) {
+        mensaje += ` | ⚠️ Omitidos (SKU vacío o datos inválidos): ${productosInvalidos}`;
       }
 
       setMensajeAlert(mensaje);
@@ -992,5 +1156,12 @@ export const useListaProductos = (tipoUsuario: number) => {
     categoriaBuscar,
     setCategoriaBuscar,
     procesandoBusquedaMagica,
+    //insertar proveedores y categorias automaticamente
+    procesandoRegistroFaltantes,
+    registrarProveedoresYCategoriasFaltantes,
+    obtenerCategoriasFaltantes,
+    obtenerProveedoresFaltantes,
+    hayProductosValidos,
+    hayFaltantes,
   };
 };

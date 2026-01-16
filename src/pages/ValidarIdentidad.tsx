@@ -35,6 +35,7 @@ import { numericFormatter } from "react-number-format";
 import AddIcon from "@mui/icons-material/Add";
 import HttpsIcon from "@mui/icons-material/Https";
 import { Spinner } from "react-bootstrap";
+import Forward10Icon from "@mui/icons-material/Forward10";
 
 function ValidarIdentidad(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -126,9 +127,9 @@ function ValidarIdentidad(): JSX.Element {
 
   return (
     <DashboardLayout withSidebar={false}>
-      <MDBox py={0} mb={0} justifyContent="center">
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={12} lg={8}>
+      <MDBox py={0} mb={0}>
+        <Grid container spacing={3} justifyContent="center" alignItems="center">
+          <Grid item xs={12} md={10} lg={9}>
             <Card>
               <CardContent sx={{ p: 4 }}>
                 {canje ? (
@@ -153,6 +154,155 @@ function ValidarIdentidad(): JSX.Element {
                       Por favor introduce un código de canje válido
                     </Typography>
                   </Box>
+                )}
+                {canje && !verificado && (
+                  <Grid
+                    item
+                    xs={12}
+                    md={12}
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    flexDirection="column"
+                  >
+                    <Box>
+                      {!codigoVerificacion ? (
+                        <Button
+                          sx={{
+                            color: "#2f2f2f",
+                            background: "#3ec972",
+                            fontSize: "0.75rem",
+                            padding: "6px 8px",
+                            mt: 0,
+                            "&:hover": {
+                              background: "#2fb85e",
+                            },
+                          }}
+                          variant="contained"
+                          endIcon={<HttpsIcon />}
+                          //disabled={}
+                          onClick={(e: any) => {
+                            //setShowInput(true);
+                            solicitarCodigoValidacion(canje);
+                          }}
+                        >
+                          {procesandoCodigo ? (
+                            <>
+                              <Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                role="status"
+                                aria-hidden="true"
+                              />
+                              Solicitando código...{" "}
+                            </>
+                          ) : (
+                            intl.formatMessage({ id: "solicitar_codigo_input" })
+                          )}
+                        </Button>
+                      ) : codigoVerificacion ? (
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            flexDirection="column"
+                          >
+                            Ingresar código de validación
+                          </Typography>
+                          <Stack direction="row" spacing={1} mb={1}>
+                            {otp.map((digit, index) => (
+                              <TextField
+                                key={index}
+                                value={digit}
+                                onChange={(e) => handleChange(index, e.target.value)}
+                                inputRef={(el) => (inputRefs.current[index] = el)}
+                                inputProps={{
+                                  maxLength: 1,
+                                  style: {
+                                    textAlign: "center",
+                                    fontSize: "14px",
+                                    fontWeight: 600,
+                                  },
+                                }}
+                                sx={{ width: { xs: 30, sm: 40 } }}
+                                autoFocus={index === 0}
+                              />
+                            ))}
+                          </Stack>
+                          <Stack direction="row" spacing={1} justifyContent="center">
+                            <Button
+                              sx={{
+                                color: "#2f2f2f",
+                                background: "#3ec972",
+                                fontSize: "0.75rem",
+                                padding: "6px 8px",
+                                mt: 2,
+                                "&:hover": {
+                                  background: "#2fb85e",
+                                },
+                              }}
+                              variant="contained"
+                              size="small"
+                              onClick={(e: any) => {
+                                handleVerify(canje.id);
+                              }}
+                              disabled={otp.some((d) => !d)}
+                            >
+                              Verificar
+                            </Button>
+                            <Button
+                              sx={{
+                                color: "#2f2f2f",
+                                background: "#ffffbf",
+                                fontSize: "0.75rem",
+                                padding: "6px 8px",
+                                mt: 0,
+                                "&:hover": {
+                                  background: "#f0f075",
+                                },
+                              }}
+                              variant="contained"
+                              endIcon={<Forward10Icon />}
+                              //disabled={}
+                              onClick={(e: any) => {
+                                //setShowInput(true);
+                                setOtp(["", "", "", "", "", ""]);
+                                solicitarCodigoValidacion(canje);
+                              }}
+                            >
+                              {procesandoCodigo ? (
+                                <>
+                                  <Spinner
+                                    as="span"
+                                    animation="border"
+                                    size="sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                  />
+                                  Reenviando código...{" "}
+                                </>
+                              ) : (
+                                intl.formatMessage({ id: "reenviar_codigo_verificacion" })
+                              )}
+                            </Button>
+                            {/*<Button
+                                  size="small"
+                                  onClick={() => {
+                                    setShowInput(false);
+                                    setOtp(["", "", "", "", "", ""]);
+                                  }}
+                                >
+                                  Cancelar
+                                </Button>*/}
+                          </Stack>
+                        </Box>
+                      ) : null}
+                    </Box>
+                  </Grid>
                 )}
 
                 <Divider sx={{ my: 3 }} />
@@ -179,7 +329,7 @@ function ValidarIdentidad(): JSX.Element {
                       <Grid
                         item
                         xs={12}
-                        md={verificado ? 4 : 3}
+                        md={4}
                         display="flex"
                         justifyContent="center"
                         alignItems="center"
@@ -195,7 +345,7 @@ function ValidarIdentidad(): JSX.Element {
                       <Grid
                         item
                         xs={12}
-                        md={verificado ? 4 : 3}
+                        md={4}
                         display="flex"
                         justifyContent="center"
                         alignItems="center"
@@ -215,7 +365,7 @@ function ValidarIdentidad(): JSX.Element {
                       <Grid
                         item
                         xs={12}
-                        md={verificado ? 4 : 3}
+                        md={4}
                         display="flex"
                         justifyContent="center"
                         alignItems="center"
@@ -232,114 +382,6 @@ function ValidarIdentidad(): JSX.Element {
                           />
                         </Box>
                       </Grid>
-                      {!verificado && (
-                        <Grid
-                          item
-                          xs={12}
-                          md={3}
-                          display="flex"
-                          justifyContent="center"
-                          alignItems="center"
-                          flexDirection="column"
-                        >
-                          <Box>
-                            {!codigoVerificacion ? (
-                              <Button
-                                sx={{
-                                  color: "#2f2f2f",
-                                  background: "#3ec972",
-                                  fontSize: "0.75rem",
-                                  padding: "6px 8px",
-                                  mt: 2,
-                                  "&:hover": {
-                                    background: "#2fb85e",
-                                  },
-                                }}
-                                variant="contained"
-                                endIcon={<HttpsIcon />}
-                                //disabled={}
-                                onClick={(e: any) => {
-                                  //setShowInput(true);
-                                  solicitarCodigoValidacion(canje);
-                                }}
-                              >
-                                {procesandoCodigo ? (
-                                  <>
-                                    <Spinner
-                                      as="span"
-                                      animation="border"
-                                      size="sm"
-                                      role="status"
-                                      aria-hidden="true"
-                                    />
-                                    Solicitando código...{" "}
-                                  </>
-                                ) : (
-                                  intl.formatMessage({ id: "solicitar_codigo_input" })
-                                )}
-                              </Button>
-                            ) : codigoVerificacion ? (
-                              <Box>
-                                <Typography variant="caption" color="text.secondary">
-                                  Ingresar código de validación
-                                </Typography>
-                                <Stack direction="row" spacing={1} mb={1}>
-                                  {otp.map((digit, index) => (
-                                    <TextField
-                                      key={index}
-                                      value={digit}
-                                      onChange={(e) => handleChange(index, e.target.value)}
-                                      inputRef={(el) => (inputRefs.current[index] = el)}
-                                      inputProps={{
-                                        maxLength: 1,
-                                        style: {
-                                          textAlign: "center",
-                                          fontSize: "14px",
-                                          fontWeight: 600,
-                                        },
-                                      }}
-                                      sx={{ width: { xs: 30, sm: 40 } }}
-                                      autoFocus={index === 0}
-                                    />
-                                  ))}
-                                </Stack>
-                                <Stack direction="row" spacing={1} justifyContent="center">
-                                  <Button
-                                    sx={{
-                                      color: "#2f2f2f",
-                                      background: "#3ec972",
-                                      fontSize: "0.75rem",
-                                      padding: "6px 8px",
-                                      mt: 2,
-                                      "&:hover": {
-                                        background: "#2fb85e",
-                                      },
-                                    }}
-                                    variant="contained"
-                                    size="small"
-                                    onClick={(e: any) => {
-                                      handleVerify(canje.id);
-                                    }}
-                                    disabled={otp.some((d) => !d)}
-                                  >
-                                    Verificar
-                                  </Button>
-                                  {/*<Button
-                                  size="small"
-                                  onClick={() => {
-                                    setShowInput(false);
-                                    setOtp(["", "", "", "", "", ""]);
-                                  }}
-                                >
-                                  Cancelar
-                                </Button>*/}
-                                </Stack>
-                              </Box>
-                            ) : null}
-                          </Box>
-                        </Grid>
-                      )}
-
                       <Grid item xs={12}>
                         <Divider />
                       </Grid>
@@ -498,7 +540,7 @@ function ValidarIdentidad(): JSX.Element {
                         <Typography variant="caption" color="text.secondary">
                           Calle
                         </Typography>
-                        <Typography variant="body2">{canje.nombre_premio}</Typography>
+                        <Typography variant="body2">{canje.calle}</Typography>
                       </Grid>
 
                       <Grid item xs={6} md={4}>
