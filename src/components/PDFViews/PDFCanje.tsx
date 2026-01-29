@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const PDFSolicitudAuto: React.FC<PDFCanjeProps> = ({ canje }) => {
+const PDFCanje: React.FC<PDFCanjeProps> = ({ canje }) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -323,4 +323,4 @@ const PDFSolicitudAuto: React.FC<PDFCanjeProps> = ({ canje }) => {
   );
 };
 
-export default PDFSolicitudAuto;
+export default PDFCanje;

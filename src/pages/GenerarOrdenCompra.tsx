@@ -65,6 +65,11 @@ import Badge, { BadgeProps } from "@mui/material/Badge";
 import { useGenerarOrdenCompra } from "./customHooksPages/useGenerarOrdenCompra";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import CanjeValidadoProveedorModal from "components/DetallesVistas/CanjeValidadoProveedor";
+import OCPorIdProveedorModal from "components/DetallesVistas/VerOCPorIdProveedor";
+import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
+import { Spinner } from "react-bootstrap";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import ProductoNuevoProveedorModal from "components/DetallesVistas/ProductoNuevoProveedor";
 
 function GenerarOrdenCompra(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -76,6 +81,32 @@ function GenerarOrdenCompra(): JSX.Element {
   const [rowsPerPage, setRowsPerPage] = useState(6);
 
   const {
+    enviarANuevoProveedor,
+    setOrdenCompraActiva,
+    ordenCompraActiva,
+    setProveedorSeleccionado,
+    proveedorSeleccionado,
+    getProductoNuevoProveedor,
+    setProductoNuevoProveedor,
+    productoNuevoProveedor,
+    rechazarCotizacionDeProveedor,
+    procesandoRechazarCotizacion,
+    procesandoNuevoProveedor,
+    setProveedorNuevo,
+    proveedorNuevo,
+    proveedoresSelect,
+    isAlertOpenOtroProveedor,
+    handleisAlertCloseOtroProveedor,
+    handleisAlertOpenOtroProveedor,
+    procesandoEnviarOrdenAProveedor,
+    enviarOrdenCompraProveedor,
+    getOCPorId,
+    ordenesCompra,
+    isAlertOpenVerOC,
+    handleisAlertOpenVerOC,
+    handleisAlertCloseVerOC,
+    conOC,
+    getOCPorIdProveedor,
     enviarCotizacionProveedor,
     procesandoEnviarProveedor,
     procesandoOrdenCompra,
@@ -280,7 +311,7 @@ function GenerarOrdenCompra(): JSX.Element {
                             borderColor: "grey.200",
                           }}
                         >
-                          <Tooltip title="Vista Previa">
+                          <Tooltip title="Crear orden compra">
                             <StyledBadge badgeContent={p.total_canjes} color="secondary">
                               <IconButton
                                 aria-label="ver"
@@ -290,6 +321,22 @@ function GenerarOrdenCompra(): JSX.Element {
                                   setVerProveedor(p);
                                   getCanjesPorProveedor(p.id);
                                   handleisAlertOpenVerCanje();
+                                }}
+                              >
+                                <LibraryAddIcon fontSize="medium" />
+                              </IconButton>
+                            </StyledBadge>
+                          </Tooltip>
+                          <Tooltip title="Ver ordenes de Compra">
+                            <StyledBadge badgeContent={p.total_ordenes_compra} color="secondary">
+                              <IconButton
+                                aria-label="ver"
+                                size="small"
+                                color="default"
+                                onClick={() => {
+                                  setVerProveedor(p);
+                                  getOCPorIdProveedor(p.id);
+                                  handleisAlertOpenVerOC();
                                 }}
                               >
                                 <VisibilityIcon fontSize="medium" />
@@ -318,6 +365,16 @@ function GenerarOrdenCompra(): JSX.Element {
                               {p.nombre}
                             </Typography>
                           </Tooltip>
+                          <Box sx={{ mt: "auto" }}>
+                            <MDTypography variant="caption" display="block" color="text" noWrap>
+                              <strong>Canjes pendientes de cotizar:</strong>{" "}
+                              {p.total_canjes ?? "N/A"}
+                            </MDTypography>
+                            <MDTypography variant="caption" display="block" color="text" noWrap>
+                              <strong>Ordenes de compra generadas:</strong>{" "}
+                              {p.total_ordenes_compra ?? "N/A"}
+                            </MDTypography>
+                          </Box>
                         </CardContent>
                       </Box>
                     </Card>
@@ -336,7 +393,7 @@ function GenerarOrdenCompra(): JSX.Element {
                 rowsPerPage={rowsPerPage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
                 rowsPerPageOptions={[3, 6, 9, 12]}
-                labelRowsPerPage="Canjes por página:"
+                labelRowsPerPage="Proveedores por página:"
                 labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
                 sx={{
                   direction: "ltr",
@@ -361,7 +418,7 @@ function GenerarOrdenCompra(): JSX.Element {
               xs={12}
               style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
             >
-              <h3>{intl.formatMessage({ id: "sin_canjes_registrados" })}</h3>
+              <h3>{intl.formatMessage({ id: "sin_canjes_validados_registrados" })}</h3>
             </Grid>
           </Grid>
         ) : null}
@@ -373,25 +430,34 @@ function GenerarOrdenCompra(): JSX.Element {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-      <ModalConfirm
-        onAcept={() => {
-          //setOpenModalConfirmEliminaProducto(false);
-          //eliminarProducto(Number(productoId));
-        }}
-        onCancel={() => {
-          //setOpenModalConfirmEliminaProducto(false);
-        }}
-        open={/*openModalConfirmEliminaProducto*/ false}
-        text={intl.formatMessage({
-          id: "eliminar_producto_confirmar",
-        })}
-        title={""}
-        cancelText="No"
-        acceptText={intl.formatMessage({
-          id: "si",
-        })}
-      />
-      {/* VISUALIZAR DATOS DEL PRODUCTO */}
+      {/* VISUALIZAR DE ORDENES DE COMPRA */}
+      <ModalComponent
+        esFullScreen
+        handleClose={handleisAlertCloseVerOC}
+        isOpen={isAlertOpenVerOC}
+        key={"alertaVerOC"}
+      >
+        <Grid container spacing={2} style={{ textAlign: "center" }}>
+          {ordenesCompra ? (
+            <>
+              <OCPorIdProveedorModal
+                handleisAlertOpenVerCanje={handleisAlertOpenVerCanje}
+                verOrdenesCompra={ordenesCompra}
+                verProveedor={verProveedor}
+                isPDFViewerOpen={isPDFViewerOpen}
+                handleClosePDFViewer={handleClosePDFViewer}
+                handleOpenPDFViewer={handleOpenPDFViewer}
+                procesandoIdentidad={procesandoIdentidad}
+                procesandoEnviarProveedor={procesandoEnviarProveedor}
+                procesandoOrdenCompra={procesandoOrdenCompra}
+                enviarCotizacionProveedor={enviarCotizacionProveedor}
+                getOCPorId={getOCPorId}
+              />
+            </>
+          ) : null}
+        </Grid>
+      </ModalComponent>
+      {/* VISUALIZAR DATOS DE LA ORDEN DE COMPRA */}
       <ModalComponent
         esFullScreen
         handleClose={handleisAlertCloseVerCanje}
@@ -411,9 +477,38 @@ function GenerarOrdenCompra(): JSX.Element {
                 procesandoEnviarProveedor={procesandoEnviarProveedor}
                 procesandoOrdenCompra={procesandoOrdenCompra}
                 enviarCotizacionProveedor={enviarCotizacionProveedor}
+                enviarOrdenCompraProveedor={enviarOrdenCompraProveedor}
+                procesandoEnviarOrdenAProveedor={procesandoEnviarOrdenAProveedor}
+                handleisAlertOpenOtroProveedor={handleisAlertOpenOtroProveedor}
+                procesandoRechazarCotizacion={procesandoRechazarCotizacion}
+                rechazarCotizacionDeProveedor={rechazarCotizacionDeProveedor}
+                getProductoNuevoProveedor={getProductoNuevoProveedor}
+                setOrdenCompraActiva={setOrdenCompraActiva}
               />
             </>
           ) : null}
+        </Grid>
+      </ModalComponent>
+      <ModalComponent
+        handleClose={handleisAlertCloseOtroProveedor}
+        isOpen={isAlertOpenOtroProveedor}
+        key={"alertaOtroProveedor"}
+      >
+        <Grid container spacing={2} style={{ textAlign: "center" }}>
+          <Grid item xs={12} sm={12} display="flex" alignContent="center" justifyContent="center">
+            {productoNuevoProveedor ? (
+              <>
+                <ProductoNuevoProveedorModal
+                  enviarANuevoProveedor={enviarANuevoProveedor}
+                  ordenCompraActiva={ordenCompraActiva}
+                  setProveedorSeleccionado={setProveedorSeleccionado}
+                  proveedorSeleccionado={proveedorSeleccionado}
+                  verProducto={productoNuevoProveedor}
+                  procesandoNuevoProveedor={procesandoNuevoProveedor}
+                />
+              </>
+            ) : null}
+          </Grid>
         </Grid>
       </ModalComponent>
       <ModalComponent handleClose={handleisAlerClose} isOpen={isAlertOpen} key={"alerta"}>

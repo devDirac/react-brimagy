@@ -498,7 +498,6 @@ export const useCatalogoProductos = (tipoUsuario: number) => {
       handleisAlertOpen();
     }
   };
-
   // Función para guardar productos (igual que antes)
   const guardarProductosExcel = async () => {
     try {

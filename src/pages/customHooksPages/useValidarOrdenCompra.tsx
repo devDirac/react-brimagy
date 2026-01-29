@@ -11,8 +11,12 @@ import {
 import { getErrorHttpMessage } from "utils";
 import {
   aceptarProductoOCHttp,
+  enviarOCAprobacionHttp,
   getOrdenCompraPorProveedorHttp,
   rechazarProductoOCHttp,
+  subirPDFFacturaHttp,
+  validarFacturaOrdenCompraHttp,
+  validarOrdenCompraFinalHttp,
 } from "actions/ordenCompra";
 
 export const useValidarOrdenCompra = () => {
@@ -32,8 +36,21 @@ export const useValidarOrdenCompra = () => {
   const [procesando, setProcesando] = useState<boolean>(false);
   const [procesandoCodigo, setProcesandoCodigo] = useState<boolean>(false);
   const [procesandoIdentidad, setProcesandoIdentidad] = useState<boolean>(false);
+  const [procesandoValidandoFactura, setProcesandoValidandoFactura] = useState<boolean>(false);
+  const [procesandoSubirPDFFactura, setProcesandoSubirPDFFactura] = useState<boolean>(false);
+  const [procesandoValidacionFinal, setProcesandoValidacionFinal] = useState<boolean>(false);
 
-  const [showInput, setShowInput] = useState(false);
+  const [facturaValidada, setFacturaValidada] = useState<boolean>(false);
+  const [observaciones, setObservaciones] = useState("");
+  //Generación PDF
+  const [isPDFViewerOpen, setIsPDFViewerOpen] = useState(false);
+  const handleOpenPDFViewer = () => setIsPDFViewerOpen(true);
+  const handleClosePDFViewer = () => setIsPDFViewerOpen(false);
+
+  const [factura, setFactura] = useState<File | null>(null);
+  const handleChangeFactura = (newFile: File | null) => {
+    setFactura(newFile);
+  };
 
   const cargarOrdenCompraPorProveedor = useCallback(async (id_ordencompra: string) => {
     try {
@@ -49,17 +66,17 @@ export const useValidarOrdenCompra = () => {
     }
   }, []);
 
-  const aceptarProductoOC = async (idCanje: number) => {
+  const aceptarProductoOC = async (id_producto: number) => {
     try {
       setProcesandoCodigo(true);
-      const response = await aceptarProductoOCHttp({ id_canje: idCanje });
+      const response = await aceptarProductoOCHttp({ id_producto: id_producto });
       setOrdenCompra((prevOrden: any) => {
         if (!prevOrden?.productos) return prevOrden;
 
         return {
           ...prevOrden,
           productos: prevOrden.productos.map((producto: any) =>
-            producto.id_canje === idCanje ? { ...producto, estatus_proveedor: 1 } : producto
+            producto.id === id_producto ? { ...producto, estatus_proveedor: 1 } : producto
           ),
         };
       });
@@ -74,17 +91,17 @@ export const useValidarOrdenCompra = () => {
     }
   };
 
-  const rechazarProductoOC = async (idCanje: number) => {
+  const rechazarProductoOC = async (id_producto: number) => {
     try {
       setProcesandoCodigo(true);
-      const response = await rechazarProductoOCHttp({ id_canje: idCanje });
+      const response = await rechazarProductoOCHttp({ id_producto: id_producto });
       setOrdenCompra((prevOrden: any) => {
         if (!prevOrden?.productos) return prevOrden;
 
         return {
           ...prevOrden,
           productos: prevOrden.productos.map((producto: any) =>
-            producto.id_canje === idCanje ? { ...producto, estatus_proveedor: 2 } : producto
+            producto.id === id_producto ? { ...producto, estatus_proveedor: 2 } : producto
           ),
         };
       });
@@ -98,6 +115,114 @@ export const useValidarOrdenCompra = () => {
       handleisAlertOpen();
     }
   };
+  const enviarAprobacion = async (data: any) => {
+    try {
+      setProcesandoCodigo(true);
+      const response = await enviarOCAprobacionHttp(data);
+      setOrdenCompra((prevOrden: any) => ({
+        ...prevOrden,
+        orden_compra: {
+          ...prevOrden.orden_compra,
+          estatus: "cotizacion_validada_por_proveedor",
+        },
+      }));
+      setMensajeAlert(intl.formatMessage({ id: "orden_compra_enviada_aprobacion_exito" }));
+      handleisAlertOpen();
+      setProcesandoCodigo(false);
+    } catch (error) {
+      setProcesandoCodigo(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(
+        message || intl.formatMessage({ id: "orden_compra_enviada_aprobacion_error" })
+      );
+      handleisAlertOpen();
+    }
+  };
+  const validarFacturaOrdenCompra = async (data: any) => {
+    try {
+      setProcesandoValidandoFactura(true);
+
+      const formData = new FormData();
+      formData.append("id_orden_compra", data.id_orden_compra);
+      formData.append("id_proveedor", data.id_proveedor);
+      formData.append("id_usuario", data.id_usuario);
+      formData.append("xml_factura", data.xml_factura);
+
+      const response: any = await validarFacturaOrdenCompraHttp(formData);
+      if (response.validacion.status === "success") {
+        setFacturaValidada(true);
+      }
+      setOrdenCompra((prevOrden: any) => ({
+        ...prevOrden,
+        orden_compra: {
+          ...prevOrden.orden_compra,
+          estatus: "xml_validado_correctamente_proveedor",
+        },
+      }));
+      setMensajeAlert(intl.formatMessage({ id: "factura_validada_correctamente" }));
+      handleisAlertOpen();
+      setProcesandoValidandoFactura(false);
+      // Limpiar el archivo después de validar
+      setFactura(null);
+    } catch (error) {
+      setProcesandoValidandoFactura(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "factura_validada_error" }));
+      handleisAlertOpen();
+    }
+  };
+
+  const subirPDFFactura = async (data: any) => {
+    try {
+      setProcesandoSubirPDFFactura(true);
+
+      const formData = new FormData();
+      formData.append("id_orden_compra", data.id_orden_compra);
+      formData.append("id_proveedor", data.id_proveedor);
+      formData.append("id_usuario", data.id_usuario);
+      formData.append("pdf_factura", data.pdf_factura);
+
+      const response: any = await subirPDFFacturaHttp(formData);
+      setOrdenCompra((prevOrden: any) => ({
+        ...prevOrden,
+        orden_compra: {
+          ...prevOrden.orden_compra,
+          estatus: "factura_subida_correctamente_proveedor",
+        },
+      }));
+      setMensajeAlert(intl.formatMessage({ id: "pdf_factura_subido_correctamente" }));
+      handleisAlertOpen();
+      setProcesandoSubirPDFFactura(false);
+      setFactura(null);
+    } catch (error) {
+      setProcesandoSubirPDFFactura(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "pdf_factura_subido_error" }));
+      handleisAlertOpen();
+    }
+  };
+
+  const validarOrdenCompraFinal = async (data: any) => {
+    try {
+      setProcesandoValidacionFinal(true);
+      const response = await validarOrdenCompraFinalHttp(data);
+      setOrdenCompra((prevOrden: any) => ({
+        ...prevOrden,
+        orden_compra: {
+          ...prevOrden.orden_compra,
+          estatus: "orden_validada_por_proveedor",
+        },
+      }));
+      setMensajeAlert(intl.formatMessage({ id: "orden_compra_final_validada_exito" }));
+      handleisAlertOpen();
+      setProcesandoValidacionFinal(false);
+    } catch (error) {
+      setProcesandoValidacionFinal(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "orden_compra_final_validada_error" }));
+      handleisAlertOpen();
+    }
+  };
 
   useEffect(() => {
     if (id_ordencompra) {
@@ -106,12 +231,25 @@ export const useValidarOrdenCompra = () => {
   }, [id_ordencompra]);
 
   return {
+    handleOpenPDFViewer,
+    isPDFViewerOpen,
+    handleClosePDFViewer,
+    validarOrdenCompraFinal,
+    subirPDFFactura,
+    procesandoSubirPDFFactura,
+    procesandoValidandoFactura,
+    validarFacturaOrdenCompra,
+    factura,
+    handleChangeFactura,
+    setObservaciones,
+    observaciones,
+    enviarAprobacion,
     aceptarProductoOC,
     rechazarProductoOC,
     cargarOrdenCompraPorProveedor,
     verificado,
-    showInput,
-    setShowInput,
+    facturaValidada,
+    setFacturaValidada,
     codigoVerificacion,
     procesandoCodigo,
     isAlertOpen,

@@ -64,10 +64,7 @@ const AccionesTable: React.FC<AccionesTableProps> = (props: AccionesTableProps) 
         </Tooltip>
       ) : null}
 
-      {props?.esListaCategorias ||
-      props?.esListaProductos ||
-      props?.esListaProveedores ||
-      props?.esListaUsuarios ? (
+      {props?.esListaCategorias || props?.esListaProductos || props?.esListaProveedores ? (
         <Tooltip title={intl.formatMessage({ id: "general_eliminar" })}>
           <IconButton
             onClick={() =>

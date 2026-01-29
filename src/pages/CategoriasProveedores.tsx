@@ -73,6 +73,10 @@ function CategoriasProveedores(): JSX.Element {
   const fotoUser: any = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
 
   const {
+    nombreContactoEditar,
+    setNombreContactoEditar,
+    razonSocialEditar,
+    setRazonSocialEditar,
     tabsStyles,
     handleAccionCallback,
     valueTab,
@@ -260,7 +264,12 @@ function CategoriasProveedores(): JSX.Element {
                           actions
                           //key={tabableKeyProveedor}
                           //sinBusqueda
-                          columnsToShow={["nombre", "descripcion"]}
+                          columnsToShow={[
+                            "nombre",
+                            "nombre_contacto",
+                            "razon_social",
+                            "descripcion",
+                          ]}
                           sinExport
                           esListaProveedores
                           //showCheckBox
@@ -390,6 +399,34 @@ function CategoriasProveedores(): JSX.Element {
                 <>
                   <Grid item xs={6} sm={4}>
                     <TextField
+                      id="nombreContactoEditar"
+                      fullWidth
+                      label={intl.formatMessage({ id: "input_nombre_contacto" })}
+                      variant="standard"
+                      name="nombreContactoEditar"
+                      value={nombreContactoEditar}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setNombreContactoEditar(e.target.value);
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6} sm={4}>
+                    <TextField
+                      id="razonSocialEditar"
+                      fullWidth
+                      label={intl.formatMessage({ id: "input_razon_social" })}
+                      variant="standard"
+                      name="razonSocialEditar"
+                      value={razonSocialEditar}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setRazonSocialEditar(e.target.value);
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6} sm={4}>
+                    <TextField
                       id="descripcionEditar"
                       fullWidth
                       label={intl.formatMessage({ id: "input_descripcion" })}
@@ -445,6 +482,8 @@ function CategoriasProveedores(): JSX.Element {
                       datos = {
                         id: generalEditar?.id,
                         nombre: nombreEditar,
+                        nombre_contacto: nombreContactoEditar,
+                        razon_social: razonSocialEditar,
                         descripcion: descripcionEditar,
                         telefono: telefonoEditar,
                         correo: correoEditar,

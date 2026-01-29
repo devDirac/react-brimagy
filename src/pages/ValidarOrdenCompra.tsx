@@ -42,6 +42,11 @@ import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import SendIcon from "@mui/icons-material/Send";
+import { MuiFileInput } from "mui-file-input";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { InputAdornment } from "@mui/material";
+import PDFOrdenCompra from "components/PDFViews/PDFOrdenCompra";
+import PDFViewerOrdenCompra from "components/PDFViews/PDFViewerOrdenCompra";
 
 function ValidarOrdenCompra(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -49,12 +54,25 @@ function ValidarOrdenCompra(): JSX.Element {
   const fotoUser: any = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
 
   const {
+    handleOpenPDFViewer,
+    isPDFViewerOpen,
+    handleClosePDFViewer,
+    validarOrdenCompraFinal,
+    subirPDFFactura,
+    procesandoSubirPDFFactura,
+    procesandoValidandoFactura,
+    validarFacturaOrdenCompra,
+    factura,
+    handleChangeFactura,
+    setObservaciones,
+    observaciones,
+    enviarAprobacion,
     aceptarProductoOC,
     rechazarProductoOC,
     cargarOrdenCompraPorProveedor,
     verificado,
-    showInput,
-    setShowInput,
+    facturaValidada,
+    setFacturaValidada,
     codigoVerificacion,
     procesandoCodigo,
     isAlertOpen,
@@ -88,16 +106,22 @@ function ValidarOrdenCompra(): JSX.Element {
     return ordenCompra?.productos.slice(startIndex, endIndex) || [];
   }, [ordenCompra, page, rowsPerPage]);
 
-  const getEstadoColor = (estado_validacion: string) => {
-    switch (estado_validacion?.toLowerCase()) {
+  const getEstadoColor = (estatus: string) => {
+    switch (estatus?.toLowerCase()) {
       case "cotizacion_enviada_a_proveedor":
         return "warning";
-      case "cotizacion_validada_a_proveedor":
+      case "cotizacion_validada_por_proveedor":
         return "info";
       case "orden_compra_enviada_a_proveedor":
         return "warning";
+      case "factura_subida_correctamente_proveedor":
+        return "warning";
       case "orden_validada_por_proveedor":
         return "success";
+      case "xml_validado_correctamente_proveedor":
+        return "info";
+      case "cotizacion_rechazada":
+        return "error";
       default:
         return "default";
     }
@@ -105,9 +129,13 @@ function ValidarOrdenCompra(): JSX.Element {
 
   const estadosOrdenCompraMap: { [key: string]: string } = {
     COTIZACION_ENVIADA_A_PROVEEDOR: "EN ESPERA DE VALIDACIÓN DE PRODUCTOS",
-    COTIZACION_VALIDADA_A_PROVEEDOR: "ESPERANDO ORDEN DE COMPRA DE BRIMAGY",
-    ORDEN_COMPRA_ENVIADA_A_PROVEEDOR: "EN ESPERA DE SUBIR FACTURA",
+    COTIZACION_VALIDADA_POR_PROVEEDOR: "ESPERANDO VALIDACIÓN DE ORDEN DE COMPRA DE BRIMAGY",
+    ORDEN_COMPRA_ENVIADA_A_PROVEEDOR: "EN ESPERA DE VALIDACIÓN DE XML DE FACTURA",
+    FACTURA_SUBIDA_CORRECTAMENTE_PROVEEDOR:
+      "FACTURA SUBIRA CORRECTAMENTE, EN ESPERA DE VALIDAR ORDEN DE COMPRA",
     ORDEN_VALIDADA_POR_PROVEEDOR: "ORDEN DE COMPRA VALIDADA",
+    XML_VALIDADO_CORRECTAMENTE_PROVEEDOR: "XML VALIDADO, ESPERANDO SUBIR PDF DE FACTURA",
+    COTIZACION_RECHAZADA: "LA COTIZACIÓN HA SIDO RECHAZADA POR BRIMAGY",
   };
   const renderEstatusChip = (estatusProveedor: number) => {
     if (estatusProveedor === null || estatusProveedor === undefined) {
@@ -135,6 +163,27 @@ function ValidarOrdenCompra(): JSX.Element {
     return estadosOrdenCompraMap[estadoUpper] || estadoUpper;
   };
 
+  const todosProductosValidados = useMemo(() => {
+    if (!ordenCompra?.productos || ordenCompra.productos.length === 0) {
+      return false;
+    }
+
+    return ordenCompra.productos.every(
+      (producto: any) => producto.estatus_proveedor === 1 || producto.estatus_proveedor === 2
+    );
+  }, [ordenCompra]);
+
+  const productosPendientes = useMemo(() => {
+    if (!ordenCompra?.productos) return 0;
+    return ordenCompra.productos.filter((producto: any) => producto.estatus_proveedor === 0).length;
+  }, [ordenCompra]);
+
+  const cotizacion =
+    ordenCompra?.orden_compra?.estatus === "cotizacion_enviada_a_proveedor" ||
+    ordenCompra?.orden_compra?.estatus === "cotizacion_rechazada"
+      ? "COTIZACIÓN"
+      : "ORDEN DE COMPRA";
+
   return (
     <DashboardLayout withSidebar={false}>
       <MDBox py={0} mb={0}>
@@ -142,17 +191,39 @@ function ValidarOrdenCompra(): JSX.Element {
           <Grid item xs={12} md={12} lg={12}>
             <Card>
               <CardContent sx={{ p: 4 }}>
-                {ordenCompra ? (
+                {ordenCompra &&
+                ordenCompra?.orden_compra?.estatus !== "orden_compra_enviada_a_proveedor" ? (
                   <Box sx={{ textAlign: "center", mb: 3 }}>
                     <VerifiedIcon sx={{ fontSize: 60, color: green[500], mb: 2 }} />
                     <Typography variant="h4" gutterBottom>
-                      VALIDACIÓN DE ORDEN DE COMPRA
+                      VALIDACIÓN DE {cotizacion}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Hola <b style={{ color: "#A5EB2F" }}>{ordenCompra.nombre_contacto}</b>, a
-                      continuación se muestran los detalles de tu orden de compra, por favor valide
-                      qué productos tiene en inventario, envíe a través del botón de{" "}
-                      <b>Enviar para validación</b> y espere la respuesta de Brimagy
+                      Hola{" "}
+                      <b style={{ color: "#A5EB2F" }}>
+                        {ordenCompra.proveedor.nombre_contacto || ordenCompra.proveedor.nombre}
+                      </b>
+                      , a continuación se muestran los detalles de tu {cotizacion.toLowerCase()},
+                      por favor valide qué productos tiene en inventario, envíe a través del botón
+                      de <b>Enviar para validación</b> y espere la respuesta de Brimagy
+                    </Typography>
+                  </Box>
+                ) : ordenCompra?.orden_compra?.estatus === "orden_compra_enviada_a_proveedor" ? (
+                  <Box sx={{ textAlign: "center", mb: 3 }}>
+                    <VerifiedIcon sx={{ fontSize: 60, color: green[500], mb: 2 }} />
+                    <Typography variant="h4" gutterBottom>
+                      VALIDACIÓN DE {cotizacion}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Hola{" "}
+                      <b style={{ color: "#A5EB2F" }}>
+                        {ordenCompra.proveedor.nombre_contacto || ordenCompra.proveedor.nombre}
+                      </b>
+                      , a continuación se muestran los detalles de tu{" "}
+                      <b style={{ color: "#A5EB2F" }}>orden de compra</b>, por favor valide que sus
+                      datos estén correctos, suba su factura correspondiente y de clic en el botón
+                      de <b>Validar información</b>, para confirmarle a Brimagy la recepción de la
+                      orden de compra
                     </Typography>
                   </Box>
                 ) : (
@@ -172,6 +243,46 @@ function ValidarOrdenCompra(): JSX.Element {
                 {/* Información del Canje */}
                 {ordenCompra && (
                   <Paper elevation={2} sx={{ mt: 3, p: 3 }}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={6} md={6}>
+                        <Typography variant="caption" color="text.secondary">
+                          Vendedor
+                        </Typography>
+                        <Typography variant="body1" fontWeight="bold" sx={{ color: "#A5EB2F" }}>
+                          {ordenCompra?.orden_compra?.nombre_vendedor +
+                            " " +
+                            ordenCompra?.orden_compra?.primer_apellido +
+                            " " +
+                            ordenCompra?.orden_compra?.segundo_apellido}
+                        </Typography>
+                      </Grid>
+                      <Grid
+                        item
+                        xs={6}
+                        md={6}
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="end"
+                        flexDirection="column"
+                      >
+                        <Typography variant="button" color="text.secondary">
+                          BRIMAGY INC.
+                        </Typography>
+                        <Typography variant="button" color="text.secondary">
+                          PARQUE DE LA GRANADA #71
+                        </Typography>
+                        <Typography variant="button" color="text.secondary">
+                          52783 HUIXQUILUCAN, CDMX
+                        </Typography>
+                        <Typography variant="button" color="text.secondary">
+                          México
+                        </Typography>
+                        <Typography variant="button" color="text.secondary">
+                          RFC: BIN040623MSA
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                    <Divider sx={{ my: 2 }} />
                     <Box
                       sx={{
                         display: "flex",
@@ -181,7 +292,7 @@ function ValidarOrdenCompra(): JSX.Element {
                       }}
                     >
                       <Typography variant="h5" color={"#eb2fa5"}>
-                        Datos de mi orden de compra
+                        Datos de mi {cotizacion.toLowerCase()}
                       </Typography>
                     </Box>
 
@@ -221,11 +332,59 @@ function ValidarOrdenCompra(): JSX.Element {
                             label={traducirEstadoOrdenCompra(
                               ordenCompra?.orden_compra?.estatus.toUpperCase()
                             )}
-                            color={getEstadoColor(ordenCompra.estado_validacion)}
+                            color={getEstadoColor(ordenCompra?.orden_compra?.estatus)}
                             size="small"
                           />
                         </Box>
                       </Grid>
+                      {ordenCompra?.orden_compra?.estatus === "orden_compra_enviada_a_proveedor" ? (
+                        <>
+                          <Grid
+                            item
+                            xs={12}
+                            md={4}
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            flexDirection="column"
+                          >
+                            <Typography variant="caption" color="text.secondary">
+                              Productos aceptados
+                            </Typography>
+                            <Box>{ordenCompra?.estadisticas?.productos_aceptados}</Box>
+                          </Grid>
+                          <Grid
+                            item
+                            xs={12}
+                            md={4}
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            flexDirection="column"
+                          >
+                            <Typography variant="caption" color="text.secondary">
+                              Productos rechazados
+                            </Typography>
+                            <Box>{ordenCompra?.estadisticas?.productos_rechazados}</Box>
+                          </Grid>
+                          <Grid
+                            item
+                            xs={12}
+                            md={4}
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            flexDirection="column"
+                          >
+                            <Typography variant="caption" color="text.secondary">
+                              Observaciones
+                            </Typography>
+                            <Typography variant="body2">
+                              {ordenCompra?.orden_compra?.observaciones}
+                            </Typography>
+                          </Grid>
+                        </>
+                      ) : null}
                       <Grid item xs={12}>
                         <Divider />
                       </Grid>
@@ -359,7 +518,16 @@ function ValidarOrdenCompra(): JSX.Element {
                         return (
                           <>
                             <Grid container spacing={2} key={producto.id}>
-                              <Grid item xs={6} md={2}>
+                              <Grid
+                                item
+                                xs={6}
+                                md={
+                                  ordenCompra?.orden_compra?.estatus ===
+                                  "cotizacion_enviada_a_proveedor"
+                                    ? 2
+                                    : 3
+                                }
+                              >
                                 <Typography variant="body2" color="text.secondary">
                                   Producto
                                 </Typography>
@@ -427,31 +595,34 @@ function ValidarOrdenCompra(): JSX.Element {
                                   })}
                                 </Typography>
                               </Grid>
-
-                              <Grid item xs={6} md={1}>
-                                <Typography variant="body2" color="text.secondary">
-                                  Acciones
-                                </Typography>
-                                <Typography variant="body2" fontWeight="medium">
-                                  <Tooltip title={intl.formatMessage({ id: "validar_producto" })}>
-                                    <IconButton
-                                      onClick={() => aceptarProductoOC(producto?.id_canje)}
-                                      sx={{ color: "#13e9bf", padding: "0" }}
+                              {ordenCompra?.orden_compra?.estatus ===
+                              "cotizacion_enviada_a_proveedor" ? (
+                                <Grid item xs={6} md={1}>
+                                  <Typography variant="body2" color="text.secondary">
+                                    Acciones
+                                  </Typography>
+                                  <Typography variant="body2" fontWeight="medium">
+                                    <Tooltip title={intl.formatMessage({ id: "validar_producto" })}>
+                                      <IconButton
+                                        onClick={() => aceptarProductoOC(producto?.id)}
+                                        sx={{ color: "#13e9bf", padding: "0" }}
+                                      >
+                                        <CheckIcon />
+                                      </IconButton>
+                                    </Tooltip>
+                                    <Tooltip
+                                      title={intl.formatMessage({ id: "rechazar_producto" })}
                                     >
-                                      <CheckIcon />
-                                    </IconButton>
-                                  </Tooltip>
-                                  <Tooltip title={intl.formatMessage({ id: "rechazar_producto" })}>
-                                    <IconButton
-                                      onClick={() => rechazarProductoOC(producto?.id_canje)}
-                                      sx={{ color: "#f64e52", padding: "0" }}
-                                    >
-                                      <CloseIcon />
-                                    </IconButton>
-                                  </Tooltip>
-                                </Typography>
-                              </Grid>
-
+                                      <IconButton
+                                        onClick={() => rechazarProductoOC(producto?.id)}
+                                        sx={{ color: "#f64e52", padding: "0" }}
+                                      >
+                                        <CloseIcon />
+                                      </IconButton>
+                                    </Tooltip>
+                                  </Typography>
+                                </Grid>
+                              ) : null}
                               <Grid item xs={6} md={2}>
                                 <Typography variant="body2" color="text.secondary">
                                   Estatus del producto
@@ -496,6 +667,202 @@ function ValidarOrdenCompra(): JSX.Element {
                         }}
                       />
                     </MDBox>
+                    {ordenCompra?.orden_compra?.estatus === "orden_compra_enviada_a_proveedor" ||
+                    ordenCompra?.orden_compra?.estatus ===
+                      "xml_validado_correctamente_proveedor" ? (
+                      <>
+                        <Divider sx={{ mb: 2 }} />
+                        <Grid item xs={12}>
+                          <Box sx={{ textAlign: "center", mb: 3 }}>
+                            <Typography variant="h5" color={"#eb2fa5"}>
+                              Validar y subir mi factura
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              Para continuar el proceso, valida tu XML, sube el PDF de tu factura y
+                              da click en{" "}
+                              <b style={{ color: "#A5EB2F" }}>Validar orden de compra</b>, para
+                              validar la información de la orden de compra
+                            </Typography>
+                          </Box>
+                        </Grid>
+                        <Divider sx={{ mb: 2 }} />
+                        <Grid item xs={12} md={12} display="flex" justifyContent="center" mb={2}>
+                          {ordenCompra?.orden_compra?.estatus !==
+                            "xml_validado_correctamente_proveedor" && (
+                            <Grid
+                              item
+                              xs={12}
+                              md={4}
+                              display="flex"
+                              justifyContent="center"
+                              alignItems="center"
+                              flexDirection="column"
+                            >
+                              <Typography variant="caption" color="text.secondary">
+                                Validar XML
+                              </Typography>
+                              <MuiFileInput
+                                value={factura}
+                                onChange={handleChangeFactura}
+                                inputProps={{ accept: ".xml" }}
+                                hideSizeText
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <CloudUploadIcon fontSize="medium" />
+                                    </InputAdornment>
+                                  ),
+                                  endAdornment: factura && (
+                                    <InputAdornment position="end">
+                                      <Button
+                                        sx={{
+                                          color: "#fff",
+                                          background: "#eb2fa5",
+                                          fontSize: "0.75rem",
+                                          padding: "6px 8px",
+                                          margin: "0",
+                                        }}
+                                        size="small"
+                                        variant="contained"
+                                        disabled={procesandoValidandoFactura}
+                                        onClick={(e: any) => {
+                                          const datos = {
+                                            id_orden_compra: ordenCompra?.orden_compra?.id,
+                                            id_proveedor: ordenCompra?.proveedor?.id,
+                                            id_usuario: ordenCompra?.orden_compra?.id_usuario,
+                                            xml_factura: factura,
+                                          };
+                                          validarFacturaOrdenCompra(datos);
+                                        }}
+                                      >
+                                        {procesandoValidandoFactura ? (
+                                          <>
+                                            <Spinner
+                                              as="span"
+                                              animation="border"
+                                              size="sm"
+                                              role="status"
+                                              aria-hidden="true"
+                                            />
+                                            Validando...{" "}
+                                          </>
+                                        ) : (
+                                          intl.formatMessage({ id: "validar_xml" })
+                                        )}
+                                      </Button>
+                                    </InputAdornment>
+                                  ),
+                                }}
+                                placeholder={`${intl.formatMessage({ id: "validar_xml_factura" })}`}
+                              />
+                            </Grid>
+                          )}
+                          {ordenCompra?.orden_compra?.estatus ===
+                            "xml_validado_correctamente_proveedor" && (
+                            <Grid
+                              item
+                              xs={12}
+                              md={4}
+                              display="flex"
+                              justifyContent="center"
+                              alignItems="center"
+                              flexDirection="column"
+                            >
+                              <Typography variant="caption" color="text.secondary">
+                                Sube tu PDF de la factura
+                              </Typography>
+                              <MuiFileInput
+                                value={factura}
+                                onChange={handleChangeFactura}
+                                inputProps={{ accept: ".pdf" }}
+                                hideSizeText
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <PictureAsPdfIcon fontSize="medium" />
+                                    </InputAdornment>
+                                  ),
+                                  endAdornment: factura && (
+                                    <InputAdornment position="end">
+                                      <Button
+                                        sx={{
+                                          color: "#fff",
+                                          background: "#eb2fa5",
+                                          fontSize: "0.75rem",
+                                          padding: "6px 8px",
+                                          margin: "0",
+                                        }}
+                                        size="small"
+                                        variant="contained"
+                                        disabled={procesandoValidandoFactura}
+                                        onClick={(e: any) => {
+                                          const datos = {
+                                            id_orden_compra: ordenCompra?.orden_compra?.id,
+                                            id_proveedor: ordenCompra?.proveedor?.id,
+                                            id_usuario: ordenCompra?.orden_compra?.id_usuario,
+                                            pdf_factura: factura,
+                                          };
+                                          subirPDFFactura(datos);
+                                        }}
+                                      >
+                                        {procesandoValidandoFactura ? (
+                                          <>
+                                            <Spinner
+                                              as="span"
+                                              animation="border"
+                                              size="sm"
+                                              role="status"
+                                              aria-hidden="true"
+                                            />
+                                            Validando...{" "}
+                                          </>
+                                        ) : (
+                                          intl.formatMessage({ id: "subir_pdf_factura" })
+                                        )}
+                                      </Button>
+                                    </InputAdornment>
+                                  ),
+                                }}
+                                placeholder={`${intl.formatMessage({
+                                  id: "subir_pdf_factura_placeholder",
+                                })}`}
+                              />
+                            </Grid>
+                          )}
+                        </Grid>
+                        <Divider sx={{ mb: 2 }} />
+                      </>
+                    ) : null}
+                    {ordenCompra?.orden_compra?.estatus === "cotizacion_enviada_a_proveedor" ? (
+                      <Grid item xs={12} md={12} display="flex" justifyContent="center" mb={2}>
+                        <TextField
+                          id="notas"
+                          multiline
+                          rows={4}
+                          sx={{ width: 400 }}
+                          label={`${intl.formatMessage({ id: "input_notas" })}`}
+                          variant="standard"
+                          name="notas"
+                          value={observaciones || ""}
+                          disabled={procesando || !todosProductosValidados}
+                          helperText={
+                            !todosProductosValidados
+                              ? "Se deben validar todos los productos para agregar una nota"
+                              : ""
+                          }
+                          onChange={(e) => {
+                            setObservaciones(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                    ) : null}
+                    {ordenCompra?.orden_compra?.estatus ===
+                    "factura_subida_correctamente_proveedor" ? (
+                      <Alert severity="warning" sx={{ m: 2 }}>
+                        La factura fue subida con éxito, para continuar el proceso debes dar click
+                        en <b>Validar orden de compra</b>
+                      </Alert>
+                    ) : null}
                     <MDBox
                       mt={0}
                       sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
@@ -510,24 +877,55 @@ function ValidarOrdenCompra(): JSX.Element {
                         }}
                         variant="contained"
                         endIcon={<SendIcon />}
-                        disabled={procesando}
+                        disabled={
+                          procesando ||
+                          !todosProductosValidados ||
+                          ordenCompra?.orden_compra?.estatus !==
+                            "factura_subida_correctamente_proveedor"
+                        }
                         onClick={(e: any) => {
-                          /*const datos = {
-                            id_usuario: idUsuario,
-                            id_proveedor: verProveedor.id,
-                            canjes: verCanje.map((canje) => {
-                              return {
-                                id_canje: canje.id,
-                                cantidad_producto: canje.number_of_awards,
-                                cantidad_almacen: canje.number_of_awards,
-                                estatus_almacen: 0,
-                                estatus_proveedor: 0,
-                                tipo_compra: "",
-                              };
-                            }),
+                          const datos = {
+                            id_orden_compra: ordenCompra?.orden_compra.id,
                           };
-
-                          enviarCotizacionProveedor(datos);*/
+                          validarOrdenCompraFinal(datos);
+                        }}
+                      >
+                        {procesando ? (
+                          <>
+                            <Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              role="status"
+                              aria-hidden="true"
+                            />
+                            Validando...{" "}
+                          </>
+                        ) : (
+                          intl.formatMessage({ id: "validar_orden_de_compra" })
+                        )}
+                      </Button>
+                      <Button
+                        sx={{
+                          color: "#fff",
+                          background: "#3ec972",
+                          fontSize: "0.75rem",
+                          padding: "6px 8px",
+                          margin: "0 10px",
+                        }}
+                        variant="contained"
+                        endIcon={<SendIcon />}
+                        disabled={
+                          procesando ||
+                          !todosProductosValidados ||
+                          ordenCompra?.orden_compra?.estatus !== "cotizacion_enviada_a_proveedor"
+                        }
+                        onClick={(e: any) => {
+                          const datos = {
+                            id_orden_compra: ordenCompra?.orden_compra.id,
+                            observaciones: observaciones,
+                          };
+                          enviarAprobacion(datos);
                         }}
                       >
                         {procesando ? (
@@ -542,7 +940,7 @@ function ValidarOrdenCompra(): JSX.Element {
                             Enviando...{" "}
                           </>
                         ) : (
-                          intl.formatMessage({ id: "enviar_a_proveedor" })
+                          intl.formatMessage({ id: "enviar_a_aprobacion" })
                         )}
                       </Button>
                       <Button
@@ -555,8 +953,11 @@ function ValidarOrdenCompra(): JSX.Element {
                         }}
                         variant="contained"
                         endIcon={<PictureAsPdfIcon />}
-                        disabled={procesando}
-                        onClick={(e: any) => {}}
+                        disabled={procesando || !todosProductosValidados}
+                        onClick={(e: any) => {
+                          //console.log(ordenCompra);
+                          handleOpenPDFViewer();
+                        }}
                       >
                         {procesando ? (
                           <>
@@ -567,13 +968,19 @@ function ValidarOrdenCompra(): JSX.Element {
                               role="status"
                               aria-hidden="true"
                             />
-                            Generando orden de compra...{" "}
+                            Generando PDF...{" "}
                           </>
                         ) : (
-                          intl.formatMessage({ id: "generar_orden_compra" })
+                          intl.formatMessage({ id: "generar_orden_compra_pdf" })
                         )}
                       </Button>
                     </MDBox>
+                    {!todosProductosValidados && ordenCompra?.productos && (
+                      <Alert severity="warning" sx={{ mt: 2 }}>
+                        Debes validar todos los productos antes de enviar a aprobación (
+                        {productosPendientes} pendiente{productosPendientes !== 1 ? "s" : ""})
+                      </Alert>
+                    )}
                   </Paper>
                 )}
               </CardContent>
@@ -596,6 +1003,12 @@ function ValidarOrdenCompra(): JSX.Element {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
+      {/* Visor de PDF */}
+      <PDFViewerOrdenCompra
+        open={isPDFViewerOpen}
+        onClose={handleClosePDFViewer}
+        ordenCompra={ordenCompra}
+      />
     </DashboardLayout>
   );
 }

@@ -45,3 +45,26 @@ export const eliminarProveedorHttp = async (id: number) => {
     return promise;
   }
 };
+export const getProductoNuevoProveedorHttp = async (data: any) => {
+  try {
+    const response = await axios.get(`${env.API_URL}/getProductoNuevoProveedor`, {
+      params: data,
+    });
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+export const enviarANuevoProveedorHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.put(
+      `${env.API_URL}/enviarANuevoProveedor`,
+      data
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};

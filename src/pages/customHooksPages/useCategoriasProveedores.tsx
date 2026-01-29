@@ -219,6 +219,7 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
       setProveedores((prevProveedores) => [...prevProveedores, proveedorData]);
       formik.resetForm();
       setTableKeyProveedor((prev) => prev + 1);
+      await getProveedores();
       setProcesandoProveedor(false);
       setMensajeAlert(intl.formatMessage({ id: "proveedor_creado_correctamente" }));
       handleisAlertOpen();
@@ -281,6 +282,10 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
   }, [getProveedores, getCategorias]);
 
   return {
+    nombreContactoEditar,
+    setNombreContactoEditar,
+    razonSocialEditar,
+    setRazonSocialEditar,
     tabsStyles,
     handleAccionCallback,
     valueTab,

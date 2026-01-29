@@ -259,15 +259,6 @@ function ListaProductos(): JSX.Element {
             </Button>
 
             <Button
-              variant="outlined"
-              startIcon={<SimCardDownloadIcon />}
-              onClick={descargarPlantillaExcel}
-              sx={{ borderColor: "#084d6e", color: "#084d6e" }}
-            >
-              Descargar Plantilla
-            </Button>
-
-            <Button
               variant="contained"
               component="label"
               startIcon={<AutoAwesomeIcon />}
@@ -337,27 +328,6 @@ function ListaProductos(): JSX.Element {
                         },
                       }}
                     >
-                      {/*<Chip
-                        icon={<TipsAndUpdatesIcon />}
-                        label="Sugerencia"
-                        sx={{
-                          position: "absolute",
-                          top: 0,
-                          right: 0,
-                          flexDirection: "row",
-                          bgcolor: pink[50],
-                          p: 1,
-                          fontWeight: 500,
-                          borderRadius: "0 0 0 20px",
-                          background: `${pink[300]}`,
-                          "& .MuiChip-icon": {
-                            color: "#FFF9C4 !important",
-                            fontSize: "20px !important",
-                            width: "20px !important",
-                            height: "20px !important",
-                          },
-                        }}
-                      />*/}
                       {/* Fila superior*/}
                       <Box
                         sx={{
@@ -1140,6 +1110,24 @@ function ListaProductos(): JSX.Element {
                 sinExport
                 data={excelData.map((p) => ({
                   ...p,
+                  costo_con_iva: numericFormatter(p.costo_con_iva + "", {
+                    thousandSeparator: ",",
+                    decimalScale: 2,
+                    fixedDecimalScale: true,
+                    prefix: "$",
+                  }),
+                  costo_sin_iva: numericFormatter(p.costo_sin_iva + "", {
+                    thousandSeparator: ",",
+                    decimalScale: 2,
+                    fixedDecimalScale: true,
+                    prefix: "$",
+                  }),
+                  total: numericFormatter(p.total + "", {
+                    thousandSeparator: ",",
+                    decimalScale: 2,
+                    fixedDecimalScale: true,
+                    prefix: "$",
+                  }),
                   proveedor_status: p.proveedor_valido ? "✓ " + p.proveedor : "✗ " + p.proveedor,
                   catalogo_status: p.categoria_valida ? "✓ " + p.catalogo : "✗ " + p.catalogo,
                   sku_status: p.sku_vacio
@@ -1524,6 +1512,7 @@ function ListaProductos(): JSX.Element {
                 style: { padding: "5px" },
               }}
             >
+              <MenuItem value="">{intl.formatMessage({ id: "seleccionar_categoria" })}</MenuItem>
               {categorias?.map((option) => (
                 <MenuItem key={option.id} value={option.id}>
                   {option.desc}

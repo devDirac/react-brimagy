@@ -38,6 +38,7 @@ interface Canje {
   creacion_canje: string;
   estado_canje: string;
   estado_validacion: string;
+  id_producto: number;
 }
 
 interface DetalleCanjeProps {
@@ -152,6 +153,7 @@ const DetallesCanjeModal = ({
               verCanje.estado_validacion === "identidad_validada"
             }
             onClick={(e: any) => {
+              //console.log(verCanje);
               validarIdentidad(verCanje);
             }}
           >
