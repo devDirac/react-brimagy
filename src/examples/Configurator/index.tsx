@@ -150,7 +150,7 @@ function Configurator(): JSX.Element {
         <MDBox>
           <MDTypography variant="h5">Configurador de tema</MDTypography>
           <MDTypography variant="body2" color="text">
-            Esqueleto.
+            Brimagy.
           </MDTypography>
         </MDBox>
 

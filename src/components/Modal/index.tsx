@@ -51,14 +51,14 @@ const ModalComponent: React.FC<ModalProps> = (props: ModalProps) => {
         <DialogTitle
           id="alert-dialog-title"
           sx={{
-            ...{ color: "#ffff", backgroundColor: "#344767" },
+            ...{ color: "#ff009e", backgroundColor: "#8ded42" },
             ...(props?.esError ? { borderBottom: "solid 4px red" } : {}),
           }}
         >
-          <InfoIcon fontSize="large" style={{ color: "#ffff" }} />
+          <InfoIcon fontSize="large" style={{ color: "#0a1105" }} />
         </DialogTitle>
         {props?.title ? (
-          <DialogTitle id="alert-dialog-title" sx={{ color: darkMode ? "white" : "#344767" }}>
+          <DialogTitle id="alert-dialog-title" sx={{ color: darkMode ? "white" : "#0a1105" }}>
             {props?.title}
           </DialogTitle>
         ) : null}
@@ -67,11 +67,11 @@ const ModalComponent: React.FC<ModalProps> = (props: ModalProps) => {
         </DialogContent>
         <DialogActions
           style={{
-            ...{ color: "#344767" /* , backgroundColor:'#344767' */ },
+            ...{ color: "#0a1105" },
             ...(props?.esError ? { borderTop: "solid 4px red" } : {}),
           }}
         >
-          <Button onClick={props?.handleClose} autoFocus style={{ color: "#344767" }}>
+          <Button onClick={props?.handleClose} autoFocus style={{ color: "#0a1105" }}>
             {props?.titleBoton ? props?.titleBoton : "Minimizar"}
           </Button>
         </DialogActions>

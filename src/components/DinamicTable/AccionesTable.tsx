@@ -11,6 +11,8 @@ import { useMaterialUIController } from "context";
 import ReplayIcon from "@mui/icons-material/Replay";
 import FaceRetouchingOffIcon from "@mui/icons-material/FaceRetouchingOff";
 import DeleteIcon from "@mui/icons-material/Delete";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
 
 const AccionesTable: React.FC<AccionesTableProps> = (props: AccionesTableProps) => {
   const intl = useIntl();
@@ -38,6 +40,39 @@ const AccionesTable: React.FC<AccionesTableProps> = (props: AccionesTableProps) 
             sx={{ color: darkMode ? "#fff" : "#1fff26", padding: "0" }}
           >
             <ReplayIcon />
+          </IconButton>
+        </Tooltip>
+      ) : null}
+
+      {props?.esListaProductos || props?.esListaCanjes ? (
+        <Tooltip title={intl.formatMessage({ id: "vista_previa" })}>
+          <IconButton
+            onClick={() => props?.enAccion("vista_previa")}
+            sx={{ color: darkMode ? "#fff" : "#1fff26", padding: "0" }}
+          >
+            <VisibilityIcon />
+          </IconButton>
+        </Tooltip>
+      ) : null}
+
+      {props?.esListaOrdenesCompra ? (
+        <Tooltip title={intl.formatMessage({ id: "crear_orden_compra" })}>
+          <IconButton
+            onClick={() => props?.enAccion("crear_orden_compra")}
+            sx={{ color: darkMode ? "#fff" : "#1fff26", padding: "0" }}
+          >
+            <LibraryAddIcon />
+          </IconButton>
+        </Tooltip>
+      ) : null}
+
+      {props?.esListaOrdenesCompra ? (
+        <Tooltip title={intl.formatMessage({ id: "ver_orden_compra" })}>
+          <IconButton
+            onClick={() => props?.enAccion("vista_previa")}
+            sx={{ color: darkMode ? "#fff" : "#1fff26", padding: "0" }}
+          >
+            <VisibilityIcon />
           </IconButton>
         </Tooltip>
       ) : null}
@@ -77,6 +112,17 @@ const AccionesTable: React.FC<AccionesTableProps> = (props: AccionesTableProps) 
             sx={{ color: darkMode ? "#fff" : "#F54927", padding: "0" }}
           >
             <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+      ) : null}
+
+      {props?.esListaRespuestas ? (
+        <Tooltip title={intl.formatMessage({ id: "general_ver_respuesta" })}>
+          <IconButton
+            onClick={() => props?.enAccion("ver_respuesta")}
+            sx={{ color: darkMode ? "#fff" : "#76a5af", padding: "0" }}
+          >
+            <VisibilityIcon />
           </IconButton>
         </Tooltip>
       ) : null}

@@ -33,6 +33,7 @@ interface Props {
   description?: string;
   value?: string | number;
   [key: string]: any;
+  iconColor?: string;
 }
 
 function DefaultInfoCard({
@@ -45,40 +46,57 @@ function DefaultInfoCard({
   elemento,
   esAjustesSitio,
   colorAjusteSitio,
+  iconColor,
 }: Props): JSX.Element {
   return (
-    <Card
-      style={{ border: "solid rgba(0, 0, 0, 0.125)", cursor: "pointer" }}
-      onClick={() => {
-        onSelec(elemento);
-      }}
-    >
-      <MDBox p={2} mx={3} display="flex" justifyContent="center">
-        <MDBox
-          sx={{ cursor: "pointer" }}
-          display="grid"
-          justifyContent="center"
-          alignItems="center"
-          bgColor={color}
-          color="white"
-          width="4rem"
-          height="4rem"
-          shadow="md"
-          borderRadius="lg"
-          variant="gradient"
-        >
+    <MDBox p={0} mx={0} display="flex" justifyContent="center">
+      <MDBox
+        onClick={() => {
+          onSelec(elemento);
+        }}
+        sx={{
+          cursor: "pointer",
+          ...(iconColor && { backgroundColor: iconColor }),
+          transition: "all 0.3s ease",
+          "&:hover": {
+            transform: "scale(1.05)",
+            boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+            ...(iconColor && {
+              backgroundColor: iconColor,
+              filter: "brightness(1.1)",
+            }),
+          },
+        }}
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
+        bgColor={!iconColor ? color : undefined}
+        color="white"
+        width="100%"
+        height="10rem"
+        shadow="md"
+        borderRadius="lg"
+        variant="gradient"
+      >
+        <MDBox sx={{ fontSize: "60px", display: "flex", alignItems: "center" }}>
           {typeof icon === "string" ? (
-            <Icon fontSize="large">{icon}</Icon>
+            <Icon sx={{ fontSize: "inherit" }}>{icon}</Icon>
           ) : React.isValidElement(icon) ? (
-            React.cloneElement(icon as React.ReactElement<any>, { fontSize: "large" })
+            React.cloneElement(icon as React.ReactElement<any>, {
+              fontSize: "inherit",
+            })
           ) : null}
         </MDBox>
-      </MDBox>
-      <MDBox pb={2} px={2} textAlign="center">
-        <MDTypography variant="h6" fontWeight="medium" textTransform="capitalize">
+        <MDTypography
+          pt={1}
+          variant="h6"
+          fontWeight="medium"
+          textTransform="capitalize"
+          style={{ lineHeight: "20px" }}
+        >
           {title}
         </MDTypography>
-
         {description && (
           <MDTypography variant="caption" color="text" fontWeight="regular">
             {description}
@@ -90,7 +108,7 @@ function DefaultInfoCard({
           </MDTypography>
         )}
       </MDBox>
-    </Card>
+    </MDBox>
   );
 }
 

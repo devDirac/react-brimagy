@@ -68,7 +68,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { styled } from "@mui/material/styles";
 import Badge, { BadgeProps } from "@mui/material/Badge";
 import { numericFormatter } from "react-number-format";
-import { useListaProductos } from "./customHooksPages/useListaProductos";
+import { useListaProductosFisicos } from "./customHooksPages/useListaProductosFisicos";
 import DinamicTableMejorada from "components/DinamicTable/DinamicTable";
 import SaveIcon from "@mui/icons-material/Save";
 import EditIcon from "@mui/icons-material/Edit";
@@ -81,15 +81,15 @@ import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 import TableRowsIcon from "@mui/icons-material/TableRows";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import DateRangeIcon from "@mui/icons-material/DateRange";
-import HistoryIcon from "@mui/icons-material/History";
 
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import HistoryIcon from "@mui/icons-material/History";
 
-function ListaProductos(): JSX.Element {
+function ListaProductosFisicos(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
   const userName = useSelector((state: StoreType) => state?.app?.user?.data?.name || false);
   const fotoUser: any = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
@@ -217,7 +217,7 @@ function ListaProductos(): JSX.Element {
     setFecha1,
     fecha2,
     setFecha2,
-    getProductosCatalogo,
+    getProductosCatalogoFisicos,
     //ver bitacora del producto
     verBitacoraProducto,
     setVerBitacoraProducto,
@@ -225,7 +225,7 @@ function ListaProductos(): JSX.Element {
     handleisAlertOpenVerBitacoraProducto,
     handleisAlertCloseVerBitacoraProducto,
     getBitacoraProductoPorId,
-  } = useListaProductos(tipoUsuario);
+  } = useListaProductosFisicos(tipoUsuario);
 
   const independiente = () => {
     return !productos?.length && !procesando ? (
@@ -711,7 +711,7 @@ function ListaProductos(): JSX.Element {
               xs={12}
               style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
             >
-              <h3>{intl.formatMessage({ id: "sin_productos_registrados" })}</h3>
+              <h3>{intl.formatMessage({ id: "sin_productos_fisicos_registrados" })}</h3>
             </Grid>
           </Grid>
         ) : null}
@@ -1794,7 +1794,7 @@ function ListaProductos(): JSX.Element {
                       fecha1: fecha1,
                       fecha2: fecha2,
                     };
-                    getProductosCatalogo(datos);
+                    getProductosCatalogoFisicos(datos);
                     handleisAlertCloseFechas();
                   }}
                 >
@@ -1805,6 +1805,7 @@ function ListaProductos(): JSX.Element {
           </Grid>
         </Grid>
       </ModalComponent>
+
       {/* VER BITACORA DE PRODUCTO */}
       <ModalComponent
         handleClose={handleisAlertCloseVerBitacoraProducto}
@@ -1869,4 +1870,4 @@ function ListaProductos(): JSX.Element {
   );
 }
 
-export default ListaProductos;
+export default ListaProductosFisicos;

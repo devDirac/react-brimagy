@@ -138,7 +138,7 @@ export const subirPDFFacturaHttp = async (formData: FormData) => {
 };
 export const validarOrdenCompraFinalHttp = async (data: any) => {
   try {
-    const response: GeneralHttpResponse = await axios.put(
+    const response: GeneralHttpResponse = await axios.post(
       `${process.env.REACT_APP_API_URL}${"/validarOrdenCompraFinal"}`,
       data
     );

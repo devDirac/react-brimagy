@@ -38,6 +38,11 @@ export const useListaCanjeos = (tipoUsuario: number) => {
   const handleisAlertOpenVerCanje = () => setIsAlertOpenVerCanje(true);
   const handleisAlertCloseVerCanje = () => setIsAlertOpenVerCanje(false);
 
+  //Ver datos del producto buscando por fechas
+  const [isAlertOpenFechas, setIsAlertOpenFechas] = useState(false);
+  const handleisAlertOpenFechas = () => setIsAlertOpenFechas(true);
+  const handleisAlertCloseFechas = () => setIsAlertOpenFechas(false);
+
   const [procesandoIdentidad, setProcesandoIdentidad] = useState<boolean>(false);
   //Generación PDF
   const [isPDFViewerOpen, setIsPDFViewerOpen] = useState(false);
@@ -48,6 +53,36 @@ export const useListaCanjeos = (tipoUsuario: number) => {
     setAuth(token);
   }, [token]);
 
+  const [visualizacion, setVisualizacion] = useState<string | null>("cuadricula");
+  const [fecha1, setFecha1] = useState("");
+  const [fecha2, setFecha2] = useState("");
+
+  const handleVisualizacion = (
+    event: React.MouseEvent<HTMLElement>,
+    nuevaVisualizacion: string | null
+  ) => {
+    setVisualizacion(nuevaVisualizacion);
+  };
+
+  const handleAccion = (accion: string, row: any) => {
+    switch (accion) {
+      case "vista_previa":
+        setVerCanje(row);
+        handleisAlertOpenVerCanje();
+        break;
+      case "editar":
+        //setProductoEditar(row);
+        //handleisAlertOpenEditarProducto();
+        break;
+      case "eliminar":
+        //setProductoId(row?.id);
+        //handleisAlertOpenEliminaProducto();
+        break;
+      default:
+        break;
+    }
+  };
+
   // Debounce para evitar muchas peticiones
   const handleBuscadorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -57,39 +92,47 @@ export const useListaCanjeos = (tipoUsuario: number) => {
       clearTimeout(debounceTimeout);
     }
     const timeout = setTimeout(() => {
-      getCanjes(value);
+      getCanjes({ search: value, fecha1, fecha2 });
     }, 500);
     setDebounceTimeout(timeout);
   };
 
-  const getCanjes = useCallback(async (search?: string) => {
-    try {
-      setProcesando(true);
-      const productosData = await getCanjesHttp(search);
+  const getCanjes = useCallback(
+    async (params?: { search?: string; fecha1?: string; fecha2?: string }) => {
+      try {
+        setProcesando(true);
+        const productosData = await getCanjesHttp(
+          params?.search,
+          params?.fecha1 ? new Date(params.fecha1) : undefined,
+          params?.fecha2 ? new Date(params.fecha2) : undefined
+        );
+        //const productosData = await getCanjesHttp(search);
 
-      const datosFormateados = productosData.map((e: any) => {
-        return {
-          ...e,
-          ...{
-            costo_con_iva_format: numericFormatter(e?.costo_con_iva + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            fecha_creacion: moment(e?.fecha_ejecucion).format("DD-MM-YYYY"),
-          },
-        };
-      });
-      setCanjes(datosFormateados);
-      setProcesando(false);
-    } catch (error) {
-      setProcesando(false);
-      const message = getErrorHttpMessage(error);
-      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
-      handleisAlertOpen();
-    }
-  }, []);
+        const datosFormateados = productosData.map((e: any) => {
+          return {
+            ...e,
+            ...{
+              costo_con_iva_format: numericFormatter(e?.costo_con_iva + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              fecha_creacion: moment(e?.fecha_ejecucion).format("DD-MM-YYYY"),
+            },
+          };
+        });
+        setCanjes(datosFormateados);
+        setProcesando(false);
+      } catch (error) {
+        setProcesando(false);
+        const message = getErrorHttpMessage(error);
+        setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+        handleisAlertOpen();
+      }
+    },
+    []
+  );
 
   const validarIdentidad = async (data: any) => {
     try {
@@ -138,5 +181,17 @@ export const useListaCanjeos = (tipoUsuario: number) => {
     handleClosePDFViewer,
     handleOpenPDFViewer,
     procesandoIdentidad,
+    visualizacion,
+    handleVisualizacion,
+    handleAccion,
+    //busqueda por fechas
+    isAlertOpenFechas,
+    handleisAlertCloseFechas,
+    handleisAlertOpenFechas,
+    fecha1,
+    setFecha1,
+    fecha2,
+    setFecha2,
+    getCanjes,
   };
 };

@@ -87,6 +87,36 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     setAuth(token);
   }, [token]);
 
+  const [visualizacion, setVisualizacion] = useState<string | null>("cuadricula");
+
+  const handleVisualizacion = (
+    event: React.MouseEvent<HTMLElement>,
+    nuevaVisualizacion: string | null
+  ) => {
+    setVisualizacion(nuevaVisualizacion);
+  };
+
+  const handleAccion = (accion: string, row: any) => {
+    switch (accion) {
+      case "crear_orden_compra":
+        setVerProveedor(row);
+        getCanjesPorProveedor(row.id);
+        handleisAlertOpenVerCanje();
+        break;
+      case "vista_previa":
+        setVerProveedor(row);
+        getOCPorIdProveedor(row.id);
+        handleisAlertOpenVerOC();
+        break;
+      case "eliminar":
+        //setProductoId(row?.id);
+        //handleisAlertOpenEliminaProducto();
+        break;
+      default:
+        break;
+    }
+  };
+
   // Debounce para evitar muchas peticiones
   const handleBuscadorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -335,5 +365,8 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     handleClosePDFViewer,
     handleOpenPDFViewer,
     procesandoIdentidad,
+    visualizacion,
+    handleVisualizacion,
+    handleAccion,
   };
 };

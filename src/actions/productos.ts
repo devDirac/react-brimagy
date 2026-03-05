@@ -14,15 +14,52 @@ export const crearProductoHttp = async (data: any) => {
     return promise;
   }
 };
-export const getCatalogoProductosHttp = async (search?: string) => {
+export const getCatalogoProductosHttp = async (search?: string, fecha1?: Date, fecha2?: Date) => {
   try {
-    let url = `${env.API_URL}/getCatalogoProductos`;
+    const url = new URL(`${env.API_URL}/getCatalogoProductos`);
 
-    if (search) {
-      url += `?search=${encodeURIComponent(search)}`;
-    }
+    if (search) url.searchParams.append("search", encodeURIComponent(search));
+    if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
+    if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
 
-    const response = await axios.get(url);
+    const response = await axios.get(url.toString());
+    return response?.data || [];
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+export const getCatalogoProductosFisicosHttp = async (
+  search?: string,
+  fecha1?: Date,
+  fecha2?: Date
+) => {
+  try {
+    const url = new URL(`${env.API_URL}/getCatalogoProductosFisicos`);
+
+    if (search) url.searchParams.append("search", encodeURIComponent(search));
+    if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
+    if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
+
+    const response = await axios.get(url.toString());
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+export const getCatalogoProductosDigitalesHttp = async (
+  search?: string,
+  fecha1?: Date,
+  fecha2?: Date
+) => {
+  try {
+    const url = new URL(`${env.API_URL}/getCatalogoProductosDigitales`);
+
+    if (search) url.searchParams.append("search", encodeURIComponent(search));
+    if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
+    if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
+
+    const response = await axios.get(url.toString());
     return response?.data || [];
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));
@@ -37,6 +74,18 @@ export const getBusquedaInteligenteHttp = async (datos?: any) => {
         puntos: datos.puntos,
         categoria: datos.categoria,
       },
+    });
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const getBitacoraProductoPorIdHttp = async (datos?: any) => {
+  try {
+    const response = await axios.get(`${env.API_URL}/getBitacoraProductoPorId`, {
+      params: datos,
     });
     return response?.data || [];
   } catch (error) {

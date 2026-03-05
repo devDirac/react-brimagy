@@ -71,23 +71,23 @@ const UserPermiso: React.FC<AddUserFormProps> = (props: AddUserFormProps) => {
     notificarCambios();
   }, [permisos]);
 
-  const isSuperAdmin = props?.permisoUser === 3;
+  const isSuperAdmin = props?.permisoUser === 6;
   const isEditor = props?.permisoUser === 2;
 
   const items = [
     ...(isSuperAdmin
       ? [
-          { nombre: "Super Admin", color: "#6d45a6", icon: LogoDevIcon, id: 3 },
-          { nombre: "Editor", color: "#1976d2", icon: FaceSharpIcon, id: 2 },
+          { nombre: "Super Admin", color: "#6d45a6", icon: LogoDevIcon, id: 6 },
+          //{ nombre: "Editor", color: "#1976d2", icon: FaceSharpIcon, id: 2 },
         ]
       : []),
     ...(isEditor
       ? [
-          { nombre: "Super Admin", color: "#6d45a6", icon: LogoDevIcon, id: 3 },
-          { nombre: "Editor", color: "#1976d2", icon: FaceSharpIcon, id: 2 },
+          { nombre: "Super Admin", color: "#6d45a6", icon: LogoDevIcon, id: 6 },
+          //{ nombre: "Editor", color: "#1976d2", icon: FaceSharpIcon, id: 2 },
         ]
       : []),
-    { nombre: "Usuario", color: "#ed6c02", icon: PersonAddAltIcon, id: 1 },
+    //{ nombre: "Usuario", color: "#ed6c02", icon: PersonAddAltIcon, id: 1 },
   ];
 
   const gridSize = 12 / items.length;

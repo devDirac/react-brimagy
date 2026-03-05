@@ -48,6 +48,8 @@ import {
   MenuItem,
   Radio,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -70,6 +72,9 @@ import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
 import { Spinner } from "react-bootstrap";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ProductoNuevoProveedorModal from "components/DetallesVistas/ProductoNuevoProveedor";
+import TableRowsIcon from "@mui/icons-material/TableRows";
+import ViewModuleIcon from "@mui/icons-material/ViewModule";
+import DinamicTableMejorada from "components/DinamicTable/DinamicTable";
 
 function GenerarOrdenCompra(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -139,6 +144,9 @@ function GenerarOrdenCompra(): JSX.Element {
     handleClosePDFViewer,
     handleOpenPDFViewer,
     procesandoIdentidad,
+    visualizacion,
+    handleVisualizacion,
+    handleAccion,
   } = useGenerarOrdenCompra(tipoUsuario);
 
   const independiente = () => {
@@ -195,32 +203,53 @@ function GenerarOrdenCompra(): JSX.Element {
       <Header tipoUsuario={tipoUsuario} nombreUsuario={userName} fotoPerfil={fotoUser} />
       <MDBox py={3} mb={20}>
         <Grid container spacing={2} mb={2}>
-          <Grid item xs={8}></Grid>
+          <Grid item xs={8}>
+            <ToggleButtonGroup
+              value={visualizacion}
+              exclusive
+              onChange={handleVisualizacion}
+              aria-label="Visualización de productos"
+              sx={{ marginLeft: "20px" }}
+            >
+              <Tooltip title="Cuadricula">
+                <ToggleButton value="cuadricula" aria-label="cuadricula">
+                  <ViewModuleIcon />
+                </ToggleButton>
+              </Tooltip>
+              <Tooltip title="Tabla">
+                <ToggleButton value="tabla" aria-label="tabla">
+                  <TableRowsIcon />
+                </ToggleButton>
+              </Tooltip>
+            </ToggleButtonGroup>
+          </Grid>
           <Grid
             item
             xs={4}
             sm={4}
             sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
           >
-            <TextField
-              id="buscador"
-              fullWidth
-              label={intl.formatMessage({ id: "input_buscador" })}
-              variant="standard"
-              name="buscador"
-              value={buscador || ""}
-              onChange={handleBuscadorChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="medium" />
-                  </InputAdornment>
-                ),
-              }}
-            />
+            {visualizacion === "cuadricula" && (
+              <TextField
+                id="buscador"
+                fullWidth
+                label={intl.formatMessage({ id: "input_buscador" })}
+                variant="standard"
+                name="buscador"
+                value={buscador || ""}
+                onChange={handleBuscadorChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="medium" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
           </Grid>
         </Grid>
-        {proveedores?.length > 0 ? (
+        {proveedores?.length > 0 && visualizacion === "cuadricula" ? (
           <>
             <Grid container spacing={2}>
               {proveedoresPaginados.map((p: any, key: number) => {
@@ -387,7 +416,7 @@ function GenerarOrdenCompra(): JSX.Element {
             <MDBox mt={3} sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
               <TablePagination
                 component="div"
-                count={proveedores.length}
+                count={proveedores?.length}
                 page={page}
                 onPageChange={handleChangePage}
                 rowsPerPage={rowsPerPage}
@@ -410,6 +439,28 @@ function GenerarOrdenCompra(): JSX.Element {
                 }}
               />
             </MDBox>
+          </>
+        ) : visualizacion === "tabla" && proveedores?.length > 0 ? (
+          <>
+            <DinamicTableMejorada
+              actions
+              key={tableKey}
+              //sinBusqueda
+              sinExport
+              esListaOrdenesCompra
+              //showCheckBox
+              data={proveedores}
+              enAccion={(accion, row) => {
+                handleAccion(accion, row);
+              }}
+              columnsOrder={[
+                "nombre",
+                "razon_social",
+                "total_canjes",
+                "puntos_canjeados",
+                "total_ordenes_compra",
+              ]}
+            />
           </>
         ) : !procesando ? (
           <Grid container spacing={2}>

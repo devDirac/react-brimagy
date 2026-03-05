@@ -22,13 +22,6 @@ export const useNuevoUsuario = (activeStep: number, isLastStep: boolean) => {
   const validationSchema = useMemo(() => {
     // Esquema base sin permiso
     const baseValidationSchema = Yup.object({
-      usuario: Yup.string()
-        .required(intl.formatMessage({ id: "input_validation_requerido" }))
-        .test("usuario-unique", "Este usuario ya está registrado", async function (value) {
-          if (!value) return true;
-
-          return await checkUsuarioAvailability(value);
-        }),
       nombre: Yup.string()
         .min(4, intl.formatMessage({ id: "input_validation_min_4" }))
         .max(150, intl.formatMessage({ id: "input_validation_max_150" }))
@@ -74,7 +67,6 @@ export const useNuevoUsuario = (activeStep: number, isLastStep: boolean) => {
 
   const formik = useFormik({
     initialValues: {
-      usuario: "",
       nombre: "",
       correo: "",
       telefono: "",

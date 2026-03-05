@@ -264,8 +264,8 @@ const OCPorIdProveedorModal = ({
             <Grid container spacing={2}>
               {ordenesCompraPaginadas.map((oc) => {
                 return (
-                  <>
-                    <Grid item xs={6} md={4} key={oc.id}>
+                  <Grid container spacing={2} key={oc.id} sx={{ mt: 1 }}>
+                    <Grid item xs={6} md={4}>
                       <Typography variant="body2" color="text.secondary">
                         No. orden
                       </Typography>
@@ -273,7 +273,7 @@ const OCPorIdProveedorModal = ({
                         {oc.no_orden}
                       </Typography>
                     </Grid>
-                    <Grid item xs={6} md={4} key={oc.id}>
+                    <Grid item xs={6} md={4}>
                       <Typography variant="body2" color="text.secondary">
                         No. canjes
                       </Typography>
@@ -281,7 +281,7 @@ const OCPorIdProveedorModal = ({
                         {oc.total_productos}
                       </Typography>
                     </Grid>
-                    <Grid item xs={6} md={4} key={oc.id}>
+                    <Grid item xs={6} md={4}>
                       <Typography variant="body2" color="text.secondary">
                         Acciones
                       </Typography>
@@ -300,7 +300,7 @@ const OCPorIdProveedorModal = ({
                         </Tooltip>
                       </Typography>
                     </Grid>
-                  </>
+                  </Grid>
                 );
               })}
             </Grid>

@@ -102,11 +102,11 @@ function Footer({ company = { href: "", name: "" }, links }: Props): JSX.Element
 
 // Declaring default props for Footer
 Footer.defaultProps = {
-  company: { href: "http://dirac.mx/", name: "Esqueleto" },
-  links: [
+  company: { href: "https://www.brimagy.com/", name: "Brimagy" },
+  /*links: [
     { href: "/aviso-de-privacidad", name: "Aviso de Privacidad" },
     { href: "/terminos-y-condiciones", name: "Términos y Condiciones de Uso" },
-  ],
+  ],*/
 };
 
 export default Footer;

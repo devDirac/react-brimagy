@@ -2,6 +2,8 @@ import LockIcon from "@mui/icons-material/Lock";
 import PeopleIcon from "@mui/icons-material/People";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import ViewListIcon from "@mui/icons-material/ViewList";
+import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
+import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
 
 const routes = [
   {
@@ -28,6 +30,31 @@ const routes = [
     ],
   },
   { type: "divider", key: "divider-0", allow: [1, 2, 3, 4, 5, 6] },
+  {
+    type: "collapse",
+    name: "Configuración Sistema",
+    key: "configuracion",
+    icon: <MiscellaneousServicesIcon />,
+    allow: [1, 2, 3, 4, 5, 6],
+    collapse: [
+      {
+        name: "Plataformas",
+        key: "plataformas",
+        icon: "ShoppingBagIcon",
+        route: "/plataformas",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6],
+      },
+      {
+        name: "Variables Globales",
+        key: "variables-globales",
+        icon: "ShoppingBagIcon",
+        route: "/variables-globales",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6],
+      },
+    ],
+  },
   {
     type: "collapse",
     name: "Usuarios",
@@ -84,6 +111,22 @@ const routes = [
         icon: "FormatListBulletedIcon",
         allow: [1, 2, 3, 4, 5, 6],
       },
+      {
+        name: "Fisicos",
+        key: "productos-fisicos",
+        route: "/productos-fisicos",
+        component: null,
+        icon: "FormatListBulletedIcon",
+        allow: [1, 2, 3, 4, 5, 6],
+      },
+      {
+        name: "Digitales",
+        key: "productos-digitales",
+        route: "/productos-digitales",
+        component: null,
+        icon: "FormatListBulletedIcon",
+        allow: [1, 2, 3, 4, 5, 6],
+      },
     ],
   },
   {
@@ -113,8 +156,42 @@ const routes = [
       {
         name: "Generar Orden de Compra",
         key: "generar-orden-de-compra",
-        icon: "ShoppingBagIcon",
+        icon: "ViewListIcon",
         route: "/generar-orden-de-compra",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6],
+      },
+    ],
+  },
+  {
+    type: "collapse",
+    name: "Almacen",
+    key: "almacen",
+    icon: <ViewListIcon />,
+    allow: [1, 2, 3, 4, 5, 6],
+    collapse: [
+      {
+        name: "Gestión de almacen",
+        key: "gestion-almacen",
+        icon: "ViewListIcon",
+        route: "/gestion-almacen",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6],
+      },
+    ],
+  },
+  {
+    type: "collapse",
+    name: "Encuestas",
+    key: "encuestas",
+    icon: <QuestionAnswerIcon />,
+    allow: [1, 2, 3, 4, 5, 6],
+    collapse: [
+      {
+        name: "Catálogo de encuestas",
+        key: "catalogo-encuestas",
+        icon: "QuestionAnswerIcon",
+        route: "/catalogo-encuestas",
         component: null,
         allow: [1, 2, 3, 4, 5, 6],
       },

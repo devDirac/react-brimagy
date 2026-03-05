@@ -48,6 +48,8 @@ import {
   MenuItem,
   Radio,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -67,6 +69,16 @@ import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { useListaCanjeos } from "./customHooksPages/useListaCanjeos";
 import TagIcon from "@mui/icons-material/Tag";
 import DetallesCanjeModal from "components/DetallesVistas/DetalleCanje";
+import TableRowsIcon from "@mui/icons-material/TableRows";
+import ViewModuleIcon from "@mui/icons-material/ViewModule";
+import DinamicTableMejorada from "components/DinamicTable/DinamicTable";
+import DateRangeIcon from "@mui/icons-material/DateRange";
+
+import dayjs from "dayjs";
+import "dayjs/locale/es";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 function ListaCanjeos(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -105,6 +117,18 @@ function ListaCanjeos(): JSX.Element {
     handleClosePDFViewer,
     handleOpenPDFViewer,
     procesandoIdentidad,
+    visualizacion,
+    handleVisualizacion,
+    handleAccion,
+    //busqueda por fechas
+    isAlertOpenFechas,
+    handleisAlertCloseFechas,
+    handleisAlertOpenFechas,
+    fecha1,
+    setFecha1,
+    fecha2,
+    setFecha2,
+    getCanjes,
   } = useListaCanjeos(tipoUsuario);
 
   const independiente = () => {
@@ -143,7 +167,7 @@ function ListaCanjeos(): JSX.Element {
   };
 
   const traducirEstadoValidacion = (estado: string | null): string => {
-    if (!estado) return "SIN ESTADO";
+    if (!estado) return "SIN VALIDAR";
     const estadoUpper = estado.toUpperCase();
     return estadosValidacionMap[estadoUpper] || estadoUpper;
   };
@@ -161,32 +185,73 @@ function ListaCanjeos(): JSX.Element {
       <Header tipoUsuario={tipoUsuario} nombreUsuario={userName} fotoPerfil={fotoUser} />
       <MDBox py={3} mb={20}>
         <Grid container spacing={2} mb={2}>
-          <Grid item xs={8}></Grid>
+          <Grid item xs={8}>
+            <ToggleButtonGroup
+              value={visualizacion}
+              exclusive
+              onChange={handleVisualizacion}
+              aria-label="Visualización de productos"
+              sx={{ margin: "0 10px" }}
+            >
+              <Tooltip title="Cuadricula">
+                <ToggleButton value="cuadricula" aria-label="cuadricula">
+                  <ViewModuleIcon />
+                </ToggleButton>
+              </Tooltip>
+              <Tooltip title="Tabla">
+                <ToggleButton value="tabla" aria-label="tabla">
+                  <TableRowsIcon />
+                </ToggleButton>
+              </Tooltip>
+              <Tooltip title="Buscar por fecha">
+                <IconButton
+                  aria-label="ver"
+                  size="small"
+                  color="default"
+                  onClick={() => {
+                    handleisAlertOpenFechas();
+                  }}
+                  sx={{
+                    border: "1px solid #0000001f",
+                    borderRadius: 0,
+                    "&:hover": {
+                      background: "#a5eb2f",
+                      color: "#2f2f2f",
+                    },
+                  }}
+                >
+                  <DateRangeIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </ToggleButtonGroup>
+          </Grid>
           <Grid
             item
             xs={4}
             sm={4}
             sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
           >
-            <TextField
-              id="buscador"
-              fullWidth
-              label={intl.formatMessage({ id: "input_buscador" })}
-              variant="standard"
-              name="buscador"
-              value={buscador || ""}
-              onChange={handleBuscadorChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="medium" />
-                  </InputAdornment>
-                ),
-              }}
-            />
+            {visualizacion === "cuadricula" && (
+              <TextField
+                id="buscador"
+                fullWidth
+                label={intl.formatMessage({ id: "input_buscador" })}
+                variant="standard"
+                name="buscador"
+                value={buscador || ""}
+                onChange={handleBuscadorChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="medium" />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            )}
           </Grid>
         </Grid>
-        {canjes?.length > 0 ? (
+        {canjes?.length > 0 && visualizacion === "cuadricula" ? (
           <>
             <Grid container spacing={2}>
               {canjesPaginados.map((p: any, key: number) => {
@@ -358,7 +423,7 @@ function ListaCanjeos(): JSX.Element {
             <MDBox mt={3} sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
               <TablePagination
                 component="div"
-                count={canjes.length}
+                count={canjes?.length}
                 page={page}
                 onPageChange={handleChangePage}
                 rowsPerPage={rowsPerPage}
@@ -381,6 +446,28 @@ function ListaCanjeos(): JSX.Element {
                 }}
               />
             </MDBox>
+          </>
+        ) : visualizacion === "tabla" && canjes?.length > 0 ? (
+          <>
+            <DinamicTableMejorada
+              actions
+              key={tableKey}
+              //sinBusqueda
+              sinExport
+              esListaCanjes
+              //showCheckBox
+              data={canjes}
+              enAccion={(accion, row) => {
+                handleAccion(accion, row);
+              }}
+              columnsOrder={[
+                "nombre_premio",
+                "folio",
+                "sku",
+                "puntos_canjeados",
+                "estado_validacion",
+              ]}
+            />
           </>
         ) : !procesando ? (
           <Grid container spacing={2}>
@@ -438,6 +525,87 @@ function ListaCanjeos(): JSX.Element {
               />
             </>
           ) : null}
+        </Grid>
+      </ModalComponent>
+      {/* BUSCAR PRODUCTOS POR FECHA */}
+      <ModalComponent
+        handleClose={handleisAlertCloseFechas}
+        isOpen={isAlertOpenFechas}
+        key={"alertaFechas"}
+      >
+        <Grid container spacing={2} style={{ textAlign: "center" }}>
+          <Grid item xs={12}>
+            <br />
+            <br />
+            <Grid container spacing={2} mb={2}>
+              <Grid item xs={12} sm={12}>
+                <Typography variant="h5" gutterBottom noWrap sx={{ fontWeight: 600 }}>
+                  BUSCAR CANJES POR FECHA
+                </Typography>
+              </Grid>
+
+              <Grid item xs={4} sm={4}>
+                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+                  <DatePicker
+                    label={intl.formatMessage({ id: "input_fecha" })}
+                    openTo="year"
+                    format="YYYY/MM/DD"
+                    views={["year", "month", "day"]}
+                    value={fecha1 ? dayjs(fecha1) : null}
+                    onChange={(newValue) => {
+                      setFecha1(newValue ? dayjs(newValue).format("YYYY-MM-DD") : "");
+                    }}
+                    slotProps={{
+                      textField: {
+                        error: false,
+                        variant: "standard",
+                      },
+                    }}
+                    sx={{ width: "100%" }}
+                  />
+                </LocalizationProvider>
+              </Grid>
+              <Grid item xs={4} sm={4}>
+                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+                  <DatePicker
+                    label={intl.formatMessage({ id: "input_fecha" })}
+                    openTo="year"
+                    format="YYYY/MM/DD"
+                    views={["year", "month", "day"]}
+                    value={fecha2 ? dayjs(fecha2) : null}
+                    onChange={(newValue) => {
+                      setFecha2(newValue ? dayjs(newValue).format("YYYY-MM-DD") : "");
+                    }}
+                    slotProps={{
+                      textField: {
+                        error: false,
+                        variant: "standard",
+                      },
+                    }}
+                    sx={{ width: "100%" }}
+                  />
+                </LocalizationProvider>
+              </Grid>
+              <Grid item xs={4} md={4}>
+                <Button
+                  sx={{ color: "#fff", background: "#084d6e" }}
+                  variant="contained"
+                  endIcon={<SearchIcon />}
+                  disabled={procesando}
+                  onClick={(e: any) => {
+                    const datos = {
+                      fecha1: fecha1,
+                      fecha2: fecha2,
+                    };
+                    getCanjes(datos);
+                    handleisAlertCloseFechas();
+                  }}
+                >
+                  {intl.formatMessage({ id: "buscar_por_fecha" })}
+                </Button>
+              </Grid>
+            </Grid>
+          </Grid>
         </Grid>
       </ModalComponent>
       <ModalComponent handleClose={handleisAlerClose} isOpen={isAlertOpen} key={"alerta"}>

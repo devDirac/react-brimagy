@@ -270,7 +270,7 @@ function CategoriasProveedores(): JSX.Element {
                             "razon_social",
                             "descripcion",
                           ]}
-                          sinExport
+                          //sinExport
                           esListaProveedores
                           //showCheckBox
                           data={proveedores}

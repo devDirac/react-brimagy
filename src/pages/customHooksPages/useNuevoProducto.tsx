@@ -43,6 +43,7 @@ export const useNuevoProducto = () => {
       marca: "",
       sku: "",
       color: "",
+      talla: "",
       id_proveedor: "",
       id_catalogo: "",
       costo_con_iva: "",
@@ -89,6 +90,7 @@ export const useNuevoProducto = () => {
           }
         }),
       color: Yup.string(),
+      talla: Yup.string(),
       id_proveedor: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
       id_catalogo: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
       costo_con_iva: Yup.string().required(

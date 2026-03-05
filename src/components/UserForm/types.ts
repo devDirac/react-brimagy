@@ -1,7 +1,6 @@
 import { FormikProps } from "formik";
 
 interface FormValues {
-  usuario: string;
   nombre: string;
   correo: string;
   telefono: string;

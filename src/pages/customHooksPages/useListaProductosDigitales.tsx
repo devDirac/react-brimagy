@@ -11,6 +11,7 @@ import {
   eliminarProductoHttp,
   getBitacoraProductoPorIdHttp,
   getBusquedaInteligenteHttp,
+  getCatalogoProductosDigitalesHttp,
   getCatalogoProductosHttp,
   verificarSkusHttp,
 } from "actions/productos";
@@ -21,7 +22,7 @@ import { crearCategoriaHttp, getCategoriasHttp } from "actions/categorias";
 import ExcelJS from "exceljs";
 import { crearPlataformaHttp, getPlataformasHttp } from "actions/configuracion";
 
-export const useListaProductos = (tipoUsuario: number) => {
+export const useListaProductosDigitales = (tipoUsuario: number) => {
   const dispatch = useDispatch();
   const intl = useIntl();
   const navigate = useNavigate();
@@ -364,28 +365,24 @@ export const useListaProductos = (tipoUsuario: number) => {
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
     }
-    const timeout = setTimeout(() => {
-      getProductosCatalogo({ search: value, fecha1, fecha2 });
-    }, 500);
 
-    // Crea un nuevo timeout
-    /*const timeout = setTimeout(() => {
-      getProductosCatalogo(value);
-    }, 500);*/
+    const timeout = setTimeout(() => {
+      getProductosCatalogoDigitales({ search: value, fecha1, fecha2 });
+    }, 500);
 
     setDebounceTimeout(timeout);
   };
 
-  const getProductosCatalogo = useCallback(
+  const getProductosCatalogoDigitales = useCallback(
     async (params?: { search?: string; fecha1?: string; fecha2?: string }) => {
       try {
         setProcesando(true);
-        const productosData = await getCatalogoProductosHttp(
+        const productosData = await getCatalogoProductosDigitalesHttp(
           params?.search,
           params?.fecha1 ? new Date(params.fecha1) : undefined,
           params?.fecha2 ? new Date(params.fecha2) : undefined
         );
-        //const productosData = await getCatalogoProductosHttp(search, fecha1, fecha2);
+        //const productosData = await getCatalogoProductosDigitalesHttp(search);
 
         const datosFormateados = productosData.map((e: any) => {
           return {
@@ -504,7 +501,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     try {
       setProcesandoEditar(true);
       const productosData = await editarProductoHttp(datos);
-      await getProductosCatalogo();
+      await getProductosCatalogoDigitales();
       setProcesandoEditar(false);
       setMensajeAlert(intl.formatMessage({ id: "producto_editado_correctamente" }));
       handleisAlertOpen();
@@ -521,7 +518,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     try {
       setProcesando(true);
       const productosData = await eliminarProductoHttp(id);
-      await getProductosCatalogo();
+      await getProductosCatalogoDigitales();
       setProcesando(false);
       setMensajeAlert(intl.formatMessage({ id: "producto_eliminado_correctamente" }));
       handleisAlertOpen();
@@ -578,9 +575,9 @@ export const useListaProductos = (tipoUsuario: number) => {
   useEffect(() => {
     getCategoriasProducto();
     getProveedores();
-    getProductosCatalogo();
+    getProductosCatalogoDigitales();
     getPlataformas();
-  }, [getProductosCatalogo, getCategoriasProducto, getProveedores]);
+  }, [getProductosCatalogoDigitales, getCategoriasProducto, getProveedores]);
 
   // Función para procesar el Excel con ExcelJS
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1052,7 +1049,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         }
       }
 
-      await getProductosCatalogo();
+      await getProductosCatalogoDigitales();
       setProcesandoExcel(false);
       handleisAlerCloseSubirExcel();
 
@@ -1083,7 +1080,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     try {
       setProcesandoBusquedaMagica(true);
       const busqueda = await getBusquedaInteligenteHttp(datos);
-      // Formatear los datos igual que en getProductosCatalogo
+      // Formatear los datos igual que en getProductosCatalogoDigitales
       const datosFormateados = busqueda.map((e: any) => {
         return {
           ...e,
@@ -1302,7 +1299,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     setFecha1,
     fecha2,
     setFecha2,
-    getProductosCatalogo,
+    getProductosCatalogoDigitales,
     //ver bitacora del producto
     verBitacoraProducto,
     setVerBitacoraProducto,

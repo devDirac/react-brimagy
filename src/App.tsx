@@ -78,6 +78,14 @@ import ListaCanjeos from "pages/ListaCanjeos";
 import ValidarIdentidad from "pages/ValidarIdentidad";
 import GenerarOrdenCompra from "pages/GenerarOrdenCompra";
 import ValidarOrdenCompra from "pages/ValidarOrdenCompra";
+import GestionAlmacen from "pages/GestionAlmacen";
+import EncuestaSatisfaccion from "pages/EncuestaUsuario";
+import EncuestaUsuario from "pages/EncuestaUsuario";
+import CatalogoEncuestas from "pages/CatalogoEncuestas";
+import VariablesGlobales from "pages/VariablesGlobales";
+import Plataformas from "pages/Plataformas";
+import ListaProductosDigitales from "pages/ListaProductosDigitales";
+import ListaProductosFisicos from "pages/ListaProductosFisicos";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
@@ -204,6 +212,7 @@ export default function App() {
           {/* inicia rutas publicas */}
           <Route path="/validar-canje/:codigo" element={<ValidarIdentidad />} />
           <Route path="/validar-ordencompra/:id_ordencompra" element={<ValidarOrdenCompra />} />
+          <Route path="/encuesta/:tipo_encuesta/:id_canje" element={<EncuestaUsuario />} />
 
           <Route path="/login" element={<PublicRouter />}>
             <Route path="/login" element={<LoginPageIlustrator />} />
@@ -230,14 +239,23 @@ export default function App() {
             {/* USUARIOS */}
             <Route path="/lista-usuarios" element={<ListaUsuarios />} />
             <Route path="/nuevo-usuario" element={<NuevoUsuario />} />
+            {/* CONFIGURACIÓN */}
+            <Route path="/variables-globales" element={<VariablesGlobales />} />
+            <Route path="/plataformas" element={<Plataformas />} />
             {/* PRODUCTOS */}
             <Route path="/nuevo-producto" element={<NuevoProducto />} />
+            <Route path="/productos-digitales" element={<ListaProductosDigitales />} />
+            <Route path="/productos-fisicos" element={<ListaProductosFisicos />} />
             <Route path="/catalogo-productos" element={<ListaProductos />} />
             <Route path="/categorias-proveedores" element={<CategoriasProveedores />} />
             {/* CANJES */}
             <Route path="/catalogo-canjes" element={<ListaCanjeos />} />
             {/* ORDENES DE COMPRA */}
             <Route path="/generar-orden-de-compra" element={<GenerarOrdenCompra />} />
+            {/* ALMACEN */}
+            <Route path="/gestion-almacen" element={<GestionAlmacen />} />
+            {/* ENCUESTAS */}
+            <Route path="/catalogo-encuestas" element={<CatalogoEncuestas />} />
           </Route>
           {/* inicia pagina no encontrada */}
           <Route path="*" element={<NotFoundPage />} />

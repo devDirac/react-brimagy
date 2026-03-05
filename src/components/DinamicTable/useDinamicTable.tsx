@@ -3,13 +3,34 @@ import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 import { DinamicTableProps } from "./types";
 import { columnsNames } from "./columnsNames";
-import { Avatar, Box, Button, Chip, Grid, Link, Tooltip } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  Grid,
+  IconButton,
+  Link,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import _ from "lodash";
 import moment from "moment";
 import { useMaterialUIController } from "context";
 import AccionesTable from "./AccionesTable";
 import { AgGridReact } from "ag-grid-react";
 import env from "react-dotenv";
+import { green, red, amber, grey, orange } from "@mui/material/colors";
+//muy satisfecho
+import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
+//satisfecho
+import SentimentSatisfiedIcon from "@mui/icons-material/SentimentSatisfied";
+//neutral
+import SentimentNeutralIcon from "@mui/icons-material/SentimentNeutral";
+//insatisfecho
+import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied";
+//muy insatisfecho
+import MoodBadIcon from "@mui/icons-material/MoodBad";
 
 const useDinamicTable = (props: DinamicTableProps) => {
   const [imagenModal, setImagenModal] = useState<string | null>(null);
@@ -24,6 +45,39 @@ const useDinamicTable = (props: DinamicTableProps) => {
       }
     })
   );
+
+  const iconosRespuestaMultiple = [
+    {
+      id: 5,
+      texto: "Muy satisfecho",
+      icono: SentimentVerySatisfiedIcon,
+      color: green[500],
+    },
+    {
+      id: 4,
+      texto: "Satisfecho",
+      icono: SentimentSatisfiedIcon,
+      color: green[300],
+    },
+    {
+      id: 3,
+      texto: "Neutral",
+      icono: SentimentNeutralIcon,
+      color: amber[500],
+    },
+    {
+      id: 2,
+      texto: "Insatisfecho",
+      icono: SentimentDissatisfiedIcon,
+      color: orange[500],
+    },
+    {
+      id: 1,
+      texto: "Muy insatisfecho",
+      icono: MoodBadIcon,
+      color: red[500],
+    },
+  ];
 
   const tipoUsuarios = [
     {
@@ -85,6 +139,42 @@ const useDinamicTable = (props: DinamicTableProps) => {
     },
   ];
 
+  const EstadosValidacionArray = [
+    {
+      id: 1,
+      tipo: "notificacion_enviada",
+      variant: "outlined" as const,
+      colorChip: "#E3EA19" as const,
+      colorTexto: "#fff" as const,
+    },
+    {
+      id: 2,
+      tipo: "solicitud_enviada",
+      variant: "outlined" as const,
+      colorChip: "#279FD6" as const,
+      colorTexto: "#00" as const,
+    },
+    {
+      id: 3,
+      tipo: "identidad_validada",
+      variant: "filled" as const,
+      colorChip: "#4CAF50" as const,
+      colorTexto: "#000" as const,
+    },
+  ];
+
+  const estadosValidacionMap: { [key: string]: string } = {
+    NOTIFICACION_ENVIADA: "EN ESPERA DE VALIDACIÓN DE IDENTIDAD",
+    SOLICITUD_ENVIADA: "SOLICITUD DE CÓDIGO ENVIADA",
+    IDENTIDAD_VALIDADA: "IDENTIDAD VALIDADA",
+  };
+
+  const traducirEstadoValidacion = (estado: string | null | undefined): string => {
+    if (!estado) return "SIN VALIDAR";
+    const estadoUpper = estado.toUpperCase();
+    return estadosValidacionMap[estadoUpper] || estadoUpper;
+  };
+
   const [showExpandedComponent, setShowExpandedComponent] = useState(null);
 
   const [controller] = useMaterialUIController();
@@ -109,10 +199,10 @@ const useDinamicTable = (props: DinamicTableProps) => {
   });
   const keys = Object.keys(filteredItems?.[0]);
 
-  const newKeys = props?.columnsToShow
-    ? _.remove(keys, (n) => {
-        return props?.columnsToShow.includes(n);
-      })
+  const newKeys = props?.columnsOrder
+    ? props.columnsOrder.filter((col: string) => keys.includes(col))
+    : props?.columnsToShow
+    ? _.remove(keys, (n) => props?.columnsToShow.includes(n))
     : keys;
 
   const columns: any = newKeys.map((dta) => {
@@ -127,19 +217,11 @@ const useDinamicTable = (props: DinamicTableProps) => {
         field: dta,
         headerName: nombreColumna,
         cellRenderer: (row: any) => StatusCellRenderer(row, dta),
-        cellStyle:
-          dta === "link"
-            ? {
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 0,
-              }
-            : {
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              },
+        cellStyle: {
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        },
       },
       ...(esPinned ? { pinned: esPinned?.lado, width: 100 } : {}),
       ...(props?.flex ? { flex: 1 } : {}),
@@ -156,11 +238,36 @@ const useDinamicTable = (props: DinamicTableProps) => {
   const StatusCellRenderer = (row: any, dta: any) => {
     return dta === "tipo_usuario"
       ? tipoUsuario(row)
+      : dta === "respuesta"
+      ? tipoIconosRespuestaMultiple(row)
       : dta === "status"
       ? usuarioEstatus(row)
-      : dta === "link"
-      ? renderImagen(row)
+      : dta === "estado_validacion"
+      ? estadoValidacionCanje(row)
       : tool(row);
+  };
+
+  const estadoValidacionCanje = (row_: any) => {
+    const row = row_?.data;
+    const x = row_?.colDef?.field;
+    console.log(row?.[x]);
+    const estatusValidacion = EstadosValidacionArray.find((e: any) => e?.tipo === row?.[x]);
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", width: "100%" }}>
+        <Chip
+          label={traducirEstadoValidacion(estatusValidacion?.tipo.toUpperCase()) || ""}
+          variant={estatusValidacion?.variant}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            width: "max-content",
+            backgroundColor: estatusValidacion?.colorChip || "#e0e0e0",
+            color: estatusValidacion?.colorTexto,
+          }}
+        />
+      </Box>
+    );
   };
 
   const usuarioEstatus = (row_: any) => {
@@ -203,6 +310,39 @@ const useDinamicTable = (props: DinamicTableProps) => {
             color: tipoUsuarioText?.colorTexto,
           }}
         />
+      </Box>
+    );
+  };
+
+  const tipoIconosRespuestaMultiple = (row_: any) => {
+    const row = row_?.data;
+    const x = row_?.colDef?.field;
+    const iconosRespuestaText = iconosRespuestaMultiple.find(
+      (e: any) => String(e?.id) === row?.[x]
+    );
+    const IconoComponente = iconosRespuestaText?.icono;
+    const tipoMultiplePregunta = row?.tipo_pregunta === "opcion_multiple";
+
+    return (
+      <Box>
+        {tipoMultiplePregunta ? (
+          <Tooltip title={iconosRespuestaText?.texto}>
+            <IconButton>
+              {IconoComponente && (
+                <IconoComponente
+                  sx={{
+                    color: iconosRespuestaText?.color,
+                    transform: "scale(1.5)",
+                    transition: "all 0.3s",
+                  }}
+                  fontSize="medium"
+                />
+              )}
+            </IconButton>
+          </Tooltip>
+        ) : (
+          row?.respuesta
+        )}
       </Box>
     );
   };
@@ -312,62 +452,6 @@ const useDinamicTable = (props: DinamicTableProps) => {
     );
   };
 
-  const renderImagen = (row_: any) => {
-    const row = row_?.data;
-    const x = row_?.colDef?.field;
-    const imagenUrl = row?.[x];
-
-    if (!imagenUrl) {
-      return (
-        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <Chip label="Sin imagen" size="small" variant="outlined" />
-        </Box>
-      );
-    }
-
-    const baseUrl = env.API_URL_ASSETS || "http://localhost/back-seguros-api/public/";
-    const fullImageUrl = `${baseUrl}anuncios/${imagenUrl}`;
-
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          width: "100%",
-          height: "100%",
-          padding: 0,
-        }}
-      >
-        <Tooltip title="Click para ver en tamaño completo">
-          <Box
-            onClick={() => {
-              if (props?.onImageClick) {
-                props.onImageClick(fullImageUrl);
-              }
-            }}
-            sx={{
-              width: 250,
-              height: 80,
-              backgroundImage: `url(${fullImageUrl})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-              borderRadius: "4px",
-              cursor: "pointer",
-              transition: "transform 0.2s",
-              border: "1px solid #e0e0e0",
-              "&:hover": {
-                transform: "scale(1.02)",
-                boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-              },
-            }}
-          />
-        </Tooltip>
-      </Box>
-    );
-  };
-
   const handleImageClick = (imageUrl: string) => {
     setImagenModal(imageUrl);
   };
@@ -405,10 +489,13 @@ const useDinamicTable = (props: DinamicTableProps) => {
 
     return (
       <AccionesTable
+        esListaCanjes={props?.esListaCanjes}
         esListaUsuarios={props?.esListaUsuarios}
         esListaProductos={props?.esListaProductos}
         esListaProveedores={props?.esListaProveedores}
         esListaCategorias={props?.esListaCategorias}
+        esListaRespuestas={props?.esListaRespuestas}
+        esListaOrdenesCompra={props?.esListaOrdenesCompra}
         titulo={props?.titulo === "Herramientas"}
         tit={props?.titulo}
         row={row}
@@ -450,7 +537,12 @@ const useDinamicTable = (props: DinamicTableProps) => {
         }
         return acciones(row);
       },
-      flex: 0,
+      cellStyle: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      flex: 1,
       minWidth: 50,
       maxWidth: 150,
       pinned: "left",

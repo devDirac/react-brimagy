@@ -66,6 +66,9 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import PeopleIcon from "@mui/icons-material/People";
 import CarCrashIcon from "@mui/icons-material/CarCrash";
 import InsertChartIcon from "@mui/icons-material/InsertChart";
+import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
+import ViewListIcon from "@mui/icons-material/ViewList";
+import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 
 const iconMap: Record<string, React.ComponentType> = {
   LockIcon,
@@ -123,6 +126,9 @@ const iconMap: Record<string, React.ComponentType> = {
   LineStyleIcon,
   AllInboxIcon,
   AssignmentIcon,
+  QuestionAnswerIcon,
+  ViewListIcon,
+  ShoppingBagIcon,
 };
 
 interface ItemProps {
@@ -179,17 +185,17 @@ const OpcionesMenuSeleccionadoPage: React.FC = () => {
               </h2>
             </Grid>
             <Grid item xs={12}>
-              <Grid container spacing={5}>
+              <Grid container spacing={2}>
                 {(ruta?.collapse || [])
                   .filter((c: any) => (c?.allow || []).includes(tipoUsuario))
                   .map(({ name, route, key, href, icon, e, collapse }: any) => {
                     return (
-                      <Grid item xs={12} md={4} key={key}>
+                      <Grid item xs={6} md={3} key={key}>
                         <DefaultInfoCard
                           icon={<MyComponent item={icon} />}
                           title={name || "Sin título"}
                           elemento={e}
-                          color="info"
+                          iconColor="#8ded42"
                           onSelec={(e: any) => {
                             navigate(route);
                           }}

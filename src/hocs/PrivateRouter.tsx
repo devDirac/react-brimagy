@@ -5,20 +5,14 @@ import { StoreType } from "../types/genericTypes";
 import ModalComponent from "../components/Modal";
 import { Alert, Grid, Snackbar, Stack } from "@mui/material";
 import moment from "moment";
+import { getNotificacionesPorUsuarioHTTP, setNotificaciones } from "../actions/notificaciones";
 
 interface PrivateRouterProps {
   path: string;
 }
 
 const PrivateRouter: React.FC<PrivateRouterProps> = (props: PrivateRouterProps) => {
-  const userId = useSelector((state: any) => state?.app?.user?.data?.id || false);
-  const espacio = useSelector((state: any) => state?.app?.espacio || null);
-  const esPromotor = useSelector(
-    (state: any) => (state?.app?.user?.data?.id_tipo_usuario || 0) === 2
-  );
-  const esAgente = useSelector(
-    (state: any) => (state?.app?.user?.data?.id_tipo_usuario || 0) === 3
-  );
+  const userId = useSelector((state: any) => state?.app?.user?.data?.id || 0);
   const [notifications, setNotifications] = useState<any>([]); // Lista de notificaciones
 
   // Función para cerrar una notificación
@@ -64,6 +58,17 @@ const PrivateRouter: React.FC<PrivateRouterProps> = (props: PrivateRouterProps) 
     const seconds = time % 60;
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
+
+  const handleActualizaNotificaciones = async () => {
+    try {
+      const notificacionesUsuario = await getNotificacionesPorUsuarioHTTP(userId);
+      dispatch(setNotificaciones(notificacionesUsuario));
+    } catch (error) {}
+  };
+
+  useEffect(() => {
+    handleActualizaNotificaciones();
+  }, [handleActualizaNotificaciones]);
 
   const inSession = useSelector((state: StoreType) => state?.app?.user?.token || false);
   return inSession ? (

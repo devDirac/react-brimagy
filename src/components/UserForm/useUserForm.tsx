@@ -14,7 +14,6 @@ export const useUserInfo = (props: AddUserFormProps) => {
   const [password_confirm, setPassword_confirm] = useState("");
   const [telefono, setTelefono] = useState("");
   const [foto, setFoto] = useState("");
-  const [usuario, setUsuario] = useState("");
   const [permisos, setPermisos] = useState<number>();
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
@@ -41,7 +40,5 @@ export const useUserInfo = (props: AddUserFormProps) => {
     setImagen,
     permisos,
     setPermisos,
-    usuario,
-    setUsuario,
   };
 };

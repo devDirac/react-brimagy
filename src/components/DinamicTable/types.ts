@@ -2,6 +2,7 @@ export interface DinamicTableProps {
   flex?: boolean;
   data: any;
   columnsToShow?: any;
+  columnsOrder?: string[];
   columnsToExport?: any;
   pinned?: any[];
   titulo?: string;
@@ -25,6 +26,9 @@ export interface DinamicTableProps {
   esListaProductos?: boolean;
   esListaCategorias?: boolean;
   esListaProductosExcel?: boolean;
+  esListaRespuestas?: boolean;
+  esListaCanjes?: boolean;
+  esListaOrdenesCompra?: boolean;
   onImageClick?: (imageUrl: string) => void;
 }
 interface DataRow {
@@ -53,4 +57,7 @@ export interface AccionesTableProps {
   esListaProductos?: boolean;
   esListaCategorias?: boolean;
   esListaProductosExcel?: boolean;
+  esListaRespuestas?: boolean;
+  esListaCanjes?: boolean;
+  esListaOrdenesCompra?: boolean;
 }

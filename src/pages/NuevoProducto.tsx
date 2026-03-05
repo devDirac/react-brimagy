@@ -80,7 +80,53 @@ function NuevoProducto(): JSX.Element {
                 {intl.formatMessage({ id: "registra_nuevo_producto_catalogo" })}
               </Typography>
               <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    id="id_catalogo"
+                    select
+                    fullWidth
+                    label={`${intl.formatMessage({ id: "select_categoria_producto" })} *`}
+                    variant="standard"
+                    name="id_catalogo"
+                    value={formik.values.id_catalogo || ""}
+                    disabled={!categorias || categorias.length === 0}
+                    helperText={
+                      !categorias || categorias.length === 0
+                        ? intl.formatMessage({ id: "sin_categorias_registradas" })
+                        : formik.touched.id_catalogo && formik.errors.id_catalogo
+                    }
+                    error={formik.touched.id_catalogo && Boolean(formik.errors.id_catalogo)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      formik.setFieldValue("id_catalogo", value);
+                    }}
+                    InputProps={{
+                      style: { padding: "5px" },
+                    }}
+                    onBlur={formik.handleBlur}
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: getFieldColor("id_catalogo"),
+                      },
+                      "& .MuiInput-underline:after": {
+                        borderBottomColor: getFieldColor("id_catalogo"),
+                      },
+                      "& .MuiInput-underline:before": {
+                        borderBottomColor: getFieldColor("id_catalogo"),
+                      },
+                      "& .MuiInputBase-input": {
+                        color: getFieldColor("id_catalogo"),
+                      },
+                    }}
+                  >
+                    {categorias?.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.desc}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} sm={4}>
                   <TextField
                     id="nombre_producto"
                     fullWidth
@@ -111,7 +157,7 @@ function NuevoProducto(): JSX.Element {
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12} sm={4}>
                   <TextField
                     id="descripcion"
                     fullWidth
@@ -175,68 +221,6 @@ function NuevoProducto(): JSX.Element {
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <TextField
-                    id="sku"
-                    fullWidth
-                    label={`${intl.formatMessage({ id: "input_sku" })} *`}
-                    variant="standard"
-                    name="sku"
-                    value={formik.values.sku || ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      formik.setFieldValue("sku", value);
-                    }}
-                    onBlur={formik.handleBlur}
-                    error={formik.touched.sku && Boolean(formik.errors.sku)}
-                    helperText={formik.touched.sku && formik.errors.sku}
-                    sx={{
-                      "& .MuiInputLabel-root": {
-                        color: getFieldColor("sku"),
-                      },
-                      "& .MuiInput-underline:after": {
-                        borderBottomColor: getFieldColor("sku"),
-                      },
-                      "& .MuiInput-underline:before": {
-                        borderBottomColor: getFieldColor("sku"),
-                      },
-                      "& .MuiInputBase-input": {
-                        color: getFieldColor("sku"),
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <TextField
-                    id="color"
-                    fullWidth
-                    label={`${intl.formatMessage({ id: "input_color" })} *`}
-                    variant="standard"
-                    name="color"
-                    value={formik.values.color || ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      formik.setFieldValue("color", value);
-                    }}
-                    onBlur={formik.handleBlur}
-                    error={formik.touched.color && Boolean(formik.errors.color)}
-                    helperText={formik.touched.color && formik.errors.color}
-                    sx={{
-                      "& .MuiInputLabel-root": {
-                        color: getFieldColor("color"),
-                      },
-                      "& .MuiInput-underline:after": {
-                        borderBottomColor: getFieldColor("color"),
-                      },
-                      "& .MuiInput-underline:before": {
-                        borderBottomColor: getFieldColor("color"),
-                      },
-                      "& .MuiInputBase-input": {
-                        color: getFieldColor("color"),
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
                     id="id_proveedor"
                     select
                     fullWidth
@@ -281,51 +265,98 @@ function NuevoProducto(): JSX.Element {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12} sm={4}>
                   <TextField
-                    id="id_catalogo"
-                    select
+                    id="sku"
                     fullWidth
-                    label={`${intl.formatMessage({ id: "select_categoria_producto" })} *`}
+                    label={`${intl.formatMessage({ id: "input_sku" })} *`}
                     variant="standard"
-                    name="id_catalogo"
-                    value={formik.values.id_catalogo || ""}
-                    disabled={!categorias || categorias.length === 0}
-                    helperText={
-                      !categorias || categorias.length === 0
-                        ? intl.formatMessage({ id: "sin_categorias_registradas" })
-                        : formik.touched.id_catalogo && formik.errors.id_catalogo
-                    }
-                    error={formik.touched.id_catalogo && Boolean(formik.errors.id_catalogo)}
+                    name="sku"
+                    value={formik.values.sku || ""}
                     onChange={(e) => {
                       const value = e.target.value;
-                      formik.setFieldValue("id_catalogo", value);
-                    }}
-                    InputProps={{
-                      style: { padding: "5px" },
+                      formik.setFieldValue("sku", value);
                     }}
                     onBlur={formik.handleBlur}
+                    error={formik.touched.sku && Boolean(formik.errors.sku)}
+                    helperText={formik.touched.sku && formik.errors.sku}
                     sx={{
                       "& .MuiInputLabel-root": {
-                        color: getFieldColor("id_catalogo"),
+                        color: getFieldColor("sku"),
                       },
                       "& .MuiInput-underline:after": {
-                        borderBottomColor: getFieldColor("id_catalogo"),
+                        borderBottomColor: getFieldColor("sku"),
                       },
                       "& .MuiInput-underline:before": {
-                        borderBottomColor: getFieldColor("id_catalogo"),
+                        borderBottomColor: getFieldColor("sku"),
                       },
                       "& .MuiInputBase-input": {
-                        color: getFieldColor("id_catalogo"),
+                        color: getFieldColor("sku"),
                       },
                     }}
-                  >
-                    {categorias?.map((option) => (
-                      <MenuItem key={option.id} value={option.id}>
-                        {option.desc}
-                      </MenuItem>
-                    ))}
-                  </TextField>
+                  />
+                </Grid>
+                <Grid item xs={12} sm={2}>
+                  <TextField
+                    id="color"
+                    fullWidth
+                    label={`${intl.formatMessage({ id: "input_color" })}`}
+                    variant="standard"
+                    name="color"
+                    value={formik.values.color || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      formik.setFieldValue("color", value);
+                    }}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.color && Boolean(formik.errors.color)}
+                    helperText={formik.touched.color && formik.errors.color}
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: getFieldColor("color"),
+                      },
+                      "& .MuiInput-underline:after": {
+                        borderBottomColor: getFieldColor("color"),
+                      },
+                      "& .MuiInput-underline:before": {
+                        borderBottomColor: getFieldColor("color"),
+                      },
+                      "& .MuiInputBase-input": {
+                        color: getFieldColor("color"),
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={2}>
+                  <TextField
+                    id="talla"
+                    fullWidth
+                    label={`${intl.formatMessage({ id: "input_talla" })}`}
+                    variant="standard"
+                    name="talla"
+                    value={formik.values.talla || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      formik.setFieldValue("talla", value);
+                    }}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.talla && Boolean(formik.errors.talla)}
+                    helperText={formik.touched.talla && formik.errors.talla}
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: getFieldColor("talla"),
+                      },
+                      "& .MuiInput-underline:after": {
+                        borderBottomColor: getFieldColor("talla"),
+                      },
+                      "& .MuiInput-underline:before": {
+                        borderBottomColor: getFieldColor("talla"),
+                      },
+                      "& .MuiInputBase-input": {
+                        color: getFieldColor("talla"),
+                      },
+                    }}
+                  />
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <TextField

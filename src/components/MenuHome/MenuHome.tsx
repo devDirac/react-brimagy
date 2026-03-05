@@ -24,15 +24,15 @@ const MenuHome = (props: any) => {
   return (
     <Grid container spacing={2} style={{ textAlign: "center" }}>
       <Grid item xs={12} md={12}>
-        <h1 style={{ color: darkMode ? "white" : "#344767" }}>
+        {/*<h1 style={{ color: darkMode ? "white" : "#0a1105" }}>
           {intl.formatMessage({ id: "menu_home_titulo" })}
-        </h1>
+        </h1>*/}
       </Grid>
 
       {
-        <Grid item xs={12} md={3}>
+        <Grid item xs={6} md={3}>
           <DefaultInfoCard
-            color={"info"}
+            iconColor="#8ded42"
             icon={<HomeIcon />}
             title={intl.formatMessage({ id: "menu_regresar_inicio" })}
             elemento={{}}
@@ -48,9 +48,9 @@ const MenuHome = (props: any) => {
         ?.filter((w) => w?.name)
         .map((e, key) => {
           return (
-            <Grid item xs={12} md={3} key={key}>
+            <Grid item xs={6} md={3} key={key}>
               <DefaultInfoCard
-                color={"info"}
+                iconColor="#8ded42"
                 icon={e?.icon}
                 title={e?.name || ""}
                 elemento={e}
@@ -64,9 +64,9 @@ const MenuHome = (props: any) => {
           );
         })}
       {
-        <Grid item xs={12} md={3}>
+        <Grid item xs={6} md={3}>
           <DefaultInfoCard
-            color={"info"}
+            iconColor="#8ded42"
             icon={<LoginIcon />}
             title={intl.formatMessage({ id: "menu_cerrar_sesion" })}
             elemento={{}}

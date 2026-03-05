@@ -49,11 +49,6 @@ const DinamicTableMejorada: React.FC<DinamicTableProps> = (props: DinamicTablePr
     }),
     []
   );
-  /*const myTheme = themeQuartz.withParams({
-    accentColor: "#4CAF50",
-    backgroundColor: darkMode ? "#1e1e1e" : "#ffffff",
-    foregroundColor: darkMode ? "#ffffff" : "#000000",
-  });*/
   const myTheme = themeQuartz.withPart(iconSetAlpine).withParams({
     accentColor: "#A5EB2F",
     browserColorScheme: "light",
@@ -87,7 +82,8 @@ const DinamicTableMejorada: React.FC<DinamicTableProps> = (props: DinamicTablePr
       }
       if (
         (props?.esListaProductosExcel && !params.node?.data?.proveedor_valido) ||
-        (props?.esListaProductosExcel && !params.node?.data?.categoria_valida)
+        (props?.esListaProductosExcel && !params.node?.data?.categoria_valida) ||
+        (props?.esListaProductosExcel && !params.node?.data?.plataforma_valida)
       ) {
         return { background: "#FF2C00" };
       }
@@ -172,7 +168,7 @@ const DinamicTableMejorada: React.FC<DinamicTableProps> = (props: DinamicTablePr
           </Grid>
         </Grid>
       ) : null}
-      <Grid item xs={12} md={12} style={{ minHeight: props?.minHeight ? props?.minHeight : 400 }}>
+      <Grid item xs={12} md={12} style={{ minHeight: props?.minHeight ? props?.minHeight : 600 }}>
         {props?.showCheckBox ? (
           <AgGridReact
             defaultColDef={defaultColDef}

@@ -53,14 +53,11 @@ const UserInfo: React.FC<AddUserFormProps> = (props: AddUserFormProps) => {
     setImagen,
     permisos,
     setPermisos,
-    usuario,
-    setUsuario,
   } = useUserInfo(props);
 
   const notificarCambios = () => {
     if (props.onDatosChange) {
       props.onDatosChange({
-        usuario,
         nombre,
         correo,
         telefono,
@@ -72,13 +69,7 @@ const UserInfo: React.FC<AddUserFormProps> = (props: AddUserFormProps) => {
   };
   useEffect(() => {
     notificarCambios();
-  }, [usuario, nombre, correo, telefono, password, password_confirm, foto]);
-
-  const isValidUsuario =
-    props.formik!.touched.usuario &&
-    !props.formik!.errors.usuario &&
-    props.formik!.values.usuario &&
-    props.formik!.values.usuario !== "";
+  }, [nombre, correo, telefono, password, password_confirm, foto]);
 
   const isValidNombre =
     props.formik!.touched.nombre &&
@@ -124,38 +115,6 @@ const UserInfo: React.FC<AddUserFormProps> = (props: AddUserFormProps) => {
             <Grid container spacing={3} mb={3}>
               <Grid item xs={12} sm={6}>
                 <TextField
-                  id="usuario"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_usuario" })}
-                  variant="standard"
-                  name="usuario"
-                  value={usuario}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    props.formik!.setFieldValue("usuario", value);
-                    setUsuario(value);
-                  }}
-                  onBlur={props.formik!.handleBlur}
-                  error={props.formik!.touched.usuario && Boolean(props.formik!.errors.usuario)}
-                  helperText={props.formik!.touched.usuario && props.formik!.errors.usuario}
-                  sx={{
-                    "& .MuiInputLabel-root": {
-                      color: isValidUsuario ? "#00AB16" : undefined,
-                    },
-                    "& .MuiInput-underline:after": {
-                      borderBottomColor: isValidUsuario ? "#00AB16" : undefined,
-                    },
-                    "& .MuiInput-underline:before": {
-                      borderBottomColor: isValidUsuario ? "#00AB16" : undefined,
-                    },
-                    "& .MuiInputBase-input": {
-                      color: isValidUsuario ? "#00AB16" : undefined,
-                    },
-                  }}
-                ></TextField>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
                   id="nombre"
                   fullWidth
                   label={intl.formatMessage({ id: "input_nombre" })}
@@ -186,8 +145,6 @@ const UserInfo: React.FC<AddUserFormProps> = (props: AddUserFormProps) => {
                   }}
                 ></TextField>
               </Grid>
-            </Grid>
-            <Grid container spacing={3} mb={3}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   id="correo"
@@ -220,6 +177,8 @@ const UserInfo: React.FC<AddUserFormProps> = (props: AddUserFormProps) => {
                   }}
                 ></TextField>
               </Grid>
+            </Grid>
+            <Grid container spacing={3} mb={3}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   id="telefono"
@@ -252,12 +211,11 @@ const UserInfo: React.FC<AddUserFormProps> = (props: AddUserFormProps) => {
                   }}
                 ></TextField>
               </Grid>
-            </Grid>
-            <Grid container spacing={3}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   id="password"
                   fullWidth
+                  type="password"
                   label={intl.formatMessage({ id: "input_password" })}
                   variant="standard"
                   name="password"
@@ -286,10 +244,13 @@ const UserInfo: React.FC<AddUserFormProps> = (props: AddUserFormProps) => {
                   }}
                 ></TextField>
               </Grid>
+            </Grid>
+            <Grid container spacing={3}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   id="password_confirm"
                   fullWidth
+                  type="password"
                   label={intl.formatMessage({ id: "input_password_confirm" })}
                   variant="standard"
                   name="password_confirm"

@@ -79,7 +79,6 @@ function NuevoUsuario(): JSX.Element {
   const fotoUser: any = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
   const [formDataV, setFormDataV] = useState({
-    usuario: "",
     nombre: "",
     correo: "",
     telefono: "",
