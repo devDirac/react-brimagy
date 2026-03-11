@@ -201,6 +201,7 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       await addGuiaProductoAlmacenHttp(datos);
       setVerProducto((prevProducto: any) => ({
         ...prevProducto,
+        guia: guiaProducto,
         estatus: "guia_asignada",
       }));
 

@@ -238,6 +238,9 @@ const textosMx = {
   input_fecha: "Fecha",
   crear_orden_compra: "Crear orden de compra",
   sin_cambios_producto: "El producto no ha sido editado",
+  set_actualizar_plataforma: "Actualizar plataforma",
+  plataforma_actualizada_correctamente: "Plataforma actualizada correctamente",
+  sin_productos_en_almacen: "Sin productos en almacen",
 };
 
 export default textosMx;

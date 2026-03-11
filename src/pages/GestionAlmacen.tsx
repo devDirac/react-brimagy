@@ -472,7 +472,7 @@ function GestionAlmacen(): JSX.Element {
               xs={12}
               style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
             >
-              <h3>{intl.formatMessage({ id: "sin_canjes_validados_registrados" })}</h3>
+              <h3>{intl.formatMessage({ id: "sin_productos_en_almacen" })}</h3>
             </Grid>
           </Grid>
         ) : null}

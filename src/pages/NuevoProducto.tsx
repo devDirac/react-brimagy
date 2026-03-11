@@ -45,6 +45,7 @@ function NuevoProducto(): JSX.Element {
     errorLogin,
     formik,
     getFieldColor,
+    plataformas,
   } = useNuevoProducto();
 
   return (
@@ -830,6 +831,52 @@ function NuevoProducto(): JSX.Element {
                     ))}
                   </TextField>
                 </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    id="plataforma"
+                    select
+                    fullWidth
+                    label={`${intl.formatMessage({ id: "select_plataforma" })} *`}
+                    variant="standard"
+                    name="plataforma"
+                    value={formik.values.plataforma || ""}
+                    disabled={!categorias || categorias.length === 0}
+                    helperText={
+                      !categorias || categorias.length === 0
+                        ? intl.formatMessage({ id: "sin_categorias_registradas" })
+                        : formik.touched.plataforma && formik.errors.plataforma
+                    }
+                    error={formik.touched.plataforma && Boolean(formik.errors.plataforma)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      formik.setFieldValue("plataforma", value);
+                    }}
+                    InputProps={{
+                      style: { padding: "5px" },
+                    }}
+                    onBlur={formik.handleBlur}
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: getFieldColor("plataforma"),
+                      },
+                      "& .MuiInput-underline:after": {
+                        borderBottomColor: getFieldColor("plataforma"),
+                      },
+                      "& .MuiInput-underline:before": {
+                        borderBottomColor: getFieldColor("plataforma"),
+                      },
+                      "& .MuiInputBase-input": {
+                        color: getFieldColor("plataforma"),
+                      },
+                    }}
+                  >
+                    {plataformas?.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.nombre}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
                 <Grid
                   item
                   xs={12}
@@ -850,6 +897,7 @@ function NuevoProducto(): JSX.Element {
                         marca: formik.values.marca,
                         sku: formik.values.sku,
                         color: formik.values.color,
+                        talla: formik.values.talla,
                         id_proveedor: formik.values.id_proveedor,
                         id_catalogo: formik.values.id_catalogo,
                         costo_con_iva: formik.values.costo_con_iva,
@@ -867,6 +915,7 @@ function NuevoProducto(): JSX.Element {
                         factor: formik.values.factor,
                         tipo_registro: "individual",
                         tipo_producto: formik.values.tipo_producto,
+                        id_plataforma: formik.values.plataforma,
                       };
                       crearProducto(datos);
                     }}

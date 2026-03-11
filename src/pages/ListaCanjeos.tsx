@@ -87,7 +87,7 @@ function ListaCanjeos(): JSX.Element {
 
   // Estados para la paginación
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(6);
+  const [rowsPerPage, setRowsPerPage] = useState(12);
 
   const {
     validarIdentidad,
@@ -256,7 +256,7 @@ function ListaCanjeos(): JSX.Element {
             <Grid container spacing={2}>
               {canjesPaginados.map((p: any, key: number) => {
                 return (
-                  <Grid item xs={12} sm={6} md={4} lg={4} key={p.id || key}>
+                  <Grid item xs={12} sm={6} md={4} lg={4} key={key}>
                     <Card
                       sx={{
                         display: "flex",
@@ -453,7 +453,7 @@ function ListaCanjeos(): JSX.Element {
               actions
               key={tableKey}
               //sinBusqueda
-              sinExport
+              //sinExport
               esListaCanjes
               //showCheckBox
               data={canjes}

@@ -143,6 +143,7 @@ export const useVariablesGlobales = () => {
     try {
       setProcesandoVariables(true);
       const data: any = await crearVariablesGlobalesHttp(datos);
+      await getProductosSincronizados();
 
       setVariablesGlobalesData((prev: any[]) => {
         const existe = prev.some((v) => v.id === data.id);

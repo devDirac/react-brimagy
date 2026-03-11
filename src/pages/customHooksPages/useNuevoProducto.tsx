@@ -10,6 +10,7 @@ import { getProveedoresHttp } from "actions/proveedores";
 import { getCategoriasHttp } from "actions/categorias";
 import { crearProductoHttp, verificarSkuDisponibleHttp } from "actions/productos";
 import { setAuth } from "actions/auth";
+import { getPlataformasHttp } from "actions/configuracion";
 
 export const useNuevoProducto = () => {
   const dispatch = useDispatch();
@@ -26,6 +27,7 @@ export const useNuevoProducto = () => {
 
   const [proveedores, setProveedores] = useState<any[]>([]);
   const [categorias, setCategorias] = useState<any[]>([]);
+  const [plataformas, setPlataformas] = useState<any[]>([]);
 
   useEffect(() => {
     setAuth(token);
@@ -60,6 +62,7 @@ export const useNuevoProducto = () => {
       puntos: "",
       factor: "",
       tipo_producto: "",
+      plataforma: "",
     },
     validationSchema: Yup.object({
       nombre_producto: Yup.string().required(
@@ -123,6 +126,7 @@ export const useNuevoProducto = () => {
       tipo_producto: Yup.string().required(
         intl.formatMessage({ id: "input_validation_requerido" })
       ),
+      plataforma: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
     }),
     onSubmit: async (values) => {
       console.log("Formulario enviado:", values);
@@ -186,7 +190,22 @@ export const useNuevoProducto = () => {
     }
   };
 
+  const getPlataformas = useCallback(async () => {
+    try {
+      setProcesando(true);
+      const data = await getPlataformasHttp();
+      setPlataformas(data);
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+      handleisAlertOpen();
+    }
+  }, []);
+
   useEffect(() => {
+    getPlataformas();
     getProveedores();
     getCategoriasProducto();
   }, []);
@@ -205,5 +224,6 @@ export const useNuevoProducto = () => {
     errorLogin,
     formik,
     getFieldColor,
+    plataformas,
   };
 };

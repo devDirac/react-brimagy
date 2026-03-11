@@ -47,6 +47,12 @@ function Plataformas(): JSX.Element {
     errorLogin,
     formik,
     getFieldColor,
+    //editando plataforma
+    tableKey,
+    plataformaEditar,
+    alertEditar,
+    handleisAlertOpenEditar,
+    handleisAlertCloseEditar,
   } = usePlataformas();
 
   return (
@@ -189,7 +195,7 @@ function Plataformas(): JSX.Element {
                   {plataformas?.length && !procesando ? (
                     <DinamicTableMejorada
                       actions
-                      key={"variablesGlobales"}
+                      key={tableKey}
                       //sinBusqueda
                       sinExport
                       esListaUsuarios
@@ -220,6 +226,126 @@ function Plataformas(): JSX.Element {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
+
+      {/* EDITAR VARIABLE GLOBAL */}
+      <ModalComponent
+        handleClose={handleisAlertCloseEditar}
+        isOpen={alertEditar}
+        key={"alertaEditar"}
+      >
+        <Grid container spacing={2} style={{ textAlign: "center" }}>
+          {plataformaEditar ? (
+            <>
+              <Grid item xs={12} mt={2}>
+                <h5>Editando plataforma: {plataformaEditar?.nombre}</h5>
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  id="nombre"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_nombre" })} *`}
+                  variant="standard"
+                  name="nombre"
+                  value={formik.values.nombre || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    formik.setFieldValue("nombre", value);
+                  }}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.nombre && Boolean(formik.errors.nombre)}
+                  helperText={formik.touched.nombre && formik.errors.nombre}
+                  sx={{
+                    "& .MuiInputLabel-root": {
+                      color: getFieldColor("nombre"),
+                    },
+                    "& .MuiInput-underline:after": {
+                      borderBottomColor: getFieldColor("nombre"),
+                    },
+                    "& .MuiInput-underline:before": {
+                      borderBottomColor: getFieldColor("nombre"),
+                    },
+                    "& .MuiInputBase-input": {
+                      color: getFieldColor("nombre"),
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  id="descripcion"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_descripcion" })} *`}
+                  variant="standard"
+                  name="descripcion"
+                  value={formik.values.descripcion || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    formik.setFieldValue("descripcion", value);
+                  }}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.descripcion && Boolean(formik.errors.descripcion)}
+                  helperText={formik.touched.descripcion && formik.errors.descripcion}
+                  sx={{
+                    "& .MuiInputLabel-root": {
+                      color: getFieldColor("descripcion"),
+                    },
+                    "& .MuiInput-underline:after": {
+                      borderBottomColor: getFieldColor("descripcion"),
+                    },
+                    "& .MuiInput-underline:before": {
+                      borderBottomColor: getFieldColor("descripcion"),
+                    },
+                    "& .MuiInputBase-input": {
+                      color: getFieldColor("descripcion"),
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid
+                item
+                xs={12}
+                sm={4}
+                display="flex"
+                alignContent="center"
+                justifyContent="center"
+              >
+                <Button
+                  sx={{ color: "#fff", background: "#084d6e" }}
+                  variant="contained"
+                  endIcon={<AddCircleIcon />}
+                  disabled={procesando || !formik.dirty || !formik.isValid}
+                  onClick={(e: any) => {
+                    const datos = {
+                      id_plataforma: plataformaEditar?.id,
+                      nombre: formik.values.nombre,
+                      descripcion: formik.values.descripcion,
+                      tipo: "actualizar",
+                    };
+                    crearPlataforma(datos);
+                  }}
+                >
+                  {procesandoPlataforma ? (
+                    <>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                      {intl.formatMessage({ id: "general_actualizando" })}...{" "}
+                    </>
+                  ) : (
+                    intl.formatMessage({ id: "set_actualizar_plataforma" })
+                  )}
+                </Button>
+              </Grid>
+            </>
+          ) : null}
+        </Grid>
+      </ModalComponent>
+
       <ModalComponent handleClose={handleisAlerClose} isOpen={isAlertOpen} key={"alerta"}>
         <Grid container spacing={2} style={{ textAlign: "center" }}>
           <Grid item xs={12}>

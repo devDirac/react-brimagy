@@ -88,6 +88,8 @@ import "dayjs/locale/es";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import HardwareIcon from "@mui/icons-material/Hardware";
+import ComputerIcon from "@mui/icons-material/Computer";
 
 function ListaProductos(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -263,18 +265,6 @@ function ListaProductos(): JSX.Element {
     return productos?.slice(startIndex, endIndex) || [];
   }, [productos, page, rowsPerPage]);
 
-  const handleSeleccionaProducto = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const productoId = Number(event.target.value);
-
-    setProductosSeleccionados((prev) => {
-      if (event.target.checked) {
-        return [...prev, productoId];
-      } else {
-        return prev.filter((id) => id !== productoId);
-      }
-    });
-  };
-
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -411,9 +401,6 @@ function ListaProductos(): JSX.Element {
                   <Grid item xs={12} sm={6} md={4} lg={4} key={p.id || key}>
                     <Card
                       sx={{
-                        border: productosSeleccionados.includes(p.id)
-                          ? "2px solid #33F299"
-                          : "none",
                         display: "flex",
                         flexDirection: "column",
                         height: "100%",
@@ -425,6 +412,40 @@ function ListaProductos(): JSX.Element {
                         },
                       }}
                     >
+                      <Chip
+                        icon={p.tipo_producto === "fisico" ? <HardwareIcon /> : <ComputerIcon />}
+                        label={p.tipo_producto?.toUpperCase()}
+                        sx={{
+                          position: "absolute",
+                          top: 0,
+                          right: 0,
+                          flexDirection: "row",
+                          bgcolor: pink[50],
+                          p: 1,
+                          fontWeight: 500,
+                          borderRadius: "0 0 0 20px",
+                          background: "#eb2fa5",
+                          maxWidth: "150px",
+                          height: "auto",
+                          whiteSpace: "normal",
+                          "& .MuiChip-label": {
+                            whiteSpace: "normal",
+                            overflow: "visible",
+                            textOverflow: "clip",
+                            display: "block",
+                            lineHeight: "12px",
+                            color: "#FFF9C4 !important",
+                          },
+                          "& .MuiChip-icon": {
+                            color: "#FFF9C4 !important",
+                            fontSize: "20px !important",
+                            width: "20px !important",
+                            height: "20px !important",
+                            marginTop: "2px",
+                            alignSelf: "flex-start",
+                          },
+                        }}
+                      />
                       {/* Fila superior*/}
                       <Box
                         sx={{
@@ -630,21 +651,12 @@ function ListaProductos(): JSX.Element {
                           flexDirection: "row",
                           bgcolor: "#dee4f0",
                           p: 0,
-                          borderBottom: `2px solid ${pink[100]}`,
+                          pt: 1,
                         }}
                       >
-                        {isSuperAdmin ? (
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                value={p.id}
-                                checked={productosSeleccionados.includes(p.id)}
-                                onChange={handleSeleccionaProducto}
-                              />
-                            }
-                            label="Seleccionar"
-                          />
-                        ) : null}
+                        <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
+                          {p.nombre_plataforma}
+                        </Typography>
                       </Box>
                     </Card>
                   </Grid>
@@ -686,7 +698,7 @@ function ListaProductos(): JSX.Element {
               actions
               key={tableKey}
               //sinBusqueda
-              sinExport
+              //sinExport
               esListaProductos
               //showCheckBox
               data={productos}

@@ -59,7 +59,7 @@ const AccionesTable: React.FC<AccionesTableProps> = (props: AccionesTableProps) 
         <Tooltip title={intl.formatMessage({ id: "crear_orden_compra" })}>
           <IconButton
             onClick={() => props?.enAccion("crear_orden_compra")}
-            sx={{ color: darkMode ? "#fff" : "#1fff26", padding: "0" }}
+            sx={{ color: darkMode ? "#fff" : "#216600", padding: "0" }}
           >
             <LibraryAddIcon />
           </IconButton>
@@ -70,7 +70,7 @@ const AccionesTable: React.FC<AccionesTableProps> = (props: AccionesTableProps) 
         <Tooltip title={intl.formatMessage({ id: "ver_orden_compra" })}>
           <IconButton
             onClick={() => props?.enAccion("vista_previa")}
-            sx={{ color: darkMode ? "#fff" : "#1fff26", padding: "0" }}
+            sx={{ color: darkMode ? "#fff" : "#0090a0", padding: "0" }}
           >
             <VisibilityIcon />
           </IconButton>

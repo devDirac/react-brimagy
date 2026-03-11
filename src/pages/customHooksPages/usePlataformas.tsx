@@ -32,6 +32,13 @@ export const usePlataformas = () => {
   const [variablesGlobalesData, setVariablesGlobalesData] = useState<any>(null);
   const [plataformas, setPlataformas] = useState<any[]>([]);
 
+  const [tableKey, setTableKey] = useState(0);
+
+  const [plataformaEditar, setPlataformaEditar] = useState<any>(null);
+  const [alertEditar, setAlertEditar] = useState(false);
+  const handleisAlertOpenEditar = () => setAlertEditar(true);
+  const handleisAlertCloseEditar = () => setAlertEditar(false);
+
   useEffect(() => {
     setAuth(token);
   }, [token]);
@@ -45,8 +52,8 @@ export const usePlataformas = () => {
         //reactivaUsuario(row);
         break;
       case "editar_usuario":
-        //setUsuarioEditar(row);
-        //handleisAlertOpenEditarUsuario();
+        setPlataformaEditar(row);
+        handleisAlertOpenEditar();
         break;
       default:
         break;
@@ -99,7 +106,13 @@ export const usePlataformas = () => {
       setProcesandoPlataforma(true);
       const data = await crearPlataformaHttp(datos);
       await getPlataformas();
-      setMensajeAlert(intl.formatMessage({ id: "plataforma_añadida_correctamente" }));
+      setTableKey((prev) => prev + 1);
+
+      setMensajeAlert(
+        plataformaEditar
+          ? intl.formatMessage({ id: "plataforma_actualizada_correctamente" })
+          : intl.formatMessage({ id: "plataforma_añadida_correctamente" })
+      );
       formik.resetForm();
       setProcesandoPlataforma(false);
       handleisAlertOpen();
@@ -110,6 +123,15 @@ export const usePlataformas = () => {
       handleisAlertOpen();
     }
   };
+
+  useEffect(() => {
+    if (plataformaEditar) {
+      formik.setValues({
+        nombre: plataformaEditar?.nombre || "",
+        descripcion: plataformaEditar?.descripcion || "",
+      });
+    }
+  }, [plataformaEditar]);
 
   useEffect(() => {
     getPlataformas();
@@ -130,5 +152,11 @@ export const usePlataformas = () => {
     errorLogin,
     formik,
     getFieldColor,
+    //editando plataforma
+    tableKey,
+    plataformaEditar,
+    alertEditar,
+    handleisAlertOpenEditar,
+    handleisAlertCloseEditar,
   };
 };

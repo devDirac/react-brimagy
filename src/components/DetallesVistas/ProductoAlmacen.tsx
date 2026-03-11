@@ -245,7 +245,7 @@ const ProductoAlmacenModal = ({
             sx={{ color: "#fff", background: "#9732d1", fontSize: "0.75rem", padding: "6px 8px" }}
             variant="contained"
             endIcon={<AddIcon />}
-            disabled={verProducto.estatus !== "enviado" && verProducto.estatus !== "entregado"}
+            disabled={verProducto.estatus !== "entregado"} //verProducto.estatus !== "enviado" &&
             onClick={(e: any) => {
               const datos = {
                 id_canje: verProducto?.id_canje,
