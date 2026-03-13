@@ -533,8 +533,8 @@ export const useListaProductosFisicos = (tipoUsuario: number) => {
   const getProveedores = useCallback(async () => {
     try {
       setProcesando(true);
-      const asegurados = await getProveedoresHttp();
-      setProveedores(asegurados);
+      const proveedores = await getProveedoresHttp();
+      setProveedores(proveedores);
       setProcesando(false);
     } catch (error) {
       setProcesando(false);
@@ -547,8 +547,8 @@ export const useListaProductosFisicos = (tipoUsuario: number) => {
   const getCategoriasProducto = useCallback(async () => {
     try {
       setProcesando(true);
-      const asegurados = await getCategoriasHttp();
-      setCategorias(asegurados);
+      const categorias = await getCategoriasHttp();
+      setCategorias(categorias);
       setProcesando(false);
     } catch (error) {
       setProcesando(false);

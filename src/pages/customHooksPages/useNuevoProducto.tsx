@@ -70,9 +70,10 @@ export const useNuevoProducto = () => {
       ),
       descripcion: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
       marca: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
-      sku: Yup.string()
-        .required(intl.formatMessage({ id: "input_validation_requerido" }))
-        .test("sku-disponible", "Este SKU ya está registrado", async function (value) {
+      sku: Yup.string().test(
+        "sku-disponible",
+        "Este SKU ya está registrado",
+        async function (value) {
           if (!value) return true;
 
           try {
@@ -91,10 +92,11 @@ export const useNuevoProducto = () => {
             console.error("Error al validar SKU:", error);
             return true;
           }
-        }),
+        }
+      ),
       color: Yup.string(),
       talla: Yup.string(),
-      id_proveedor: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      id_proveedor: Yup.string(),
       id_catalogo: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
       costo_con_iva: Yup.string().required(
         intl.formatMessage({ id: "input_validation_requerido" })
@@ -149,8 +151,8 @@ export const useNuevoProducto = () => {
   const getProveedores = useCallback(async () => {
     try {
       setProcesando(true);
-      const asegurados = await getProveedoresHttp();
-      setProveedores(asegurados);
+      const proveedores = await getProveedoresHttp();
+      setProveedores(proveedores);
       setProcesando(false);
     } catch (error) {
       setProcesando(false);
@@ -163,8 +165,8 @@ export const useNuevoProducto = () => {
   const getCategoriasProducto = useCallback(async () => {
     try {
       setProcesando(true);
-      const asegurados = await getCategoriasHttp();
-      setCategorias(asegurados);
+      const categorias = await getCategoriasHttp();
+      setCategorias(categorias);
       setProcesando(false);
     } catch (error) {
       setProcesando(false);
@@ -177,7 +179,7 @@ export const useNuevoProducto = () => {
   const crearProducto = async (datos: any) => {
     try {
       setProcesandoProducto(true);
-      const asegurados = await crearProductoHttp(datos);
+      const producto = await crearProductoHttp(datos);
       setMensajeAlert(intl.formatMessage({ id: "producto_añadido_correctamente" }));
       formik.resetForm();
       setProcesandoProducto(false);

@@ -10,6 +10,7 @@ import {
   TablePagination,
   Tooltip,
   IconButton,
+  Alert,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useIntl } from "react-intl";
@@ -31,11 +32,15 @@ import ModalConfirm from "components/ModalConfirm/ModalConfirm";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import SendIcon from "@mui/icons-material/Send";
 import PDFViewerOrdenCompra from "components/PDFViews/PDFViewerOrdenCompra";
+import { MuiFileInput } from "mui-file-input";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { InputAdornment } from "@mui/material";
 
 interface Producto {
   id: number;
   id_validacion_producto: number;
   id_canje: number;
+  id_proveedor: number;
   folio: string;
   nombre_usuario: string;
   email: string;
@@ -97,6 +102,7 @@ interface CanjesResponse {
   };
   orden_compra: {
     id: number;
+    id_usuario: number;
     no_orden: string;
     estatus: string;
     observaciones: string;
@@ -130,16 +136,26 @@ interface DetalleCanjeProps {
   handleClosePDFViewer: () => void;
   handleOpenPDFViewer: () => void;
   handleisAlertOpenOtroProveedor: () => void;
+  handleisAlertOpenAsignarProveedor: () => void;
   procesandoIdentidad: boolean;
   procesandoEnviarProveedor: boolean;
   procesandoOrdenCompra: boolean;
   procesandoEnviarOrdenAProveedor: boolean;
   procesandoRechazarCotizacion: boolean;
+  procesandoValidandoFactura: boolean;
+  procesandoSubirPDFFactura: boolean;
+  procesandoValidacionFinal: boolean;
+  validarOrdenCompraFinal: (data: any) => Promise<void>;
+  subirPDFFactura: (data: any) => Promise<void>;
+  validarFacturaOrdenCompra: (data: any) => Promise<void>;
   enviarOrdenCompraProveedor: (data: any) => Promise<void>;
   enviarCotizacionProveedor: (data: any) => Promise<void>;
   rechazarCotizacionDeProveedor: (data: any) => Promise<void>;
   getProductoNuevoProveedor: (data: any) => Promise<void>;
   setOrdenCompraActiva: React.Dispatch<React.SetStateAction<any>>;
+  factura: File | null;
+  setProductoSeleccionado: React.Dispatch<React.SetStateAction<any>>;
+  handleChangeFactura: (newFile: File | null) => void;
 }
 
 const CanjeValidadoProveedorModal = ({
@@ -153,12 +169,22 @@ const CanjeValidadoProveedorModal = ({
   procesandoOrdenCompra,
   procesandoEnviarOrdenAProveedor,
   procesandoRechazarCotizacion,
+  procesandoValidandoFactura,
+  procesandoSubirPDFFactura,
+  procesandoValidacionFinal,
+  validarOrdenCompraFinal,
+  subirPDFFactura,
+  validarFacturaOrdenCompra,
   enviarCotizacionProveedor,
   enviarOrdenCompraProveedor,
   rechazarCotizacionDeProveedor,
   getProductoNuevoProveedor,
   handleisAlertOpenOtroProveedor,
+  handleisAlertOpenAsignarProveedor,
   setOrdenCompraActiva,
+  setProductoSeleccionado,
+  factura,
+  handleChangeFactura,
 }: DetalleCanjeProps) => {
   if (!verCanje) return null;
   if (!verProveedor) return null;
@@ -536,21 +562,38 @@ const CanjeValidadoProveedorModal = ({
                             Acciones
                           </Typography>
                           <Typography variant="body2" fontWeight="medium">
-                            <Tooltip title={intl.formatMessage({ id: "enviar_a_otro_proveedor" })}>
-                              <IconButton
-                                onClick={() => {
-                                  const datos = {
-                                    nombre_producto: canje.nombre_premio,
-                                  };
-                                  setOrdenCompraActiva(canje?.id_validacion_producto);
-                                  getProductoNuevoProveedor(datos);
-                                  handleisAlertOpenOtroProveedor();
-                                }}
-                                sx={{ color: darkMode ? "#fff" : "#13e9bf", padding: "0" }}
+                            {canje.id_proveedor !== null ? (
+                              <Tooltip
+                                title={intl.formatMessage({ id: "enviar_a_otro_proveedor" })}
                               >
-                                <DoubleArrowIcon />
-                              </IconButton>
-                            </Tooltip>
+                                <IconButton
+                                  onClick={() => {
+                                    const datos = {
+                                      nombre_producto: canje.nombre_premio,
+                                    };
+                                    setOrdenCompraActiva(canje?.id_validacion_producto);
+                                    getProductoNuevoProveedor(datos);
+                                    handleisAlertOpenOtroProveedor();
+                                  }}
+                                  sx={{ color: darkMode ? "#fff" : "#13e9bf", padding: "0" }}
+                                >
+                                  <DoubleArrowIcon />
+                                </IconButton>
+                              </Tooltip>
+                            ) : null}
+                            {canje.id_proveedor === null ? (
+                              <Tooltip title={intl.formatMessage({ id: "asignar_proveedor" })}>
+                                <IconButton
+                                  onClick={() => {
+                                    setProductoSeleccionado(canje);
+                                    handleisAlertOpenAsignarProveedor();
+                                  }}
+                                  sx={{ color: darkMode ? "#fff" : "#6fbf4c", padding: "0" }}
+                                >
+                                  <AddIcon />
+                                </IconButton>
+                              </Tooltip>
+                            ) : null}
                             {/*{canje.estatus_proveedor === 2 ? null : (
                               <Tooltip
                                 title={intl.formatMessage({ id: "marcar_como_compra_digital" })}
@@ -627,7 +670,7 @@ const CanjeValidadoProveedorModal = ({
               />
             </MDBox>
 
-            {verCanje?.orden_compra?.observaciones !== "" && (
+            {verCanje?.orden_compra?.observaciones && (
               <Grid item xs={12} mb={2}>
                 <Typography variant="body2" color="text.secondary">
                   Observaciones del proveedor
@@ -638,13 +681,183 @@ const CanjeValidadoProveedorModal = ({
               </Grid>
             )}
 
+            {verCanje?.orden_compra?.estatus === "orden_compra_enviada_a_proveedor" ||
+            verCanje?.orden_compra?.estatus === "xml_validado_correctamente_proveedor" ? (
+              <>
+                <Divider sx={{ mb: 2 }} />
+                <Grid item xs={12}>
+                  <Box sx={{ textAlign: "center", mb: 3 }}>
+                    <Typography variant="h5" color={"#eb2fa5"}>
+                      Validar y subir factura
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Para continuar el proceso, valida el XML, sube el PDF de la factura y da click
+                      en <b style={{ color: "#A5EB2F" }}>Validar orden de compra</b>, para validar
+                      la información de la orden de compra
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Divider sx={{ mb: 2 }} />
+                <Grid item xs={12} md={12} display="flex" justifyContent="center" mb={2}>
+                  {verCanje?.orden_compra?.estatus !== "xml_validado_correctamente_proveedor" && (
+                    <Grid
+                      item
+                      xs={12}
+                      md={4}
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                      flexDirection="column"
+                    >
+                      <Typography variant="caption" color="text.secondary">
+                        Validar XML
+                      </Typography>
+                      <MuiFileInput
+                        value={factura}
+                        onChange={handleChangeFactura}
+                        inputProps={{ accept: ".xml" }}
+                        hideSizeText
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <CloudUploadIcon fontSize="medium" />
+                            </InputAdornment>
+                          ),
+                          endAdornment: factura && (
+                            <InputAdornment position="end">
+                              <Button
+                                sx={{
+                                  color: "#fff",
+                                  background: "#eb2fa5",
+                                  fontSize: "0.75rem",
+                                  padding: "6px 8px",
+                                  margin: "0",
+                                }}
+                                size="small"
+                                variant="contained"
+                                disabled={procesandoValidandoFactura}
+                                onClick={(e: any) => {
+                                  const datos = {
+                                    id_orden_compra: verCanje?.orden_compra?.id,
+                                    id_proveedor: verCanje?.proveedor?.id,
+                                    id_usuario: verCanje?.orden_compra?.id_usuario,
+                                    xml_factura: factura,
+                                  };
+                                  validarFacturaOrdenCompra(datos);
+                                }}
+                              >
+                                {procesandoValidandoFactura ? (
+                                  <>
+                                    <Spinner
+                                      as="span"
+                                      animation="border"
+                                      size="sm"
+                                      role="status"
+                                      aria-hidden="true"
+                                    />
+                                    Validando...{" "}
+                                  </>
+                                ) : (
+                                  intl.formatMessage({ id: "validar_xml" })
+                                )}
+                              </Button>
+                            </InputAdornment>
+                          ),
+                        }}
+                        placeholder={`${intl.formatMessage({ id: "validar_xml_factura" })}`}
+                      />
+                    </Grid>
+                  )}
+                  {verCanje?.orden_compra?.estatus === "xml_validado_correctamente_proveedor" && (
+                    <Grid
+                      item
+                      xs={12}
+                      md={4}
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                      flexDirection="column"
+                    >
+                      <Typography variant="caption" color="text.secondary">
+                        Sube tu PDF de la factura
+                      </Typography>
+                      <MuiFileInput
+                        value={factura}
+                        onChange={handleChangeFactura}
+                        inputProps={{ accept: ".pdf" }}
+                        hideSizeText
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <PictureAsPdfIcon fontSize="medium" />
+                            </InputAdornment>
+                          ),
+                          endAdornment: factura && (
+                            <InputAdornment position="end">
+                              <Button
+                                sx={{
+                                  color: "#fff",
+                                  background: "#eb2fa5",
+                                  fontSize: "0.75rem",
+                                  padding: "6px 8px",
+                                  margin: "0",
+                                }}
+                                size="small"
+                                variant="contained"
+                                disabled={procesandoValidandoFactura}
+                                onClick={(e: any) => {
+                                  const datos = {
+                                    id_orden_compra: verCanje?.orden_compra?.id,
+                                    id_proveedor: verCanje?.proveedor?.id,
+                                    id_usuario: verCanje?.orden_compra?.id_usuario,
+                                    pdf_factura: factura,
+                                  };
+                                  subirPDFFactura(datos);
+                                }}
+                              >
+                                {procesandoValidandoFactura ? (
+                                  <>
+                                    <Spinner
+                                      as="span"
+                                      animation="border"
+                                      size="sm"
+                                      role="status"
+                                      aria-hidden="true"
+                                    />
+                                    Validando...{" "}
+                                  </>
+                                ) : (
+                                  intl.formatMessage({ id: "subir_pdf_factura" })
+                                )}
+                              </Button>
+                            </InputAdornment>
+                          ),
+                        }}
+                        placeholder={`${intl.formatMessage({
+                          id: "subir_pdf_factura_placeholder",
+                        })}`}
+                      />
+                    </Grid>
+                  )}
+                </Grid>
+                <Divider sx={{ mb: 2 }} />
+              </>
+            ) : null}
+
+            {verCanje?.orden_compra?.estatus === "factura_subida_correctamente_proveedor" ? (
+              <Alert severity="warning" sx={{ m: 2 }}>
+                La factura fue subida con éxito, para continuar el proceso debes dar click en{" "}
+                <b>Validar orden de compra</b>
+              </Alert>
+            ) : null}
+
             <Button
               sx={{
                 color: "#fff",
                 background: "#3ec972",
                 fontSize: "0.75rem",
                 padding: "6px 8px",
-                margin: "0 10px",
+                margin: "5px 10px",
               }}
               variant="contained"
               endIcon={<SendIcon />}
@@ -675,13 +888,52 @@ const CanjeValidadoProveedorModal = ({
                 intl.formatMessage({ id: "enviar_orden_de_compra" })
               )}
             </Button>
+
+            <Button
+              sx={{
+                color: "#fff",
+                background: "#3ec972",
+                fontSize: "0.75rem",
+                padding: "6px 8px",
+                margin: "5px 10px",
+              }}
+              variant="contained"
+              endIcon={<SendIcon />}
+              disabled={
+                procesandoValidacionFinal ||
+                !todosProductosValidados ||
+                verCanje?.orden_compra?.estatus !== "factura_subida_correctamente_proveedor"
+              }
+              onClick={(e: any) => {
+                const datos = {
+                  id_orden_compra: verCanje?.orden_compra.id,
+                };
+                validarOrdenCompraFinal(datos);
+              }}
+            >
+              {procesandoValidacionFinal ? (
+                <>
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                  Validando...{" "}
+                </>
+              ) : (
+                intl.formatMessage({ id: "validar_orden_de_compra" })
+              )}
+            </Button>
+
             <Button
               sx={{
                 color: "#fff",
                 background: "#e01032",
                 fontSize: "0.75rem",
                 padding: "6px 8px",
-                margin: "0 10px",
+                margin: "5px 10px",
               }}
               variant="contained"
               endIcon={<SendIcon />}
@@ -718,7 +970,7 @@ const CanjeValidadoProveedorModal = ({
                 background: "#3ec972",
                 fontSize: "0.75rem",
                 padding: "6px 8px",
-                margin: "0 10px",
+                margin: "5px 10px",
               }}
               variant="contained"
               endIcon={<SendIcon />}
@@ -741,7 +993,6 @@ const CanjeValidadoProveedorModal = ({
                     };
                   }),
                 };
-                //console.log(datos);
                 enviarCotizacionProveedor(datos);
               }}
             >
@@ -766,7 +1017,7 @@ const CanjeValidadoProveedorModal = ({
                 background: "#084d6e",
                 fontSize: "0.75rem",
                 padding: "6px 8px",
-                margin: "0 10px",
+                margin: "5px 10px",
               }}
               variant="contained"
               endIcon={<PictureAsPdfIcon />}
@@ -774,7 +1025,6 @@ const CanjeValidadoProveedorModal = ({
                 procesandoOrdenCompra || canjesPaginados.length === 0 || !todosProductosValidados
               }
               onClick={(e: any) => {
-                //console.log(verCanje);
                 handleOpenPDFViewer();
               }}
             >
@@ -799,7 +1049,6 @@ const CanjeValidadoProveedorModal = ({
       <ModalConfirm
         onAcept={() => {
           handleisAlertCloseCompraDigital();
-          //eliminarProducto(Number(productoId));
         }}
         onCancel={() => {
           handleisAlertCloseCompraDigital();

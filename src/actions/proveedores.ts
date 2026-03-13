@@ -14,6 +14,18 @@ export const crearProveedorHttp = async (data: any) => {
     return promise;
   }
 };
+export const asignarProveedorHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.put(
+      `${env.API_URL}${"/asignarProveedor"}`,
+      data
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
 export const getProveedoresHttp = async () => {
   try {
     const response = await axios.get(`${env.API_URL}${"/getProveedores"}`);

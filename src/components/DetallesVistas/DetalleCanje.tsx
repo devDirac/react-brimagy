@@ -39,6 +39,7 @@ interface Canje {
   estado_canje: string;
   estado_validacion: string;
   id_producto: number;
+  id_proveedor: number;
 }
 
 interface DetalleCanjeProps {
@@ -46,6 +47,7 @@ interface DetalleCanjeProps {
   isPDFViewerOpen: boolean;
   handleClosePDFViewer: () => void;
   handleOpenPDFViewer: () => void;
+  validarIdentidadSinProveedor: (data: any) => Promise<void>;
   validarIdentidad: (data: any) => Promise<void>;
   procesandoIdentidad: boolean;
 }
@@ -54,6 +56,7 @@ const DetallesCanjeModal = ({
   isPDFViewerOpen,
   handleClosePDFViewer,
   handleOpenPDFViewer,
+  validarIdentidadSinProveedor,
   validarIdentidad,
   verCanje,
   procesandoIdentidad,
@@ -153,8 +156,9 @@ const DetallesCanjeModal = ({
               verCanje.estado_validacion === "identidad_validada"
             }
             onClick={(e: any) => {
-              //console.log(verCanje);
-              validarIdentidad(verCanje);
+              verCanje?.id_proveedor == null
+                ? validarIdentidadSinProveedor(verCanje)
+                : validarIdentidad(verCanje);
             }}
           >
             {procesandoIdentidad ? (

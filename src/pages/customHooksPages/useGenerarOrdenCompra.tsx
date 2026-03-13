@@ -5,6 +5,8 @@ import { getErrorHttpMessage } from "../../utils";
 import { StoreType } from "../../types/genericTypes";
 import { useIntl } from "react-intl";
 import { setAuth } from "../../actions/auth";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import { numericFormatter } from "react-number-format";
 import moment from "moment";
 import { enviarValidacionHttp, getCanjesHttp, getCanjesPorProveedorHttp } from "actions/canjes";
@@ -15,8 +17,13 @@ import {
   getOCPorIdProveedorHttp,
   getProveedoresOCHttp,
   rechazarCotizacionDeProveedorHttp,
+  subirPDFFacturaHttp,
+  validarFacturaOrdenCompraHttp,
+  validarOrdenCompraFinalHttp,
 } from "actions/ordenCompra";
 import {
+  asignarProveedorHttp,
+  crearProveedorHttp,
   enviarANuevoProveedorHttp,
   getProductoNuevoProveedorHttp,
   getProveedoresHttp,
@@ -63,6 +70,8 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
   const [procesandoEnviarOrdenAProveedor, setProcesandoEnviarOrdenAProveedor] =
     useState<boolean>(false);
   const [procesandoRechazarCotizacion, setProcesandoRechazarCotizacion] = useState<boolean>(false);
+  const [procesandoValidandoFactura, setProcesandoValidandoFactura] = useState<boolean>(false);
+  const [procesandoSubirPDFFactura, setProcesandoSubirPDFFactura] = useState<boolean>(false);
   //Generación PDF
   const [isPDFViewerOpen, setIsPDFViewerOpen] = useState(false);
   const handleOpenPDFViewer = () => setIsPDFViewerOpen(true);
@@ -83,11 +92,82 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
   const [proveedorSeleccionado, setProveedorSeleccionado] = useState<any>(null);
   const [productoNuevoProveedor, setProductoNuevoProveedor] = useState<any[]>([]);
 
+  const [visualizacion, setVisualizacion] = useState<string | null>("cuadricula");
+
+  //ASIGNAR PROVEEDOR A UN PRODUCTO
+  const [procesandoProveedor, setProcesandoProveedor] = useState<boolean>(false);
+  const [productoSeleccionado, setProductoSeleccionado] = useState<any>(null);
+  const [isAlertOpenAsignarProveedor, setIsAlertOpenAsignarProveedor] = useState(false);
+  const handleisAlertOpenAsignarProveedor = () => setIsAlertOpenAsignarProveedor(true);
+  const handleisAlerCloseAsignarProveedor = () => setIsAlertOpenAsignarProveedor(false);
+
+  //MODAL REGISTRAR NUEVO PROVEEDOR
+  const [isAlertOpenNuevoProveedor, setIsAlertOpenNuevoProveedor] = useState(false);
+  const handleisAlertOpenNuevoProveedor = () => setIsAlertOpenNuevoProveedor(true);
+  const handleisAlerCloseNuevoProveedor = () => setIsAlertOpenNuevoProveedor(false);
+
+  //PARA AÑADIR FACTURAS/XML
+  const [facturaValidada, setFacturaValidada] = useState<boolean>(false);
+  const [procesandoValidacionFinal, setProcesandoValidacionFinal] = useState<boolean>(false);
+  const [factura, setFactura] = useState<File | null>(null);
+  const handleChangeFactura = (newFile: File | null) => {
+    setFactura(newFile);
+  };
+
   useEffect(() => {
     setAuth(token);
   }, [token]);
 
-  const [visualizacion, setVisualizacion] = useState<string | null>("cuadricula");
+  const formikAsignar = useFormik({
+    initialValues: {
+      id_proveedor: "",
+    },
+    validationSchema: Yup.object({
+      id_proveedor: Yup.string(),
+    }),
+    onSubmit: async (values) => {
+      console.log("Formulario enviado:", values);
+    },
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      id_proveedor: "",
+      nombre: "",
+      razon_social: "",
+      descripcion: "",
+      nombre_contacto: "",
+      telefono: "",
+      correo: "",
+    },
+    validationSchema: Yup.object({
+      id_proveedor: Yup.string(),
+      nombre: Yup.string(),
+      razon_social: Yup.string(),
+      descripcion: Yup.string(),
+      nombre_contacto: Yup.string(),
+      telefono: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      correo: Yup.string()
+        .email(intl.formatMessage({ id: "input_validation_email_invalido" }))
+        .required(intl.formatMessage({ id: "input_validation_requerido" })),
+    }),
+    onSubmit: async (values) => {
+      console.log("Formulario enviado:", values);
+    },
+  });
+
+  const isFieldValid = (fieldName: keyof typeof formikAsignar.values) => {
+    return (
+      formikAsignar.touched[fieldName] &&
+      !formikAsignar.errors[fieldName] &&
+      formikAsignar.values[fieldName] &&
+      formikAsignar.values[fieldName] !== ""
+    );
+  };
+
+  const getFieldColor = (fieldName: keyof typeof formikAsignar.values) => {
+    return isFieldValid(fieldName) ? "#00AB16" : undefined;
+  };
 
   const handleVisualizacion = (
     event: React.MouseEvent<HTMLElement>,
@@ -134,8 +214,8 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
   const getProveedores = useCallback(async () => {
     try {
       setProcesando(true);
-      const asegurados = await getProveedoresHttp();
-      setProveedoresSelect(asegurados);
+      const proveedores = await getProveedoresHttp();
+      setProveedoresSelect(proveedores);
       setProcesando(false);
     } catch (error) {
       setProcesando(false);
@@ -144,6 +224,47 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
       handleisAlertOpen();
     }
   }, []);
+
+  const crearProveedor = async (datos: any) => {
+    try {
+      setProcesandoProveedor(true);
+      const proveedorData: any = await crearProveedorHttp(datos);
+      setProveedoresSelect((prev) => [...prev, proveedorData]);
+      formikAsignar.setFieldValue("id_proveedor", proveedorData.id);
+      formik.resetForm();
+      setProcesandoProveedor(false);
+      setMensajeAlert(intl.formatMessage({ id: "proveedor_creado_correctamente" }));
+      handleisAlerCloseNuevoProveedor();
+      handleisAlertOpen();
+    } catch (error) {
+      setProcesandoProveedor(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "proveedor_creado_error" }));
+      handleisAlertOpen();
+    }
+  };
+
+  const asignarProveedor = async (datos: any) => {
+    try {
+      setProcesandoProveedor(true);
+      const proveedorData: any = await asignarProveedorHttp(datos);
+      await getProveedoresOC();
+      //setProveedoresSelect((prev) => [...prev, proveedorData]);
+      //formikAsignar.setFieldValue("id_proveedor", proveedorData.id);
+      formikAsignar.resetForm();
+      setProcesandoProveedor(false);
+      setMensajeAlert(intl.formatMessage({ id: "proveedor_asignado_correctamente" }));
+      handleisAlertCloseVerCanje();
+      handleisAlerCloseNuevoProveedor();
+      handleisAlerCloseAsignarProveedor();
+      handleisAlertOpen();
+    } catch (error) {
+      setProcesandoProveedor(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "proveedor_asignado_error" }));
+      handleisAlertOpen();
+    }
+  };
 
   const getProveedoresOC = useCallback(async (search?: string) => {
     try {
@@ -301,12 +422,101 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     }
   }, []);
 
+  //FUNCIONES PARA FACTURAS POR PARTE DE BRIMAGY
+  const validarFacturaOrdenCompra = async (data: any) => {
+    try {
+      setProcesandoValidandoFactura(true);
+
+      const formData = new FormData();
+      formData.append("id_orden_compra", data.id_orden_compra);
+      formData.append("id_proveedor", data.id_proveedor);
+      formData.append("id_usuario", data.id_usuario);
+      formData.append("xml_factura", data.xml_factura);
+
+      const response: any = await validarFacturaOrdenCompraHttp(formData);
+      if (response.validacion.status === "success") {
+        setFacturaValidada(true);
+      }
+      setVerCanje((prevOrden: any) => ({
+        ...prevOrden,
+        orden_compra: {
+          ...prevOrden.orden_compra,
+          estatus: "xml_validado_correctamente_proveedor",
+        },
+      }));
+      setMensajeAlert(intl.formatMessage({ id: "factura_validada_correctamente" }));
+      handleisAlertOpen();
+      setProcesandoValidandoFactura(false);
+      // Limpiar el archivo después de validar
+      setFactura(null);
+    } catch (error) {
+      setProcesandoValidandoFactura(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "factura_validada_error" }));
+      handleisAlertOpen();
+    }
+  };
+  const subirPDFFactura = async (data: any) => {
+    try {
+      setProcesandoSubirPDFFactura(true);
+
+      const formData = new FormData();
+      formData.append("id_orden_compra", data.id_orden_compra);
+      formData.append("id_proveedor", data.id_proveedor);
+      formData.append("id_usuario", data.id_usuario);
+      formData.append("pdf_factura", data.pdf_factura);
+
+      const response: any = await subirPDFFacturaHttp(formData);
+      setVerCanje((prevOrden: any) => ({
+        ...prevOrden,
+        orden_compra: {
+          ...prevOrden.orden_compra,
+          estatus: "factura_subida_correctamente_proveedor",
+        },
+      }));
+      setMensajeAlert(intl.formatMessage({ id: "pdf_factura_subido_correctamente" }));
+      handleisAlertOpen();
+      setProcesandoSubirPDFFactura(false);
+      setFactura(null);
+    } catch (error) {
+      setProcesandoSubirPDFFactura(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "pdf_factura_subido_error" }));
+      handleisAlertOpen();
+    }
+  };
+
+  const validarOrdenCompraFinal = async (data: any) => {
+    try {
+      setProcesandoValidacionFinal(true);
+      const response = await validarOrdenCompraFinalHttp(data);
+      setVerCanje((prevOrden: any) => ({
+        ...prevOrden,
+        orden_compra: {
+          ...prevOrden.orden_compra,
+          estatus: "orden_validada_por_proveedor",
+        },
+      }));
+      setMensajeAlert(intl.formatMessage({ id: "orden_compra_final_validada_exito" }));
+      handleisAlertOpen();
+      setProcesandoValidacionFinal(false);
+    } catch (error) {
+      setProcesandoValidacionFinal(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "orden_compra_final_validada_error" }));
+      handleisAlertOpen();
+    }
+  };
+
   useEffect(() => {
     getProveedoresOC();
     getProveedores();
   }, [getProveedoresOC, getProveedores]);
 
   return {
+    formik,
+    formikAsignar,
+    getFieldColor,
     enviarANuevoProveedor,
     setOrdenCompraActiva,
     ordenCompraActiva,
@@ -368,5 +578,26 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     visualizacion,
     handleVisualizacion,
     handleAccion,
+    //para factura
+    procesandoValidandoFactura,
+    procesandoSubirPDFFactura,
+    factura,
+    handleChangeFactura,
+    validarFacturaOrdenCompra,
+    subirPDFFactura,
+    procesandoValidacionFinal,
+    validarOrdenCompraFinal,
+    //ASIGNAR PROVEEDOR A UN PRODUCTO
+    asignarProveedor,
+    crearProveedor,
+    procesandoProveedor,
+    productoSeleccionado,
+    setProductoSeleccionado,
+    isAlertOpenAsignarProveedor,
+    handleisAlertOpenAsignarProveedor,
+    handleisAlerCloseAsignarProveedor,
+    isAlertOpenNuevoProveedor,
+    handleisAlertOpenNuevoProveedor,
+    handleisAlerCloseNuevoProveedor,
   };
 };

@@ -7,7 +7,11 @@ import { useIntl } from "react-intl";
 import { setAuth } from "../../actions/auth";
 import { numericFormatter } from "react-number-format";
 import moment from "moment";
-import { enviarValidacionHttp, getCanjesHttp } from "actions/canjes";
+import {
+  enviarValidacionHttp,
+  enviarValidacionSinProveedorHttp,
+  getCanjesHttp,
+} from "actions/canjes";
 
 export const useListaCanjeos = (tipoUsuario: number) => {
   const dispatch = useDispatch();
@@ -138,6 +142,15 @@ export const useListaCanjeos = (tipoUsuario: number) => {
     try {
       setProcesandoIdentidad(true);
       await enviarValidacionHttp(data);
+      setVerCanje((prevCanje: any) => ({
+        ...prevCanje,
+        estado_validacion: "notificacion_enviada",
+      }));
+      setCanjes((prevCanjes: any[]) =>
+        prevCanjes.map((c) =>
+          c.id === verCanje?.id ? { ...c, estado_validacion: "notificacion_enviada" } : c
+        )
+      );
       setMensajeAlert(intl.formatMessage({ id: "validacion_enviada_correctamente" }));
       handleisAlertOpen();
       setProcesandoIdentidad(false);
@@ -149,12 +162,37 @@ export const useListaCanjeos = (tipoUsuario: number) => {
     }
   };
 
+  const validarIdentidadSinProveedor = async (data: any) => {
+    try {
+      setProcesandoIdentidad(true);
+      await enviarValidacionSinProveedorHttp(data);
+      setVerCanje((prevCanje: any) => ({
+        ...prevCanje,
+        estado_validacion: "identidad_validada",
+      }));
+      setCanjes((prevCanjes: any[]) =>
+        prevCanjes.map((c) =>
+          c.id === verCanje?.id ? { ...c, estado_validacion: "identidad_validada" } : c
+        )
+      );
+      setMensajeAlert(intl.formatMessage({ id: "canje_validado_correctamente" }));
+      handleisAlertOpen();
+      setProcesandoIdentidad(false);
+    } catch (error) {
+      setProcesandoIdentidad(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "canje_validado_error" }));
+      handleisAlertOpen();
+    }
+  };
+
   useEffect(() => {
     getCanjes();
   }, [getCanjes]);
 
   return {
     validarIdentidad,
+    validarIdentidadSinProveedor,
     verCanje,
     setVerCanje,
     isAlertOpenVerCanje,

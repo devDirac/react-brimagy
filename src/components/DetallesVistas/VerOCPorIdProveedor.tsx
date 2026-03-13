@@ -289,7 +289,6 @@ const OCPorIdProveedorModal = ({
                         <Tooltip title={intl.formatMessage({ id: "ver_orden_compra" })}>
                           <IconButton
                             onClick={() => {
-                              //console.log(oc.id);
                               getOCPorId(oc.id);
                               handleisAlertOpenVerCanje();
                             }}

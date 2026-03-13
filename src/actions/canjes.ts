@@ -31,6 +31,19 @@ export const enviarValidacionHttp = async (data: any) => {
   }
 };
 
+export const enviarValidacionSinProveedorHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.post(
+      `${env.API_URL}${"/enviarValidacionSinProveedor"}`,
+      data
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
 export const validarCodigoCanjeHttp = async (codigo: number, id_canje: number) => {
   try {
     const response: GeneralHttpResponse = await axios.post(`${env.API_URL}/validarCodigoCanje`, {

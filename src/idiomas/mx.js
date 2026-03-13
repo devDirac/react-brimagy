@@ -241,6 +241,13 @@ const textosMx = {
   set_actualizar_plataforma: "Actualizar plataforma",
   plataforma_actualizada_correctamente: "Plataforma actualizada correctamente",
   sin_productos_en_almacen: "Sin productos en almacen",
+  canje_validado_correctamente: "Canje validado correctamente",
+  canje_validado_error: "Error al validar el canje",
+  asignar_proveedor: "Asignar un proveedor",
+  general_asignando: "Asignando",
+  set_asignar: "Asignar",
+  proveedor_asignado_correctamente: "Proveedor asignado correctamente",
+  proveedor_asignado_error: "Error al asignar el proveedor",
 };
 
 export default textosMx;

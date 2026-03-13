@@ -247,8 +247,8 @@ export const useCatalogoProductos = (tipoUsuario: number) => {
   const getProveedores = useCallback(async () => {
     try {
       setProcesando(true);
-      const asegurados = await getProveedoresHttp();
-      setProveedores(asegurados);
+      const proveedores = await getProveedoresHttp();
+      setProveedores(proveedores);
       setProcesando(false);
     } catch (error) {
       setProcesando(false);
@@ -261,8 +261,8 @@ export const useCatalogoProductos = (tipoUsuario: number) => {
   const getCategoriasProducto = useCallback(async () => {
     try {
       setProcesando(true);
-      const asegurados = await getCategoriasHttp();
-      setCategorias(asegurados);
+      const proveedores = await getCategoriasHttp();
+      setCategorias(proveedores);
       setProcesando(false);
     } catch (error) {
       setProcesando(false);

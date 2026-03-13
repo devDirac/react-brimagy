@@ -16,7 +16,7 @@ Coded by www.creative-tim.com
 import { useMemo, useState } from "react";
 
 // formik components
-import { Formik, Form } from "formik";
+import { Formik, Form, FormikProvider } from "formik";
 
 // @mui material components
 import Grid from "@mui/material/Grid";
@@ -75,6 +75,8 @@ import ProductoNuevoProveedorModal from "components/DetallesVistas/ProductoNuevo
 import TableRowsIcon from "@mui/icons-material/TableRows";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import DinamicTableMejorada from "components/DinamicTable/DinamicTable";
+import { TextFieldValidado } from "components/TextFieldValidado/TextFieldValidado";
+import AddBoxIcon from "@mui/icons-material/AddBox";
 
 function GenerarOrdenCompra(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -86,6 +88,9 @@ function GenerarOrdenCompra(): JSX.Element {
   const [rowsPerPage, setRowsPerPage] = useState(6);
 
   const {
+    formik,
+    formikAsignar,
+    getFieldColor,
     enviarANuevoProveedor,
     setOrdenCompraActiva,
     ordenCompraActiva,
@@ -147,6 +152,27 @@ function GenerarOrdenCompra(): JSX.Element {
     visualizacion,
     handleVisualizacion,
     handleAccion,
+    //para factura
+    procesandoValidandoFactura,
+    procesandoSubirPDFFactura,
+    factura,
+    handleChangeFactura,
+    validarFacturaOrdenCompra,
+    subirPDFFactura,
+    procesandoValidacionFinal,
+    validarOrdenCompraFinal,
+    //ASIGNAR PROVEEDOR A UN PRODUCTO
+    asignarProveedor,
+    crearProveedor,
+    procesandoProveedor,
+    productoSeleccionado,
+    setProductoSeleccionado,
+    isAlertOpenAsignarProveedor,
+    handleisAlertOpenAsignarProveedor,
+    handleisAlerCloseAsignarProveedor,
+    isAlertOpenNuevoProveedor,
+    handleisAlertOpenNuevoProveedor,
+    handleisAlerCloseNuevoProveedor,
   } = useGenerarOrdenCompra(tipoUsuario);
 
   const independiente = () => {
@@ -535,6 +561,16 @@ function GenerarOrdenCompra(): JSX.Element {
                 rechazarCotizacionDeProveedor={rechazarCotizacionDeProveedor}
                 getProductoNuevoProveedor={getProductoNuevoProveedor}
                 setOrdenCompraActiva={setOrdenCompraActiva}
+                procesandoValidandoFactura={procesandoValidandoFactura}
+                procesandoSubirPDFFactura={procesandoSubirPDFFactura}
+                factura={factura}
+                handleChangeFactura={handleChangeFactura}
+                validarFacturaOrdenCompra={validarFacturaOrdenCompra}
+                subirPDFFactura={subirPDFFactura}
+                procesandoValidacionFinal={procesandoValidacionFinal}
+                validarOrdenCompraFinal={validarOrdenCompraFinal}
+                handleisAlertOpenAsignarProveedor={handleisAlertOpenAsignarProveedor}
+                setProductoSeleccionado={setProductoSeleccionado}
               />
             </>
           ) : null}
@@ -562,6 +598,242 @@ function GenerarOrdenCompra(): JSX.Element {
           </Grid>
         </Grid>
       </ModalComponent>
+      {/* ASIGNAR CANJE A UN PROVEEDOR */}
+      <ModalComponent
+        handleClose={handleisAlerCloseAsignarProveedor}
+        isOpen={isAlertOpenAsignarProveedor}
+        key={"alertaAsignarProveedor"}
+      >
+        {productoSeleccionado ? (
+          <FormikProvider value={formikAsignar!}>
+            <Grid container spacing={2} style={{ textAlign: "center" }}>
+              <Grid item xs={12}>
+                <br />
+                <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
+                  Asignar {productoSeleccionado?.nombre_premio} a un proveedor
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  id="id_proveedor"
+                  select
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "select_proveedores" })} *`}
+                  variant="standard"
+                  name="id_proveedor"
+                  value={formikAsignar.values.id_proveedor || ""}
+                  disabled={!proveedores || proveedores.length === 0}
+                  helperText={
+                    !proveedores || proveedores.length === 0
+                      ? intl.formatMessage({ id: "sin_proveedores_registrados" })
+                      : formikAsignar.touched.id_proveedor && formikAsignar.errors.id_proveedor
+                  }
+                  error={
+                    formikAsignar.touched.id_proveedor && Boolean(formikAsignar.errors.id_proveedor)
+                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    formikAsignar.setFieldValue("id_proveedor", value);
+                  }}
+                  InputProps={{
+                    style: { padding: "5px" },
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Tooltip title="Agregar proveedor">
+                          <IconButton
+                            size="medium"
+                            color="primary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleisAlertOpenNuevoProveedor();
+                            }}
+                          >
+                            <AddBoxIcon fontSize="medium" />
+                          </IconButton>
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                  }}
+                  onBlur={formikAsignar.handleBlur}
+                  sx={{
+                    "& .MuiInputLabel-root": {
+                      color: getFieldColor("id_proveedor"),
+                    },
+                    "& .MuiInput-underline:after": {
+                      borderBottomColor: getFieldColor("id_proveedor"),
+                    },
+                    "& .MuiInput-underline:before": {
+                      borderBottomColor: getFieldColor("id_proveedor"),
+                    },
+                    "& .MuiInputBase-input": {
+                      color: getFieldColor("id_proveedor"),
+                    },
+                  }}
+                >
+                  {proveedoresSelect?.map((option) => (
+                    <MenuItem key={option.id} value={option.id}>
+                      {option.nombre}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                display="flex"
+                alignContent="center"
+                justifyContent="center"
+              >
+                <Button
+                  sx={{ color: "#fff", background: "#084d6e" }}
+                  variant="contained"
+                  endIcon={<AddCircleIcon />}
+                  disabled={procesando || !formikAsignar.dirty || !formikAsignar.isValid}
+                  onClick={(e: any) => {
+                    const datos = {
+                      id_proveedor: formikAsignar.values.id_proveedor,
+                      id_producto: productoSeleccionado?.id_producto,
+                      id_validacion: productoSeleccionado?.id_validacion_producto,
+                    };
+                    asignarProveedor(datos);
+                  }}
+                >
+                  {procesandoProveedor ? (
+                    <>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                      {intl.formatMessage({ id: "general_asignando" })}...{" "}
+                    </>
+                  ) : (
+                    intl.formatMessage({ id: "set_asignar" })
+                  )}
+                </Button>
+              </Grid>
+            </Grid>
+          </FormikProvider>
+        ) : null}
+      </ModalComponent>
+      {/* REGISTRAR PROVEEDOR NUEVO */}
+      <ModalComponent
+        handleClose={handleisAlerCloseNuevoProveedor}
+        isOpen={isAlertOpenNuevoProveedor}
+        key={"alertaNuevoProveedor"}
+      >
+        {productoSeleccionado ? (
+          <FormikProvider value={formik!}>
+            <Grid container spacing={2} style={{ textAlign: "center" }}>
+              <Grid item xs={12}>
+                <br />
+                <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
+                  Registrar nuevo proveedor
+                </Typography>
+              </Grid>
+              <Grid item xs={6} sm={6}>
+                <TextFieldValidado
+                  id="nombre"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_nombre" })} *`}
+                  variant="standard"
+                  name="nombre"
+                />
+              </Grid>
+              <Grid item xs={6} sm={6}>
+                <TextFieldValidado
+                  id="razon_social"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_razon_social" })}`}
+                  variant="standard"
+                  name="razon_social"
+                />
+              </Grid>
+              <Grid item xs={6} sm={6}>
+                <TextFieldValidado
+                  id="descripcion"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_descripcion" })}`}
+                  variant="standard"
+                  name="descripcion"
+                />
+              </Grid>
+              <Grid item xs={6} sm={6}>
+                <TextFieldValidado
+                  id="nombre_contacto"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_nombre_contacto" })}`}
+                  variant="standard"
+                  name="nombre_contacto"
+                />
+              </Grid>
+              <Grid item xs={6} sm={6}>
+                <TextFieldValidado
+                  id="telefono"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_telefono" })} *`}
+                  variant="standard"
+                  name="telefono"
+                />
+              </Grid>
+              <Grid item xs={6} sm={6}>
+                <TextFieldValidado
+                  id="correo"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_correo" })} *`}
+                  variant="standard"
+                  name="correo"
+                />
+              </Grid>
+              <Grid
+                item
+                xs={12}
+                sm={12}
+                display="flex"
+                alignContent="center"
+                justifyContent="center"
+              >
+                <Button
+                  sx={{ color: "#fff", background: "#084d6e" }}
+                  variant="contained"
+                  endIcon={<AddCircleIcon />}
+                  disabled={procesando || !formik.dirty || !formik.isValid}
+                  onClick={(e: any) => {
+                    const datos = {
+                      nombre: formik.values.nombre,
+                      razon_social: formik.values.razon_social,
+                      descripcion: formik.values.descripcion,
+                      nombre_contacto: formik.values.nombre_contacto,
+                      telefono: formik.values.telefono,
+                      correo: formik.values.correo,
+                    };
+                    crearProveedor(datos);
+                  }}
+                >
+                  {procesandoProveedor ? (
+                    <>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                      {intl.formatMessage({ id: "general_añadiendo" })}...{" "}
+                    </>
+                  ) : (
+                    intl.formatMessage({ id: "set_añadir" })
+                  )}
+                </Button>
+              </Grid>
+            </Grid>
+          </FormikProvider>
+        ) : null}
+      </ModalComponent>
+
       <ModalComponent handleClose={handleisAlerClose} isOpen={isAlertOpen} key={"alerta"}>
         <Grid container spacing={2} style={{ textAlign: "center" }}>
           <Grid item xs={12}>

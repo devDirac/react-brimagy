@@ -1170,6 +1170,7 @@ function ListaProductos(): JSX.Element {
                           (p) => p?.proveedor_valido && p?.categoria_valida && !p?.sku_vacio
                         ).length
                       }
+                      <br />✓ Sin SKU: {excelData.filter((p) => p?.sku_vacio).length}
                     </Typography>
                   </Box>
                 </Grid>
@@ -1177,11 +1178,7 @@ function ListaProductos(): JSX.Element {
                   <Box sx={{ p: 2, bgcolor: "#ffebee", borderRadius: 1 }}>
                     <Typography variant="h6" color="error.main">
                       ✗ Productos inválidos:{" "}
-                      {
-                        excelData.filter(
-                          (p) => !p?.proveedor_valido || !p?.categoria_valida || p?.sku_vacio
-                        ).length
-                      }
+                      {excelData.filter((p) => !p?.proveedor_valido || !p?.categoria_valida).length}
                     </Typography>
                   </Box>
                 </Grid>
@@ -1299,7 +1296,12 @@ function ListaProductos(): JSX.Element {
                   plataforma_status: p.plataforma_valida
                     ? "✓ " + p.plataforma
                     : "✗ " + p.plataforma,
-                  proveedor_status: p.proveedor_valido ? "✓ " + p.proveedor : "✗ " + p.proveedor,
+                  //proveedor_status: p.proveedor_valido ? "✓ " + p.proveedor : "✗ " + p.proveedor,
+                  proveedor_status: p.proveedor_vacio
+                    ? "⚠️ Sin proveedor"
+                    : p.proveedor_valido
+                    ? "✓ " + p.proveedor
+                    : "✗ " + p.proveedor,
                   catalogo_status: p.categoria_valida ? "✓ " + p.catalogo : "✗ " + p.catalogo,
                   sku_status: p.sku_vacio
                     ? "⚠️ SKU VACÍO"
@@ -1355,7 +1357,7 @@ function ListaProductos(): JSX.Element {
               ) : (
                 `Guardar ${
                   excelData?.filter(
-                    (p) => p?.proveedor_valido && p?.categoria_valida && !p?.sku_vacio
+                    (p) => p?.proveedor_valido && p?.categoria_valida && p?.sku_vacio
                   ).length || 0
                 } productos válidos`
               )}

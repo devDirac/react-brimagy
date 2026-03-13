@@ -165,8 +165,19 @@ export const useListaProductos = (tipoUsuario: number) => {
 
   //Obtiene los proveedores únicos que no están registrados
   const obtenerProveedoresFaltantes = useCallback(() => {
-    const proveedoresFaltantes = Array.from(
+    /*const proveedoresFaltantes = Array.from(
       new Set(excelData.filter((p) => !p.proveedor_valido).map((p) => p.proveedor))
+    );*/
+    const proveedoresFaltantes = Array.from(
+      new Set(
+        excelData
+          .filter((p) => {
+            // ✅ Solo contar como faltante si tiene proveedor real pero no está registrado
+            const esVacioONA = !p.proveedor || p.proveedor.toUpperCase() === "N/A";
+            return !p.proveedor_valido && !esVacioONA;
+          })
+          .map((p) => p.proveedor)
+      )
     );
     return proveedoresFaltantes.filter(Boolean);
   }, [excelData]);
@@ -308,7 +319,7 @@ export const useListaProductos = (tipoUsuario: number) => {
   //Verificar si hay productos válidos para guardar
   const hayProductosValidos = useCallback(() => {
     return excelData.some(
-      (p) => p.proveedor_valido && p.categoria_valida && p.plataforma_valida && !p.sku_vacio
+      (p) => p.proveedor_valido && p.categoria_valida && p.plataforma_valida // && p.sku_vacio
     );
   }, [excelData]);
 
@@ -536,8 +547,8 @@ export const useListaProductos = (tipoUsuario: number) => {
   const getProveedores = useCallback(async () => {
     try {
       setProcesando(true);
-      const asegurados = await getProveedoresHttp();
-      setProveedores(asegurados);
+      const proveedores = await getProveedoresHttp();
+      setProveedores(proveedores);
       setProcesando(false);
     } catch (error) {
       setProcesando(false);
@@ -550,8 +561,8 @@ export const useListaProductos = (tipoUsuario: number) => {
   const getCategoriasProducto = useCallback(async () => {
     try {
       setProcesando(true);
-      const asegurados = await getCategoriasHttp();
-      setCategorias(asegurados);
+      const categorias = await getCategoriasHttp();
+      setCategorias(categorias);
       setProcesando(false);
     } catch (error) {
       setProcesando(false);
@@ -647,12 +658,17 @@ export const useListaProductos = (tipoUsuario: number) => {
       const limpiarSku = (valor: any): string => {
         if (valor === null || valor === undefined) return "";
 
-        return String(valor)
-          .toUpperCase() // Convertir a mayúsculas (opcional, depende de tu estándar)
-          .normalize("NFD") // Normalizar para separar acentos
-          .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
-          .replace(/[^A-Z0-9]/g, "") // Solo letras y números
-          .trim();
+        const valorStr = String(valor).toUpperCase().trim();
+
+        if (valorStr === "N/A" || valorStr === "") return "N/A";
+
+        return (
+          valorStr
+            .normalize("NFD") // Normalizar para separar acentos
+            .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
+            .replace(/[^A-Z0-9]/g, "") // Solo letras y números
+            .trim() || "N/A"
+        );
       };
 
       // Función para limpiar texto con caracteres permitidos -_',
@@ -698,7 +714,7 @@ export const useListaProductos = (tipoUsuario: number) => {
       const valoresVacios = (valor: string, tipo: "texto" | "sku"): boolean => {
         if (!valor) return false;
 
-        if (tipo === "sku") {
+        if (tipo === "sku" && valor !== "N/A") {
           // SKU: solo letras y números
           return !/^[A-Z0-9]+$/i.test(valor);
         } else {
@@ -712,6 +728,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         if (rowNumber === 1) return;
 
         const proveedor = String(getValueByHeader(row, "proveedor") || "").trim();
+        const proveedorVacio = !proveedor || proveedor.toUpperCase() === "N/A";
 
         const categoria = String(
           getValueByHeader(row, "categoría") ||
@@ -726,7 +743,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         );
         const marca = limpiarTextoConCaracteres(getValueByHeader(row, "marca"));
         const sku = limpiarSku(getValueByHeader(row, "sku"));
-        const skuVacio = !sku || sku.trim() === "";
+        const skuVacio = !sku || sku.trim() === "" || sku === "N/A";
         const color = limpiarTexto(getValueByHeader(row, "color"));
         const talla = getValueByHeader(row, "talla");
 
@@ -743,7 +760,7 @@ export const useListaProductos = (tipoUsuario: number) => {
           );
         }
 
-        if (sku && tieneCaracteresNoPermitidos(sku, "sku")) {
+        if (sku && tieneCaracteresNoPermitidos(sku, "sku") && sku !== "N/A") {
           erroresValidacion.push(
             `Fila ${rowNumber}: El SKU solo puede contener letras y números (sin espacios ni caracteres especiales)`
           );
@@ -799,9 +816,12 @@ export const useListaProductos = (tipoUsuario: number) => {
         });
 
         // Buscar IDs de proveedor y categoría
-        const proveedorObj = proveedores?.find(
+        /*const proveedorObj = proveedores?.find(
           (p) => p.nombre.toLowerCase() === proveedor.toLowerCase()
-        );
+        );*/
+        const proveedorObj = proveedorVacio
+          ? null
+          : proveedores?.find((p) => p.nombre.toLowerCase() === proveedor.toLowerCase());
         const categoriaObj = categorias?.find(
           (c) => c.desc.toLowerCase().trim() === categoria.toLowerCase().trim()
         );
@@ -836,7 +856,9 @@ export const useListaProductos = (tipoUsuario: number) => {
           puntos: Math.round(limpiarNumero(puntosRaw)),
           factor: Math.round(limpiarNumero(factorRaw)),
           tipo_producto: tipoProductoRaw,
-          proveedor_valido: !!proveedorObj,
+          //proveedor_valido: !!proveedorObj,
+          proveedor_valido: proveedorVacio ? true : !!proveedorObj,
+          proveedor_vacio: proveedorVacio,
           categoria_valida: !!categoriaObj,
           plataforma_valida: !!plataformaObj,
           sku_duplicado: false,
@@ -998,7 +1020,7 @@ export const useListaProductos = (tipoUsuario: number) => {
       setProcesandoExcel(true);
 
       const productosValidos = excelData.filter(
-        (p) => !p.sku_vacio && p.proveedor_valido && p.categoria_valida
+        (p) => /*p.sku_vacio && */ p.proveedor_valido && p.categoria_valida
       );
 
       const productosInvalidos = excelData.length - productosValidos.length;

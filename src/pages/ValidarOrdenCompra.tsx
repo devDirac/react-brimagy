@@ -955,7 +955,6 @@ function ValidarOrdenCompra(): JSX.Element {
                         endIcon={<PictureAsPdfIcon />}
                         disabled={procesando || !todosProductosValidados}
                         onClick={(e: any) => {
-                          //console.log(ordenCompra);
                           handleOpenPDFViewer();
                         }}
                       >

@@ -91,6 +91,7 @@ function ListaCanjeos(): JSX.Element {
 
   const {
     validarIdentidad,
+    validarIdentidadSinProveedor,
     verCanje,
     setVerCanje,
     isAlertOpenVerCanje,
@@ -383,6 +384,7 @@ function ListaCanjeos(): JSX.Element {
                               color="default"
                               onClick={() => {
                                 setVerCanje(p);
+                                console.log(verCanje);
                                 handleisAlertOpenVerCanje();
                               }}
                             >
@@ -521,6 +523,7 @@ function ListaCanjeos(): JSX.Element {
                 handleClosePDFViewer={handleClosePDFViewer}
                 handleOpenPDFViewer={handleOpenPDFViewer}
                 validarIdentidad={validarIdentidad}
+                validarIdentidadSinProveedor={validarIdentidadSinProveedor}
                 procesandoIdentidad={procesandoIdentidad}
               />
             </>
