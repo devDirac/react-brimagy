@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getErrorHttpMessage } from "../../utils";
@@ -28,6 +28,9 @@ import {
   getProductoNuevoProveedorHttp,
   getProveedoresHttp,
 } from "actions/proveedores";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import AddIcon from "@mui/icons-material/Add";
+import { registrarNuevoPrecioHttp } from "actions/productos";
 
 export const useGenerarOrdenCompra = (tipoUsuario: number) => {
   const dispatch = useDispatch();
@@ -105,6 +108,7 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
   const [isAlertOpenNuevoProveedor, setIsAlertOpenNuevoProveedor] = useState(false);
   const handleisAlertOpenNuevoProveedor = () => setIsAlertOpenNuevoProveedor(true);
   const handleisAlerCloseNuevoProveedor = () => setIsAlertOpenNuevoProveedor(false);
+  const [accionProducto, setAccionProducto] = useState(true);
 
   //PARA AÑADIR FACTURAS/XML
   const [facturaValidada, setFacturaValidada] = useState<boolean>(false);
@@ -118,16 +122,37 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     setAuth(token);
   }, [token]);
 
+  const validationSchemaAsignar = useMemo(
+    () =>
+      Yup.object({
+        id_proveedor: accionProducto
+          ? Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" }))
+          : Yup.string().notRequired(),
+        costo_sin_iva: !accionProducto
+          ? Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" }))
+          : Yup.string().notRequired(),
+      }),
+    [accionProducto]
+  );
+
+  const handleAccionProducto = (checked: boolean) => {
+    setAccionProducto(checked);
+    formikAsignar.resetForm({
+      values: {
+        id_proveedor: "",
+        costo_sin_iva: "",
+      },
+    });
+  };
+
   const formikAsignar = useFormik({
     initialValues: {
       id_proveedor: "",
+      costo_sin_iva: "",
     },
-    validationSchema: Yup.object({
-      id_proveedor: Yup.string(),
-    }),
-    onSubmit: async (values) => {
-      console.log("Formulario enviado:", values);
-    },
+    validationSchema: validationSchemaAsignar,
+    enableReinitialize: true,
+    onSubmit: async (values) => {},
   });
 
   const formik = useFormik({
@@ -249,8 +274,6 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
       setProcesandoProveedor(true);
       const proveedorData: any = await asignarProveedorHttp(datos);
       await getProveedoresOC();
-      //setProveedoresSelect((prev) => [...prev, proveedorData]);
-      //formikAsignar.setFieldValue("id_proveedor", proveedorData.id);
       formikAsignar.resetForm();
       setProcesandoProveedor(false);
       setMensajeAlert(intl.formatMessage({ id: "proveedor_asignado_correctamente" }));
@@ -262,6 +285,26 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
       setProcesandoProveedor(false);
       const message = getErrorHttpMessage(error);
       setMensajeAlert(message || intl.formatMessage({ id: "proveedor_asignado_error" }));
+      handleisAlertOpen();
+    }
+  };
+
+  const registrarNuevoPrecio = async (datos: any) => {
+    try {
+      setProcesandoProveedor(true);
+      const proveedorData: any = await registrarNuevoPrecioHttp(datos);
+      await getProveedoresOC();
+      formikAsignar.resetForm();
+      setProcesandoProveedor(false);
+      setMensajeAlert(intl.formatMessage({ id: "nuevo_precio_registrado_correctamente" }));
+      handleisAlertCloseVerCanje();
+      handleisAlerCloseNuevoProveedor();
+      handleisAlerCloseAsignarProveedor();
+      handleisAlertOpen();
+    } catch (error) {
+      setProcesandoProveedor(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "nuevo_precio_registrado_error" }));
       handleisAlertOpen();
     }
   };
@@ -324,25 +367,43 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
 
   const enviarCotizacionProveedor = async (datos: any) => {
     try {
-      setProcesandoEnviarProveedor(true);
+      datos?.tipo_envio == "directo"
+        ? setProcesandoValidacionFinal(true)
+        : setProcesandoEnviarProveedor(true);
       await enviarCotizacionProveedorHttp(datos);
-      setVerCanje((prevCanje: any) => {
+      await getProveedoresOC();
+      /*setVerCanje((prevCanje: any) => {
         if (!prevCanje?.productos) return prevCanje;
 
         return {
           ...prevCanje,
           productos: prevCanje.productos.map((canje: any) =>
-            canje.id_canje === datos.productos.id_canje ? { ...canje, estatus_proveedor: 0 } : canje
+            canje.id_canje === datos.productos.id_canje
+              ? { ...canje, estatus_proveedor: datos?.tipo_envio === "directo" ? 1 : 0 }
+              : canje
           ),
         };
-      });
-      setMensajeAlert(intl.formatMessage({ id: "exito_enviar_cotizacion_proveedor" }));
+      });*/
+      handleisAlertCloseVerCanje();
+      setMensajeAlert(
+        datos?.tipo_envio == "directo"
+          ? intl.formatMessage({ id: "orden_compra_final_validada_exito" })
+          : intl.formatMessage({ id: "exito_enviar_cotizacion_proveedor" })
+      );
       handleisAlertOpen();
-      setProcesandoEnviarProveedor(false);
+      datos?.tipo_envio == "directo"
+        ? setProcesandoValidacionFinal(false)
+        : setProcesandoEnviarProveedor(false);
     } catch (error) {
-      setProcesandoEnviarProveedor(false);
+      datos?.tipo_envio == "directo"
+        ? setProcesandoValidacionFinal(false)
+        : setProcesandoEnviarProveedor(false);
       const message = getErrorHttpMessage(error);
-      setMensajeAlert(message || intl.formatMessage({ id: "error_enviar_cotizacion_proveedor" }));
+      setMensajeAlert(
+        message || datos?.tipo_envio == "directo"
+          ? intl.formatMessage({ id: "orden_compra_final_validada_error" })
+          : intl.formatMessage({ id: "error_enviar_cotizacion_proveedor" })
+      );
       handleisAlertOpen();
     }
   };
@@ -394,6 +455,8 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     try {
       setProcesandoNuevoProveedor(true);
       await enviarANuevoProveedorHttp(datos);
+      await getProveedoresOC();
+      handleisAlertCloseOtroProveedor();
       setMensajeAlert(intl.formatMessage({ id: "exito_enviar_producto_a_otro_proveedor" }));
       handleisAlertOpen();
       setProcesandoNuevoProveedor(false);
@@ -599,5 +662,9 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     isAlertOpenNuevoProveedor,
     handleisAlertOpenNuevoProveedor,
     handleisAlerCloseNuevoProveedor,
+    setAccionProducto,
+    accionProducto,
+    registrarNuevoPrecio,
+    handleAccionProducto,
   };
 };

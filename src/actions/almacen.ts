@@ -76,3 +76,27 @@ export const confirmarRecepcionProductoAlmacenHttp = async (data: any) => {
     return promise;
   }
 };
+export const registrarNuevoPrecioAlmacenHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.post(
+      `${env.API_URL}${"/registrarNuevoPrecioAlmacen"}`,
+      data
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+export const registrarMeiNoSerieHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.put(
+      `${env.API_URL}${"/registrarMeiNoSerie"}`,
+      data
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};

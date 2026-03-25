@@ -902,6 +902,7 @@ const CanjeValidadoProveedorModal = ({
               disabled={
                 procesandoValidacionFinal ||
                 !todosProductosValidados ||
+                !verCanje?.orden_compra ||
                 verCanje?.orden_compra?.estatus !== "factura_subida_correctamente_proveedor"
               }
               onClick={(e: any) => {
@@ -964,53 +965,108 @@ const CanjeValidadoProveedorModal = ({
                 intl.formatMessage({ id: "rechazar_cotizacion_proveedor" })
               )}
             </Button>
-            <Button
-              sx={{
-                color: "#fff",
-                background: "#3ec972",
-                fontSize: "0.75rem",
-                padding: "6px 8px",
-                margin: "5px 10px",
-              }}
-              variant="contained"
-              endIcon={<SendIcon />}
-              disabled={
-                procesandoEnviarProveedor || canjesPaginados.length === 0 || todosProductosValidados
-              }
-              onClick={(e: any) => {
-                const datos = {
-                  id_usuario: idUsuario,
-                  id_proveedor: verProveedor.id,
-                  productos: verCanje.productos.map((productos) => {
-                    return {
-                      id_canje: productos.id_canje,
-                      id_producto: productos.id,
-                      cantidad_producto: productos.number_of_awards,
-                      cantidad_almacen: productos.number_of_awards,
-                      estatus_almacen: 0,
-                      estatus_proveedor: 0,
-                      tipo_compra: "",
-                    };
-                  }),
-                };
-                enviarCotizacionProveedor(datos);
-              }}
-            >
-              {procesandoEnviarProveedor ? (
-                <>
-                  <Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    role="status"
-                    aria-hidden="true"
-                  />
-                  Enviando...{" "}
-                </>
-              ) : (
-                intl.formatMessage({ id: "enviar_a_proveedor" })
-              )}
-            </Button>
+            {verProveedor.id === null && !verCanje?.orden_compra ? (
+              <Button
+                sx={{
+                  color: "#fff",
+                  background: "#3ec972",
+                  fontSize: "0.75rem",
+                  padding: "6px 8px",
+                  margin: "5px 10px",
+                }}
+                variant="contained"
+                endIcon={<SendIcon />}
+                disabled={
+                  procesandoValidacionFinal ||
+                  verCanje?.orden_compra?.estatus === "cotizacion_validada_por_proveedor"
+                }
+                onClick={(e: any) => {
+                  const datos = {
+                    id_usuario: idUsuario,
+                    id_proveedor: verProveedor.id,
+                    productos: verCanje.productos.map((productos) => {
+                      return {
+                        id_canje: productos.id_canje,
+                        id_producto: productos.id,
+                        cantidad_producto: productos.number_of_awards,
+                        cantidad_almacen: productos.number_of_awards,
+                        estatus_almacen: 0,
+                        estatus_proveedor: 1,
+                      };
+                    }),
+                    tipo_envio: "directo",
+                  };
+                  enviarCotizacionProveedor(datos);
+                }}
+              >
+                {procesandoValidacionFinal ? (
+                  <>
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                    Validando...{" "}
+                  </>
+                ) : (
+                  intl.formatMessage({ id: "validar_sin_proveedor" })
+                )}
+              </Button>
+            ) : (
+              <Button
+                sx={{
+                  color: "#fff",
+                  background: "#3ec972",
+                  fontSize: "0.75rem",
+                  padding: "6px 8px",
+                  margin: "5px 10px",
+                }}
+                variant="contained"
+                endIcon={<SendIcon />}
+                disabled={
+                  procesandoEnviarProveedor ||
+                  canjesPaginados.length === 0 ||
+                  todosProductosValidados ||
+                  verProveedor.id == null
+                }
+                onClick={(e: any) => {
+                  const datos = {
+                    id_usuario: idUsuario,
+                    id_proveedor: verProveedor.id,
+                    productos: verCanje.productos.map((productos) => {
+                      return {
+                        id_canje: productos.id_canje,
+                        id_producto: productos.id,
+                        cantidad_producto: productos.number_of_awards,
+                        cantidad_almacen: productos.number_of_awards,
+                        estatus_almacen: 0,
+                        estatus_proveedor: 0,
+                      };
+                    }),
+                    tipo_envio: "proveedor",
+                  };
+                  enviarCotizacionProveedor(datos);
+                }}
+              >
+                {procesandoEnviarProveedor ? (
+                  <>
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                    Enviando...{" "}
+                  </>
+                ) : (
+                  intl.formatMessage({ id: "enviar_a_proveedor" })
+                )}
+              </Button>
+            )}
+
             <Button
               sx={{
                 color: "#fff",

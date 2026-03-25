@@ -248,6 +248,17 @@ const textosMx = {
   set_asignar: "Asignar",
   proveedor_asignado_correctamente: "Proveedor asignado correctamente",
   proveedor_asignado_error: "Error al asignar el proveedor",
+  general_registrando: "Registrando",
+  set_registrar: "Registrar",
+  nuevo_precio_registrado_correctamente: "Nuevo precio registrado correctamente",
+  nuevo_precio_registrado_error: "Error al registrar el nuevo precio",
+  validar_sin_proveedor: "Validar sin proveedor",
+  registrar_nuevo_precio: "Registrar nuevo precio",
+  input_precio_compra: "Precio de compra",
+  registrar_mei_y_no_serie: "Registrar MEI y No. Serie",
+  input_mei: "MEI",
+  input_no_serie: "No. Serie",
+  datos_registrados_correctamente: "Datos registrados correctamente",
 };
 
 export default textosMx;

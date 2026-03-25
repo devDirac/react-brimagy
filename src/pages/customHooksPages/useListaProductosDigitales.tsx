@@ -11,6 +11,7 @@ import {
   eliminarProductoHttp,
   getBitacoraProductoPorIdHttp,
   getBusquedaInteligenteHttp,
+  getCatalogoProductosDigitalesBrimagyHttp,
   getCatalogoProductosDigitalesHttp,
   getCatalogoProductosHttp,
   verificarSkusHttp,
@@ -377,7 +378,7 @@ export const useListaProductosDigitales = (tipoUsuario: number) => {
     async (params?: { search?: string; fecha1?: string; fecha2?: string }) => {
       try {
         setProcesando(true);
-        const productosData = await getCatalogoProductosDigitalesHttp(
+        const productosData = await getCatalogoProductosDigitalesBrimagyHttp(
           params?.search,
           params?.fecha1 ? new Date(params.fecha1) : undefined,
           params?.fecha2 ? new Date(params.fecha2) : undefined

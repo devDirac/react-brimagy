@@ -14,6 +14,18 @@ export const crearProductoHttp = async (data: any) => {
     return promise;
   }
 };
+export const registrarNuevoPrecioHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.post(
+      `${env.API_URL}${"/registrarNuevoPrecio"}`,
+      data
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
 export const getCatalogoProductosHttp = async (search?: string, fecha1?: Date, fecha2?: Date) => {
   try {
     const url = new URL(`${env.API_URL}/getCatalogoProductos`);
@@ -129,6 +141,26 @@ export const eliminarProductoHttp = async (id: number) => {
     const response: GeneralHttpResponse = await axios.delete(
       `${env.API_URL}${"/eliminarProducto"}?id_producto=${id}`
     );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const getCatalogoProductosDigitalesBrimagyHttp = async (
+  search?: string,
+  fecha1?: Date,
+  fecha2?: Date
+) => {
+  try {
+    const url = new URL(`${env.API_URL}/getCatalogoProductosDigitalesBrimagy`);
+
+    if (search) url.searchParams.append("search", encodeURIComponent(search));
+    if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
+    if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
+
+    const response = await axios.get(url.toString());
     return response?.data || [];
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));

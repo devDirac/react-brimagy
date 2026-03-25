@@ -5,6 +5,8 @@ import { getErrorHttpMessage } from "../../utils";
 import { StoreType } from "../../types/genericTypes";
 import { useIntl } from "react-intl";
 import { setAuth } from "../../actions/auth";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import {
   addGuiaProductoAlmacenHttp,
   confirmarRecepcionProductoAlmacenHttp,
@@ -12,10 +14,13 @@ import {
   getProductoAlmacenPorIdHttp,
   getProductosAlmacenHttp,
   recibirProductoAlmacenHttp,
+  registrarMeiNoSerieHttp,
+  registrarNuevoPrecioAlmacenHttp,
 } from "actions/almacen";
 import { subirEvidenciasHttp } from "actions/evidencias";
 import { addFechaPagoFacturaHttp } from "actions/factura";
 import { enviarEncuestaUsuarioHttp, getEncuestasDisponiblesHttp } from "actions/encuestas";
+import { crearProveedorHttp, getProveedoresHttp } from "actions/proveedores";
 
 export const useGestionAlmacen = (tipoUsuario: number) => {
   const dispatch = useDispatch();
@@ -106,10 +111,97 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
   const [isAlertOpenEnviarEncuesta, setIsAlertOpenEnviarEncuesta] = useState(false);
   const handleisAlertOpenEnviarEncuesta = () => setIsAlertOpenEnviarEncuesta(true);
   const handleisAlertCloseEnviarEncuesta = () => setIsAlertOpenEnviarEncuesta(false);
+  //MODAL REGISTRAR NUEVO PRECIO DEL PRODUCTO EN ALMACEN
+  const [procesandoNuevoPrecio, setProcesandoNuevoPrecio] = useState<boolean>(false);
+  const [proveedoresSelect, setProveedoresSelect] = useState<any[]>([]);
+  const [productoSeleccionado, setProductoSeleccionado] = useState<any>(null);
+  const [isAlertOpenNuevoPrecio, setIsAlertOpenNuevoPrecio] = useState(false);
+  const handleisAlertOpenNuevoPrecio = () => setIsAlertOpenNuevoPrecio(true);
+  const handleisAlerCloseNuevoPrecio = () => setIsAlertOpenNuevoPrecio(false);
+  //MODAL REGISTRAR NUEVO PROVEEDOR
+  const [procesandoProveedor, setProcesandoProveedor] = useState<boolean>(false);
+  const [isAlertOpenNuevoProveedor, setIsAlertOpenNuevoProveedor] = useState(false);
+  const handleisAlertOpenNuevoProveedor = () => setIsAlertOpenNuevoProveedor(true);
+  const handleisAlerCloseNuevoProveedor = () => setIsAlertOpenNuevoProveedor(false);
+
+  //MODAL REGISTRAR NUEVO PROVEEDOR
+  const [procesandoMeiNoOrden, setProcesandoMeiNoOrden] = useState<boolean>(false);
+  const [isAlertOpenProductosTecnologicos, setIsAlertOpenProductosTecnologicos] = useState(false);
+  const handleisAlertOpenProductosTecnologicos = () => setIsAlertOpenProductosTecnologicos(true);
+  const handleisAlerCloseProductosTecnologicos = () => setIsAlertOpenProductosTecnologicos(false);
 
   useEffect(() => {
     setAuth(token);
   }, [token]);
+
+  const formikPrecio = useFormik({
+    initialValues: {
+      id_proveedor: "",
+      precio_compra: "",
+    },
+    validationSchema: Yup.object({
+      id_proveedor: Yup.number().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      precio_compra: Yup.number().required(
+        intl.formatMessage({ id: "input_validation_requerido" })
+      ),
+    }),
+    onSubmit: async (values) => {
+      console.log("Formulario enviado:", values);
+    },
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      id_proveedor: "",
+      nombre: "",
+      razon_social: "",
+      descripcion: "",
+      nombre_contacto: "",
+      telefono: "",
+      correo: "",
+    },
+    validationSchema: Yup.object({
+      id_proveedor: Yup.number(),
+      nombre: Yup.string(),
+      razon_social: Yup.string(),
+      descripcion: Yup.string(),
+      nombre_contacto: Yup.string(),
+      telefono: Yup.number().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      correo: Yup.string()
+        .email(intl.formatMessage({ id: "input_validation_email_invalido" }))
+        .required(intl.formatMessage({ id: "input_validation_requerido" })),
+    }),
+    onSubmit: async (values) => {
+      console.log("Formulario enviado:", values);
+    },
+  });
+
+  const formikTecnologico = useFormik({
+    initialValues: {
+      mei: "",
+      no_serie: "",
+    },
+    validationSchema: Yup.object({
+      mei: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      no_serie: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+    }),
+    onSubmit: async (values) => {
+      console.log("Formulario enviado:", values);
+    },
+  });
+
+  const isFieldValid = (fieldName: keyof typeof formikPrecio.values) => {
+    return (
+      formikPrecio.touched[fieldName] &&
+      !formikPrecio.errors[fieldName] &&
+      formikPrecio.values[fieldName] &&
+      formikPrecio.values[fieldName] !== ""
+    );
+  };
+
+  const getFieldColor = (fieldName: keyof typeof formikPrecio.values) => {
+    return isFieldValid(fieldName) ? "#00AB16" : undefined;
+  };
 
   // Debounce para evitar muchas peticiones
   const handleBuscadorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -336,8 +428,85 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     setCantidadProducto(value.toString());
   };
 
+  const getProveedores = useCallback(async () => {
+    try {
+      setProcesando(true);
+      const proveedores = await getProveedoresHttp();
+      setProveedoresSelect(proveedores);
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+      handleisAlertOpen();
+    }
+  }, []);
+
+  const registrarNuevoPrecio = async (datos: any) => {
+    try {
+      setProcesandoNuevoPrecio(true);
+      const resultado: any = await registrarNuevoPrecioAlmacenHttp(datos);
+      setVerProducto((prevProducto: any) => ({
+        ...prevProducto,
+        precio_compra: resultado?.costo_sin_iva,
+        nombre_proveedor: resultado?.nombre_proveedor,
+      }));
+      formikPrecio.resetForm();
+      setProcesandoNuevoPrecio(false);
+      setMensajeAlert(intl.formatMessage({ id: "nuevo_precio_registrado_correctamente" }));
+      handleisAlertOpen();
+    } catch (error) {
+      setProcesandoNuevoPrecio(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "nuevo_precio_registrado_error" }));
+      handleisAlertOpen();
+    }
+  };
+
+  const crearProveedor = async (datos: any) => {
+    try {
+      setProcesandoProveedor(true);
+      const proveedorData: any = await crearProveedorHttp(datos);
+      setProveedoresSelect((prev) => [...prev, proveedorData]);
+      formikPrecio.setFieldValue("id_proveedor", proveedorData.id);
+      formik.resetForm();
+      setProcesandoProveedor(false);
+      setMensajeAlert(intl.formatMessage({ id: "proveedor_creado_correctamente" }));
+      handleisAlerCloseNuevoProveedor();
+      handleisAlertOpen();
+    } catch (error) {
+      setProcesandoProveedor(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "proveedor_creado_error" }));
+      handleisAlertOpen();
+    }
+  };
+
+  const registrarMeiNoSerie = async (datos: any) => {
+    try {
+      setProcesandoMeiNoOrden(true);
+      const resultado: any = await registrarMeiNoSerieHttp(datos);
+      setVerProducto((prevProducto: any) => ({
+        ...prevProducto,
+        mei: resultado?.mei,
+        no_serie: resultado?.no_serie,
+      }));
+      formikTecnologico.resetForm();
+      setProcesandoMeiNoOrden(false);
+      handleisAlerCloseProductosTecnologicos();
+      setMensajeAlert(intl.formatMessage({ id: "datos_registrados_correctamente" }));
+      handleisAlertOpen();
+    } catch (error) {
+      setProcesandoMeiNoOrden(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "datos_registrados_error" }));
+      handleisAlertOpen();
+    }
+  };
+
   useEffect(() => {
     getEncuestasDisponibles();
+    getProveedores();
   }, []);
 
   useEffect(() => {
@@ -423,5 +592,29 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     encuestas,
     setTipoEncuesta,
     tipoEncuesta,
+    //registrar nuevo precio
+    formik,
+    formikPrecio,
+    isAlertOpenNuevoPrecio,
+    handleisAlertOpenNuevoPrecio,
+    handleisAlerCloseNuevoPrecio,
+    isAlertOpenNuevoProveedor,
+    handleisAlertOpenNuevoProveedor,
+    handleisAlerCloseNuevoProveedor,
+    setProductoSeleccionado,
+    productoSeleccionado,
+    proveedoresSelect,
+    getFieldColor,
+    registrarNuevoPrecio,
+    procesandoNuevoPrecio,
+    crearProveedor,
+    procesandoProveedor,
+    //registrar mei y no orden
+    formikTecnologico,
+    procesandoMeiNoOrden,
+    isAlertOpenProductosTecnologicos,
+    handleisAlertOpenProductosTecnologicos,
+    handleisAlerCloseProductosTecnologicos,
+    registrarMeiNoSerie,
   };
 };

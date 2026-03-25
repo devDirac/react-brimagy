@@ -165,14 +165,10 @@ export const useListaProductos = (tipoUsuario: number) => {
 
   //Obtiene los proveedores únicos que no están registrados
   const obtenerProveedoresFaltantes = useCallback(() => {
-    /*const proveedoresFaltantes = Array.from(
-      new Set(excelData.filter((p) => !p.proveedor_valido).map((p) => p.proveedor))
-    );*/
     const proveedoresFaltantes = Array.from(
       new Set(
         excelData
           .filter((p) => {
-            // ✅ Solo contar como faltante si tiene proveedor real pero no está registrado
             const esVacioONA = !p.proveedor || p.proveedor.toUpperCase() === "N/A";
             return !p.proveedor_valido && !esVacioONA;
           })
@@ -815,10 +811,6 @@ export const useListaProductos = (tipoUsuario: number) => {
           }
         });
 
-        // Buscar IDs de proveedor y categoría
-        /*const proveedorObj = proveedores?.find(
-          (p) => p.nombre.toLowerCase() === proveedor.toLowerCase()
-        );*/
         const proveedorObj = proveedorVacio
           ? null
           : proveedores?.find((p) => p.nombre.toLowerCase() === proveedor.toLowerCase());
@@ -833,15 +825,15 @@ export const useListaProductos = (tipoUsuario: number) => {
           id: rowNumber - 1,
           fila: rowNumber,
           id_catalogo: categoriaObj?.id || null,
+          catalogo: categoria,
           nombre_producto,
           descripcion,
           marca,
+          proveedor,
+          id_proveedor: proveedorObj?.id || null,
           sku,
           color,
           talla,
-          proveedor,
-          catalogo: categoria,
-          id_proveedor: proveedorObj?.id || null,
           costo_con_iva: Math.round(limpiarNumero(costoConIvaRaw)),
           costo_sin_iva: Math.round(limpiarNumero(costoSinIvaRaw)),
           costo_puntos_con_iva: Math.round(limpiarNumero(costoPuntosConIvaRaw)),
@@ -940,10 +932,10 @@ export const useListaProductos = (tipoUsuario: number) => {
         { header: "Nombre Producto", key: "nombre_producto", width: 30 },
         { header: "Descripción", key: "descripcion", width: 40 },
         { header: "Marca", key: "marca", width: 20 },
+        { header: "Proveedor", key: "proveedor", width: 25 },
         { header: "SKU", key: "sku", width: 20 },
         { header: "Color", key: "color", width: 15 },
         { header: "Talla", key: "talla", width: 15 },
-        { header: "Proveedor", key: "proveedor", width: 25 },
         { header: "Costo con IVA", key: "costo_con_iva", width: 15 },
         { header: "Costo sin IVA", key: "costo_sin_iva", width: 15 },
         { header: "Costo Puntos con IVA", key: "costo_puntos_con_iva", width: 20 },
@@ -972,14 +964,14 @@ export const useListaProductos = (tipoUsuario: number) => {
 
       // Agregar una fila de ejemplo
       worksheet.addRow({
+        categoria: "Categoria1",
         nombre_producto: "Producto Ejemplo",
         descripcion: "Descripción del producto",
         marca: "Marca X",
+        proveedor: "Proveedor1",
         sku: "SKU123",
         color: "Rojo",
         talla: "",
-        proveedor: proveedores?.[0]?.nombre || "Proveedor1",
-        categoria: categorias?.[0]?.nombre || "Categoria1",
         costo_con_iva: 100,
         costo_sin_iva: 86,
         costo_puntos_con_iva: 100,
@@ -1019,9 +1011,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     try {
       setProcesandoExcel(true);
 
-      const productosValidos = excelData.filter(
-        (p) => /*p.sku_vacio && */ p.proveedor_valido && p.categoria_valida
-      );
+      const productosValidos = excelData.filter((p) => p.proveedor_valido && p.categoria_valida);
 
       const productosInvalidos = excelData.length - productosValidos.length;
 
@@ -1034,15 +1024,15 @@ export const useListaProductos = (tipoUsuario: number) => {
         try {
           const datos = {
             id_catalogo: producto.id_catalogo,
+            catalogo: producto.catalogo,
             nombre_producto: producto.nombre_producto,
             descripcion: producto.descripcion,
             marca: producto.marca,
+            proveedor: producto.proveedor,
+            id_proveedor: producto.id_proveedor,
             sku: producto.sku,
             color: producto.color,
             talla: producto.talla,
-            proveedor: producto.proveedor,
-            catalogo: producto.catalogo,
-            id_proveedor: producto.id_proveedor,
             costo_con_iva: producto.costo_con_iva,
             costo_sin_iva: producto.costo_sin_iva,
             costo_puntos_con_iva: producto.costo_puntos_con_iva,

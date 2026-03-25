@@ -38,11 +38,19 @@ interface Producto {
   nombre_producto: string;
   marca: string;
   sku: string;
+  nombre_producto_nuevo: string;
+  marca_nuevo: string;
+  sku_nuevo: string;
   no_orden: string;
   cantidad_producto: number;
   cantidad_almacen: number;
+  id_proveedor: number;
+  costo_sin_iva: number;
+  precio_compra: number;
   fecha: Date;
   comentarios: string;
+  mei: string;
+  no_serie: string;
   estatus: string;
   guia: string;
   evidencias: JSON;
@@ -57,24 +65,30 @@ interface DetalleCanjeProps {
   procesandoRecepcionProducto: boolean;
   procesandoRecibirProducto: boolean;
   procesandoGuiaProducto: boolean;
+  handleisAlertOpenNuevoPrecio: () => void;
   handleisAlertOpenCantidad: () => void;
   handleisAlertOpenEnviarEncuesta: () => void;
   handleisAlertOpenGuia: () => void;
   handleOpenEvidencia: () => void;
+  handleisAlertOpenProductosTecnologicos: () => void;
   handleOpenVistaEvidencia: (evidencia: any) => void;
   setDatosEncuestaEnviar: React.Dispatch<React.SetStateAction<any>>;
+  setProductoSeleccionado: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const ProductoAlmacenModal = ({
   addProductoAlmacen,
   enviarProductoAlmacen,
   confirmarRecepcionProductoAlmacen,
+  handleisAlertOpenNuevoPrecio,
   handleisAlertOpenCantidad,
   handleisAlertOpenEnviarEncuesta,
   handleisAlertOpenGuia,
   handleOpenVistaEvidencia,
   handleOpenEvidencia,
+  handleisAlertOpenProductosTecnologicos,
   setDatosEncuestaEnviar,
+  setProductoSeleccionado,
   verProducto,
   procesandoGuiaProducto,
   procesandoRecibirProducto,
@@ -83,6 +97,13 @@ const ProductoAlmacenModal = ({
 }: DetalleCanjeProps) => {
   if (!verProducto) return null;
   const intl = useIntl();
+
+  const ahorroProducto =
+    verProducto.precio_compra === null ? 0 : verProducto.costo_sin_iva - verProducto.precio_compra;
+  const porcentajeAhorro =
+    verProducto.costo_sin_iva > 0 ? (ahorroProducto / verProducto.costo_sin_iva) * 100 : 0;
+  const esPositivoAhorro = ahorroProducto > 0;
+  const esNegativoAhorro = ahorroProducto < 0;
 
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
   const isSuperAdmin = tipoUsuario === 6;
@@ -157,7 +178,20 @@ const ProductoAlmacenModal = ({
             </Typography>
           </Box>
         </Grid>
-        <Grid item xs={12} display="flex" justifyContent="center" gap={2}>
+        <Grid
+          item
+          xs={12}
+          display="flex"
+          justifyContent="center"
+          sx={{
+            flexDirection: {
+              xs: "column",
+              sm: "row",
+            },
+            alignItems: "center",
+          }}
+          gap={1}
+        >
           <Button
             sx={{ color: "#fff", background: "#3ec972", fontSize: "0.75rem", padding: "6px 8px" }}
             variant="contained"
@@ -167,7 +201,6 @@ const ProductoAlmacenModal = ({
               verProducto.estatus !== "en_almacen_parcialmente"
             }
             onClick={(e: any) => {
-              //console.log(verProducto);
               handleisAlertOpenCantidad();
             }}
           >
@@ -186,7 +219,6 @@ const ProductoAlmacenModal = ({
             endIcon={<AddIcon />}
             disabled={verProducto.estatus !== "en_almacen"}
             onClick={(e: any) => {
-              //console.log(verProducto);
               handleisAlertOpenGuia();
             }}
           >
@@ -245,7 +277,7 @@ const ProductoAlmacenModal = ({
             sx={{ color: "#fff", background: "#9732d1", fontSize: "0.75rem", padding: "6px 8px" }}
             variant="contained"
             endIcon={<AddIcon />}
-            disabled={verProducto.estatus !== "entregado"} //verProducto.estatus !== "enviado" &&
+            disabled={verProducto.estatus !== "entregado"}
             onClick={(e: any) => {
               const datos = {
                 id_canje: verProducto?.id_canje,
@@ -284,12 +316,67 @@ const ProductoAlmacenModal = ({
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <Grid container spacing={2}>
+              <Grid
+                item
+                xs={12}
+                display="flex"
+                justifyContent="center"
+                sx={{
+                  flexDirection: {
+                    xs: "column",
+                    sm: "row",
+                  },
+                  alignItems: "center",
+                }}
+                gap={1}
+              >
+                <Button
+                  sx={{
+                    color: "#fff",
+                    background: "#3ec972",
+                    fontSize: "0.75rem",
+                    padding: "6px 8px",
+                  }}
+                  variant="contained"
+                  endIcon={<AddIcon />}
+                  disabled={
+                    verProducto.estatus !== "en_almacen" &&
+                    verProducto.estatus !== "en_almacen_parcialmente"
+                  }
+                  onClick={(e: any) => {
+                    setProductoSeleccionado(verProducto);
+                    handleisAlertOpenNuevoPrecio();
+                  }}
+                >
+                  {intl.formatMessage({ id: "registrar_nuevo_precio" })}
+                </Button>
+                <Button
+                  sx={{
+                    color: "#fff",
+                    background: "#3ec972",
+                    fontSize: "0.75rem",
+                    padding: "6px 8px",
+                  }}
+                  variant="contained"
+                  endIcon={<AddIcon />}
+                  disabled={
+                    verProducto.estatus !== "en_almacen" &&
+                    verProducto.estatus !== "en_almacen_parcialmente"
+                  }
+                  onClick={(e: any) => {
+                    setProductoSeleccionado(verProducto);
+                    handleisAlertOpenProductosTecnologicos();
+                  }}
+                >
+                  {intl.formatMessage({ id: "registrar_mei_y_no_serie" })}
+                </Button>
+              </Grid>
               <Grid item xs={12} md={6}>
                 <Typography variant="body2" color="text.secondary">
                   Nombre
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
-                  {verProducto.nombre_producto}
+                  {verProducto.nombre_producto_nuevo ?? verProducto.nombre_producto}
                 </Typography>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -297,7 +384,7 @@ const ProductoAlmacenModal = ({
                   Proveedor
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
-                  {verProducto.nombre_proveedor}
+                  {verProducto.nombre_proveedor ?? "Sin proveedor"}
                 </Typography>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -305,7 +392,7 @@ const ProductoAlmacenModal = ({
                   Marca
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
-                  {verProducto.marca}
+                  {verProducto.marca_nuevo ?? verProducto.marca}
                 </Typography>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -313,9 +400,29 @@ const ProductoAlmacenModal = ({
                   Sku
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
-                  {verProducto.sku}
+                  {verProducto.sku_nuevo ?? verProducto.sku}
                 </Typography>
               </Grid>
+              {verProducto.mei && (
+                <Grid item xs={12} md={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    MEI
+                  </Typography>
+                  <Typography variant="body2" fontWeight="medium">
+                    {verProducto.mei}
+                  </Typography>
+                </Grid>
+              )}
+              {verProducto.no_serie && (
+                <Grid item xs={12} md={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    No. Serie
+                  </Typography>
+                  <Typography variant="body2" fontWeight="medium">
+                    {verProducto.no_serie}
+                  </Typography>
+                </Grid>
+              )}
               <Grid item xs={12} md={6}>
                 <Typography variant="body2" color="text.secondary">
                   Cantidad por surtir
@@ -332,6 +439,102 @@ const ProductoAlmacenModal = ({
                   {verProducto.cantidad_almacen}
                 </Typography>
               </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="body2" color="text.secondary">
+                  Precio de compra
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {esPositivoAhorro ? (
+                    <>
+                      <b
+                        style={{
+                          color: "#000",
+                          textDecoration: "line-through",
+                          textDecorationColor: "red",
+                          textDecorationThickness: "3px",
+                        }}
+                      >
+                        {numericFormatter(verProducto.costo_sin_iva + "", {
+                          thousandSeparator: ",",
+                          decimalScale: 2,
+                          fixedDecimalScale: true,
+                          prefix: "$",
+                        })}
+                      </b>{" "}
+                      →{" "}
+                      <b
+                        style={{
+                          color: "green",
+                        }}
+                      >
+                        {numericFormatter(verProducto.precio_compra + "", {
+                          thousandSeparator: ",",
+                          decimalScale: 2,
+                          fixedDecimalScale: true,
+                          prefix: "$",
+                        })}
+                      </b>
+                      <br />
+                      {"Se ahorró un " +
+                        numericFormatter(porcentajeAhorro + "", {
+                          thousandSeparator: ",",
+                          decimalScale: 2,
+                          fixedDecimalScale: true,
+                          suffix: "%",
+                        })}
+                    </>
+                  ) : esNegativoAhorro ? (
+                    <>
+                      <b
+                        style={{
+                          color: "#000",
+                          textDecoration: "line-through",
+                          textDecorationColor: "red",
+                          textDecorationThickness: "3px",
+                        }}
+                      >
+                        {numericFormatter(verProducto.costo_sin_iva + "", {
+                          thousandSeparator: ",",
+                          decimalScale: 2,
+                          fixedDecimalScale: true,
+                          prefix: "$",
+                        })}
+                      </b>{" "}
+                      →{" "}
+                      <b
+                        style={{
+                          color: "green",
+                        }}
+                      >
+                        {numericFormatter(verProducto.precio_compra + "", {
+                          thousandSeparator: ",",
+                          decimalScale: 2,
+                          fixedDecimalScale: true,
+                          prefix: "$",
+                        })}
+                      </b>
+                      <br />
+                      {"Tuvo un sobrecosto de " +
+                        numericFormatter(-porcentajeAhorro + "", {
+                          thousandSeparator: ",",
+                          decimalScale: 2,
+                          fixedDecimalScale: true,
+                          suffix: "%",
+                        })}
+                    </>
+                  ) : (
+                    ""
+                  )}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="body2" color="text.secondary">
+                  Comentarios
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {verProducto.comentarios}
+                </Typography>
+              </Grid>
             </Grid>
           </Paper>
         </Grid>
@@ -344,7 +547,7 @@ const ProductoAlmacenModal = ({
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <Grid container spacing={2}>
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} md={3}>
                 <Typography variant="body2" color="text.secondary">
                   No. orden
                 </Typography>
@@ -352,20 +555,30 @@ const ProductoAlmacenModal = ({
                   {verProducto.no_orden}
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} md={3}>
                 <Typography variant="body2" color="text.secondary">
                   Guía
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
-                  {verProducto.guia}
+                  <a href={verProducto.guia} target="_blank" rel="noreferrer">
+                    Ver rastreo
+                  </a>
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} md={3}>
                 <Typography variant="body2" color="text.secondary">
-                  Comentarios
+                  MEI
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
-                  {verProducto.comentarios}
+                  {verProducto.mei ?? "N/A"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <Typography variant="body2" color="text.secondary">
+                  No. Serie
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {verProducto.no_serie ?? "N/A"}
                 </Typography>
               </Grid>
             </Grid>
