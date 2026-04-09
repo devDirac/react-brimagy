@@ -125,7 +125,7 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
   const handleisAlerCloseNuevoProveedor = () => setIsAlertOpenNuevoProveedor(false);
 
   //MODAL REGISTRAR NUEVO PROVEEDOR
-  const [procesandoMeiNoOrden, setProcesandoMeiNoOrden] = useState<boolean>(false);
+  const [procesandoImeiNoOrden, setProcesandoImeiNoOrden] = useState<boolean>(false);
   const [isAlertOpenProductosTecnologicos, setIsAlertOpenProductosTecnologicos] = useState(false);
   const handleisAlertOpenProductosTecnologicos = () => setIsAlertOpenProductosTecnologicos(true);
   const handleisAlerCloseProductosTecnologicos = () => setIsAlertOpenProductosTecnologicos(false);
@@ -178,11 +178,11 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
 
   const formikTecnologico = useFormik({
     initialValues: {
-      mei: "",
+      imei: "",
       no_serie: "",
     },
     validationSchema: Yup.object({
-      mei: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      imei: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
       no_serie: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
     }),
     onSubmit: async (values) => {
@@ -482,22 +482,22 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     }
   };
 
-  const registrarMeiNoSerie = async (datos: any) => {
+  const registrarImeiNoSerie = async (datos: any) => {
     try {
-      setProcesandoMeiNoOrden(true);
+      setProcesandoImeiNoOrden(true);
       const resultado: any = await registrarMeiNoSerieHttp(datos);
       setVerProducto((prevProducto: any) => ({
         ...prevProducto,
-        mei: resultado?.mei,
+        imei: resultado?.imei,
         no_serie: resultado?.no_serie,
       }));
       formikTecnologico.resetForm();
-      setProcesandoMeiNoOrden(false);
+      setProcesandoImeiNoOrden(false);
       handleisAlerCloseProductosTecnologicos();
       setMensajeAlert(intl.formatMessage({ id: "datos_registrados_correctamente" }));
       handleisAlertOpen();
     } catch (error) {
-      setProcesandoMeiNoOrden(false);
+      setProcesandoImeiNoOrden(false);
       const message = getErrorHttpMessage(error);
       setMensajeAlert(message || intl.formatMessage({ id: "datos_registrados_error" }));
       handleisAlertOpen();
@@ -611,10 +611,10 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     procesandoProveedor,
     //registrar mei y no orden
     formikTecnologico,
-    procesandoMeiNoOrden,
+    procesandoImeiNoOrden,
     isAlertOpenProductosTecnologicos,
     handleisAlertOpenProductosTecnologicos,
     handleisAlerCloseProductosTecnologicos,
-    registrarMeiNoSerie,
+    registrarImeiNoSerie,
   };
 };

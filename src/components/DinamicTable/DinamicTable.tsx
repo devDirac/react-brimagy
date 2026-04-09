@@ -87,7 +87,7 @@ const DinamicTableMejorada: React.FC<DinamicTableProps> = (props: DinamicTablePr
       ) {
         return { background: "#FF2C00" };
       }
-      if (params.node?.data?.sku_duplicado) {
+      if (params.node?.data?.sku_duplicado || params.node?.data?.id_producto_brimagy_duplicado) {
         return { background: "#fff3cd" };
       }
       if (

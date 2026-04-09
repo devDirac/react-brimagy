@@ -6,7 +6,7 @@ export const getCanjesHttp = async (search?: string, fecha1?: Date, fecha2?: Dat
   try {
     const url = new URL(`${env.API_URL}/getCanjes`);
 
-    if (search) url.searchParams.append("search", encodeURIComponent(search));
+    if (search) url.searchParams.append("search", search);
     if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
     if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
 

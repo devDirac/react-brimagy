@@ -166,6 +166,8 @@ const DetallesCanjeModal = ({
                 <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
                 Enviando validación...{" "}
               </>
+            ) : verCanje?.id_proveedor == null ? (
+              intl.formatMessage({ id: "validar_identidad_directa" })
             ) : (
               intl.formatMessage({ id: "validar_identidad_input" })
             )}

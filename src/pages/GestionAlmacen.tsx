@@ -192,11 +192,11 @@ function GestionAlmacen(): JSX.Element {
     procesandoProveedor,
     //registrar mei y no orden
     formikTecnologico,
-    procesandoMeiNoOrden,
+    procesandoImeiNoOrden,
     isAlertOpenProductosTecnologicos,
     handleisAlertOpenProductosTecnologicos,
     handleisAlerCloseProductosTecnologicos,
-    registrarMeiNoSerie,
+    registrarImeiNoSerie,
   } = useGestionAlmacen(tipoUsuario);
 
   const handleChangeEvidencias = (newFiles: File[] | null) => {
@@ -390,7 +390,9 @@ function GestionAlmacen(): JSX.Element {
                                 size="small"
                                 color="default"
                                 onClick={() => {
+                                  console.log(p);
                                   const datos = {
+                                    no_orden: p.no_orden,
                                     id_producto_almacen: p.id,
                                   };
                                   getProductoAlmacenPorId(datos);
@@ -410,6 +412,7 @@ function GestionAlmacen(): JSX.Element {
                                   color="default"
                                   onClick={() => {
                                     const datos = {
+                                      no_orden: p.no_orden,
                                       id_producto_almacen: p.id,
                                     };
                                     const factura = {
@@ -1302,17 +1305,17 @@ function GestionAlmacen(): JSX.Element {
               <Grid item xs={12}>
                 <br />
                 <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
-                  Registrar MEI y No. serie a {productoSeleccionado?.nombre_producto}
+                  Registrar IMEI y No. serie a {productoSeleccionado?.nombre_producto}
                 </Typography>
               </Grid>
 
               <Grid item xs={12} sm={4}>
                 <TextFieldValidado
-                  id="mei"
+                  id="imei"
                   fullWidth
-                  label={`${intl.formatMessage({ id: "input_mei" })} *`}
+                  label={`${intl.formatMessage({ id: "input_imei" })} *`}
                   variant="standard"
-                  name="mei"
+                  name="imei"
                 />
               </Grid>
               <Grid item xs={12} sm={4}>
@@ -1337,18 +1340,18 @@ function GestionAlmacen(): JSX.Element {
                   variant="contained"
                   endIcon={<AddCircleIcon />}
                   disabled={
-                    procesandoMeiNoOrden || !formikTecnologico.dirty || !formikTecnologico.isValid
+                    procesandoImeiNoOrden || !formikTecnologico.dirty || !formikTecnologico.isValid
                   }
                   onClick={(e: any) => {
                     const datos = {
-                      mei: formikTecnologico.values.mei,
+                      mei: formikTecnologico.values.imei,
                       no_serie: formikTecnologico.values.no_serie,
                       id_producto_almacen: productoSeleccionado?.id_producto_almacen,
                     };
-                    registrarMeiNoSerie(datos);
+                    registrarImeiNoSerie(datos);
                   }}
                 >
-                  {procesandoMeiNoOrden ? (
+                  {procesandoImeiNoOrden ? (
                     <>
                       <Spinner
                         as="span"

@@ -81,6 +81,7 @@ interface Producto {
   estatus_almacen: number;
   importe_total: number;
   subtotal: number;
+  tipo_producto: string;
 }
 interface Proveedor {
   id: number;
@@ -275,7 +276,20 @@ const CanjeValidadoProveedorModal = ({
     FACTURA_SUBIDA_CORRECTAMENTE_PROVEEDOR: "ESPERANDO VALIDACIÓN DE ORDEN POR PROVEEDOR",
   };
 
-  const renderEstatusChip = (estatusProveedor: number) => {
+  const renderEstatusChip = (estatusProveedor: number, tipoProducto: string) => {
+    if (tipoProducto === "digital") {
+      return (
+        <Chip
+          label="Producto Digital"
+          sx={{
+            backgroundColor: "#ff9809",
+            color: "#fff",
+          }}
+          variant="filled"
+        />
+      );
+    }
+
     if (estatusProveedor === null || estatusProveedor === undefined) {
       return <Chip label="Cotización pendiente" color="default" variant="outlined" />;
     }
@@ -435,6 +449,8 @@ const CanjeValidadoProveedorModal = ({
                                   textDecoration: "line-through",
                                   textDecorationColor: "red",
                                 }
+                              : canje.tipo_producto === "digital"
+                              ? { color: "#ff9809" }
                               : {}
                           }
                         >
@@ -455,6 +471,8 @@ const CanjeValidadoProveedorModal = ({
                                   textDecoration: "line-through",
                                   textDecorationColor: "red",
                                 }
+                              : canje.tipo_producto === "digital"
+                              ? { color: "#ff9809" }
                               : {}
                           }
                         >
@@ -475,6 +493,8 @@ const CanjeValidadoProveedorModal = ({
                                   textDecoration: "line-through",
                                   textDecorationColor: "red",
                                 }
+                              : canje.tipo_producto === "digital"
+                              ? { color: "#ff9809" }
                               : {}
                           }
                         >
@@ -500,6 +520,8 @@ const CanjeValidadoProveedorModal = ({
                                   textDecoration: "line-through",
                                   textDecorationColor: "red",
                                 }
+                              : canje.tipo_producto === "digital"
+                              ? { color: "#ff9809" }
                               : {}
                           }
                         >
@@ -525,6 +547,8 @@ const CanjeValidadoProveedorModal = ({
                                   textDecoration: "line-through",
                                   textDecorationColor: "red",
                                 }
+                              : canje.tipo_producto === "digital"
+                              ? { color: "#ff9809" }
                               : {}
                           }
                         >
@@ -545,6 +569,8 @@ const CanjeValidadoProveedorModal = ({
                                   textDecoration: "line-through",
                                   textDecorationColor: "red",
                                 }
+                              : canje.tipo_producto === "digital"
+                              ? { color: "#ff9809" }
                               : {}
                           }
                         >
@@ -556,7 +582,7 @@ const CanjeValidadoProveedorModal = ({
                           })}
                         </Typography>
                       </Grid>
-                      {!verCanje?.orden_compra ? (
+                      {!verCanje?.orden_compra && canje.tipo_producto === "fisico" ? (
                         <Grid item xs={6} md={1}>
                           <Typography variant="body2" color="text.secondary">
                             Acciones
@@ -594,7 +620,7 @@ const CanjeValidadoProveedorModal = ({
                                 </IconButton>
                               </Tooltip>
                             ) : null}
-                            {/*{canje.estatus_proveedor === 2 ? null : (
+                            {/* {canje.tipo_producto === "fisico" ? null : (
                               <Tooltip
                                 title={intl.formatMessage({ id: "marcar_como_compra_digital" })}
                               >
@@ -614,7 +640,7 @@ const CanjeValidadoProveedorModal = ({
                           Estatus
                         </Typography>
                         <Typography variant="body2" fontWeight="medium">
-                          {renderEstatusChip(canje.estatus_proveedor)}
+                          {renderEstatusChip(canje.estatus_proveedor, canje.tipo_producto)}
                         </Typography>
                       </Grid>
                     </Grid>
@@ -966,105 +992,217 @@ const CanjeValidadoProveedorModal = ({
               )}
             </Button>
             {verProveedor.id === null && !verCanje?.orden_compra ? (
-              <Button
-                sx={{
-                  color: "#fff",
-                  background: "#3ec972",
-                  fontSize: "0.75rem",
-                  padding: "6px 8px",
-                  margin: "5px 10px",
-                }}
-                variant="contained"
-                endIcon={<SendIcon />}
-                disabled={
-                  procesandoValidacionFinal ||
-                  verCanje?.orden_compra?.estatus === "cotizacion_validada_por_proveedor"
-                }
-                onClick={(e: any) => {
-                  const datos = {
-                    id_usuario: idUsuario,
-                    id_proveedor: verProveedor.id,
-                    productos: verCanje.productos.map((productos) => {
-                      return {
-                        id_canje: productos.id_canje,
-                        id_producto: productos.id,
-                        cantidad_producto: productos.number_of_awards,
-                        cantidad_almacen: productos.number_of_awards,
-                        estatus_almacen: 0,
-                        estatus_proveedor: 1,
+              <>
+                <Button
+                  sx={{
+                    color: "#fff",
+                    background: "#3ec972",
+                    fontSize: "0.75rem",
+                    padding: "6px 8px",
+                    margin: "5px 10px",
+                  }}
+                  variant="contained"
+                  endIcon={<SendIcon />}
+                  disabled={
+                    procesandoValidacionFinal ||
+                    verCanje?.orden_compra?.estatus === "cotizacion_validada_por_proveedor"
+                  }
+                  onClick={(e: any) => {
+                    const datos = {
+                      id_usuario: idUsuario,
+                      id_proveedor: verProveedor.id,
+                      productos: verCanje.productos
+                        .filter((p) => p.tipo_producto === "fisico")
+                        .map((productos) => {
+                          return {
+                            id_canje: productos.id_canje,
+                            id_producto: productos.id,
+                            cantidad_producto: productos.number_of_awards,
+                            cantidad_almacen: productos.number_of_awards,
+                            estatus_almacen: 0,
+                            estatus_proveedor: 1,
+                          };
+                        }),
+                      tipo_envio: "directo",
+                    };
+                    enviarCotizacionProveedor(datos);
+                  }}
+                >
+                  {procesandoValidacionFinal ? (
+                    <>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                      Validando...{" "}
+                    </>
+                  ) : (
+                    intl.formatMessage({ id: "validar_sin_proveedor" })
+                  )}
+                </Button>
+                {verCanje.productos.some((p) => p.tipo_producto === "digital") && (
+                  <Button
+                    sx={{
+                      color: "#fff",
+                      background: "#ff9809",
+                      fontSize: "0.75rem",
+                      padding: "6px 8px",
+                      margin: "5px 10px",
+                    }}
+                    variant="contained"
+                    endIcon={<SendIcon />}
+                    disabled={
+                      procesandoValidacionFinal ||
+                      verCanje?.orden_compra?.estatus === "cotizacion_validada_por_proveedor"
+                    }
+                    onClick={(e: any) => {
+                      const datos = {
+                        id_usuario: idUsuario,
+                        id_proveedor: verProveedor.id,
+                        productos: verCanje.productos
+                          .filter((p) => p.tipo_producto === "digital")
+                          .map((productos) => {
+                            return {
+                              id_canje: productos.id_canje,
+                              id_producto: productos.id,
+                              cantidad_producto: productos.number_of_awards,
+                              cantidad_almacen: productos.number_of_awards,
+                              estatus_almacen: 0,
+                              estatus_proveedor: 1,
+                            };
+                          }),
+                        tipo_envio: "directo",
                       };
-                    }),
-                    tipo_envio: "directo",
-                  };
-                  enviarCotizacionProveedor(datos);
-                }}
-              >
-                {procesandoValidacionFinal ? (
-                  <>
-                    <Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
-                    />
-                    Validando...{" "}
-                  </>
-                ) : (
-                  intl.formatMessage({ id: "validar_sin_proveedor" })
+                      enviarCotizacionProveedor(datos);
+                    }}
+                  >
+                    {procesandoValidacionFinal ? (
+                      <>
+                        <Spinner
+                          as="span"
+                          animation="border"
+                          size="sm"
+                          role="status"
+                          aria-hidden="true"
+                        />
+                        Validando...{" "}
+                      </>
+                    ) : (
+                      intl.formatMessage({ id: "validar_productos_digitales" })
+                    )}
+                  </Button>
                 )}
-              </Button>
+              </>
             ) : (
-              <Button
-                sx={{
-                  color: "#fff",
-                  background: "#3ec972",
-                  fontSize: "0.75rem",
-                  padding: "6px 8px",
-                  margin: "5px 10px",
-                }}
-                variant="contained"
-                endIcon={<SendIcon />}
-                disabled={
-                  procesandoEnviarProveedor ||
-                  canjesPaginados.length === 0 ||
-                  todosProductosValidados ||
-                  verProveedor.id == null
-                }
-                onClick={(e: any) => {
-                  const datos = {
-                    id_usuario: idUsuario,
-                    id_proveedor: verProveedor.id,
-                    productos: verCanje.productos.map((productos) => {
-                      return {
-                        id_canje: productos.id_canje,
-                        id_producto: productos.id,
-                        cantidad_producto: productos.number_of_awards,
-                        cantidad_almacen: productos.number_of_awards,
-                        estatus_almacen: 0,
-                        estatus_proveedor: 0,
+              <>
+                <Button
+                  sx={{
+                    color: "#fff",
+                    background: "#3ec972",
+                    fontSize: "0.75rem",
+                    padding: "6px 8px",
+                    margin: "5px 10px",
+                  }}
+                  variant="contained"
+                  endIcon={<SendIcon />}
+                  disabled={
+                    procesandoEnviarProveedor ||
+                    canjesPaginados.length === 0 ||
+                    todosProductosValidados ||
+                    verProveedor.id == null
+                  }
+                  onClick={(e: any) => {
+                    const datos = {
+                      id_usuario: idUsuario,
+                      id_proveedor: verProveedor.id,
+                      productos: verCanje.productos
+                        .filter((p) => p.tipo_producto === "fisico")
+                        .map((p) => {
+                          return {
+                            id_canje: p.id_canje,
+                            id_producto: p.id,
+                            cantidad_producto: p.number_of_awards,
+                            cantidad_almacen: p.number_of_awards,
+                            estatus_almacen: 0,
+                            estatus_proveedor: 0,
+                          };
+                        }),
+                      tipo_envio: "proveedor",
+                    };
+                    enviarCotizacionProveedor(datos);
+                  }}
+                >
+                  {procesandoEnviarProveedor ? (
+                    <>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                      Enviando...{" "}
+                    </>
+                  ) : (
+                    intl.formatMessage({ id: "enviar_a_proveedor" })
+                  )}
+                </Button>
+                {verCanje.productos.some((p) => p.tipo_producto === "digital") && (
+                  <Button
+                    sx={{
+                      color: "#fff",
+                      background: "#ff9809",
+                      fontSize: "0.75rem",
+                      padding: "6px 8px",
+                      margin: "5px 10px",
+                    }}
+                    variant="contained"
+                    endIcon={<SendIcon />}
+                    disabled={
+                      procesandoValidacionFinal ||
+                      verCanje?.orden_compra?.estatus === "cotizacion_validada_por_proveedor"
+                    }
+                    onClick={(e: any) => {
+                      const datos = {
+                        id_usuario: idUsuario,
+                        id_proveedor: verProveedor.id,
+                        productos: verCanje.productos
+                          .filter((p) => p.tipo_producto === "digital")
+                          .map((productos) => {
+                            return {
+                              id_canje: productos.id_canje,
+                              id_producto: productos.id,
+                              cantidad_producto: productos.number_of_awards,
+                              cantidad_almacen: productos.number_of_awards,
+                              estatus_almacen: 0,
+                              estatus_proveedor: 1,
+                            };
+                          }),
+                        tipo_envio: "proveedor",
                       };
-                    }),
-                    tipo_envio: "proveedor",
-                  };
-                  enviarCotizacionProveedor(datos);
-                }}
-              >
-                {procesandoEnviarProveedor ? (
-                  <>
-                    <Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
-                    />
-                    Enviando...{" "}
-                  </>
-                ) : (
-                  intl.formatMessage({ id: "enviar_a_proveedor" })
+                      enviarCotizacionProveedor(datos);
+                    }}
+                  >
+                    {procesandoValidacionFinal ? (
+                      <>
+                        <Spinner
+                          as="span"
+                          animation="border"
+                          size="sm"
+                          role="status"
+                          aria-hidden="true"
+                        />
+                        Validando...{" "}
+                      </>
+                    ) : (
+                      intl.formatMessage({ id: "validar_productos_digitales" })
+                    )}
+                  </Button>
                 )}
-              </Button>
+              </>
             )}
 
             <Button

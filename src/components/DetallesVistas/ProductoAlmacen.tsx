@@ -49,7 +49,7 @@ interface Producto {
   precio_compra: number;
   fecha: Date;
   comentarios: string;
-  mei: string;
+  imei: string;
   no_serie: string;
   estatus: string;
   guia: string;
@@ -368,7 +368,7 @@ const ProductoAlmacenModal = ({
                     handleisAlertOpenProductosTecnologicos();
                   }}
                 >
-                  {intl.formatMessage({ id: "registrar_mei_y_no_serie" })}
+                  {intl.formatMessage({ id: "registrar_imei_y_no_serie" })}
                 </Button>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -403,13 +403,13 @@ const ProductoAlmacenModal = ({
                   {verProducto.sku_nuevo ?? verProducto.sku}
                 </Typography>
               </Grid>
-              {verProducto.mei && (
+              {verProducto.imei && (
                 <Grid item xs={12} md={6}>
                   <Typography variant="body2" color="text.secondary">
-                    MEI
+                    IMEI
                   </Typography>
                   <Typography variant="body2" fontWeight="medium">
-                    {verProducto.mei}
+                    {verProducto.imei}
                   </Typography>
                 </Grid>
               )}
@@ -560,17 +560,19 @@ const ProductoAlmacenModal = ({
                   Guía
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
-                  <a href={verProducto.guia} target="_blank" rel="noreferrer">
-                    Ver rastreo
-                  </a>
+                  {verProducto.guia && (
+                    <a href={verProducto.guia} target="_blank" rel="noreferrer">
+                      Ver rastreo
+                    </a>
+                  )}
                 </Typography>
               </Grid>
               <Grid item xs={12} md={3}>
                 <Typography variant="body2" color="text.secondary">
-                  MEI
+                  IMEI
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
-                  {verProducto.mei ?? "N/A"}
+                  {verProducto.imei ?? "N/A"}
                 </Typography>
               </Grid>
               <Grid item xs={12} md={3}>

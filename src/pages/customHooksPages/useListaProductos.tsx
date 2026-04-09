@@ -12,6 +12,7 @@ import {
   getBitacoraProductoPorIdHttp,
   getBusquedaInteligenteHttp,
   getCatalogoProductosHttp,
+  verificarIdProductoBrimagyHttp,
   verificarSkusHttp,
 } from "actions/productos";
 import { numericFormatter } from "react-number-format";
@@ -128,6 +129,27 @@ export const useListaProductos = (tipoUsuario: number) => {
   const [visualizacion, setVisualizacion] = useState<string | null>("cuadricula");
   const [fecha1, setFecha1] = useState("");
   const [fecha2, setFecha2] = useState("");
+
+  // Convierte nombres de color (red, blue) a hex
+  const colorNameToHex = (color: string): string => {
+    const ctx = document.createElement("canvas").getContext("2d");
+    if (!ctx) return color;
+    ctx.fillStyle = color;
+    const computed = ctx.fillStyle;
+    // Si no pudo convertir, devuelve el valor original
+    return computed.startsWith("#") ? computed : color;
+  };
+
+  const esColorValido = (color: string): boolean => {
+    const s = new Option().style;
+    s.color = color;
+    return s.color !== "";
+  };
+
+  // Dentro de tu componente
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
+  const colorHex = esColorValido(colorEditar) ? colorNameToHex(colorEditar) : "#000000";
 
   const handleVisualizacion = (
     event: React.MouseEvent<HTMLElement>,
@@ -366,19 +388,12 @@ export const useListaProductos = (tipoUsuario: number) => {
   const handleBuscadorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setBuscador(value);
-
-    // Limpia el timeout anterior
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
     }
     const timeout = setTimeout(() => {
       getProductosCatalogo({ search: value, fecha1, fecha2 });
     }, 500);
-
-    // Crea un nuevo timeout
-    /*const timeout = setTimeout(() => {
-      getProductosCatalogo(value);
-    }, 500);*/
 
     setDebounceTimeout(timeout);
   };
@@ -392,9 +407,8 @@ export const useListaProductos = (tipoUsuario: number) => {
           params?.fecha1 ? new Date(params.fecha1) : undefined,
           params?.fecha2 ? new Date(params.fecha2) : undefined
         );
-        //const productosData = await getCatalogoProductosHttp(search, fecha1, fecha2);
 
-        const datosFormateados = productosData.map((e: any) => {
+        /*const datosFormateados = productosData.map((e: any) => {
           return {
             ...e,
             ...{
@@ -479,8 +493,8 @@ export const useListaProductos = (tipoUsuario: number) => {
               fecha_creacion: moment(e?.fecha_ejecucion).format("DD-MM-YYYY"),
             },
           };
-        });
-        setProductos(datosFormateados);
+        });*/
+        setProductos(productosData);
         setTableKey((prev) => prev + 1);
         setProcesando(false);
       } catch (error) {
@@ -624,7 +638,6 @@ export const useListaProductos = (tipoUsuario: number) => {
         headers[colNumber] = cell.text.toLowerCase().trim();
       });
 
-      // Función helper para obtener valor de celda por nombre de columna
       const getValueByHeader = (row: ExcelJS.Row, headerName: string): any => {
         const colIndex = Object.keys(headers).find((key) =>
           headers[parseInt(key)].includes(headerName)
@@ -742,6 +755,8 @@ export const useListaProductos = (tipoUsuario: number) => {
         const skuVacio = !sku || sku.trim() === "" || sku === "N/A";
         const color = limpiarTexto(getValueByHeader(row, "color"));
         const talla = getValueByHeader(row, "talla");
+        const id_producto_brimagy = getValueByHeader(row, "id producto");
+        const idBrimagyVacio = !id_producto_brimagy;
 
         // Validaciones de campos de texto
         if (nombre_producto && tieneCaracteresNoPermitidos(nombre_producto, "texto")) {
@@ -854,8 +869,11 @@ export const useListaProductos = (tipoUsuario: number) => {
           categoria_valida: !!categoriaObj,
           plataforma_valida: !!plataformaObj,
           sku_duplicado: false,
+          id_producto_brimagy_duplicado: false,
           sku_vacio: skuVacio,
+          id_producto_brimagy_vacio: idBrimagyVacio,
           plataforma: plataforma,
+          id_producto_brimagy: id_producto_brimagy,
         };
 
         // Solo agregar si tiene al menos nombre y SKU
@@ -881,8 +899,9 @@ export const useListaProductos = (tipoUsuario: number) => {
 
       // Verificar SKUs duplicados en la BD
       const skus = datosFormateados.map((p) => p.sku).filter(Boolean);
+      const ids = datosFormateados.map((p) => p.id_producto_brimagy).filter(Boolean);
 
-      if (skus.length > 0) {
+      /*if (skus.length > 0) {
         try {
           const skusExistentesResponse = await verificarSkusHttp(skus);
           const skusExistentes = skusExistentesResponse?.skus_existentes || [];
@@ -904,6 +923,32 @@ export const useListaProductos = (tipoUsuario: number) => {
           }
         } catch (error) {
           console.error("Error al verificar SKUs:", error);
+        }
+      }*/
+      if (ids.length > 0) {
+        try {
+          const idsExistentesResponse = await verificarIdProductoBrimagyHttp(ids);
+          const idsExistentes = idsExistentesResponse?.ids_existentes || [];
+
+          // Marcar productos con SKU duplicado
+          datosFormateados.forEach((producto) => {
+            if (idsExistentes.includes(producto.id_producto_brimagy)) {
+              producto.id_producto_brimagy_duplicado = true;
+            }
+          });
+
+          // Mostrar alerta si hay SKUs duplicados
+          const cantidadDuplicados = datosFormateados.filter(
+            (p) => p.id_producto_brimagy_duplicado
+          ).length;
+          if (cantidadDuplicados > 0) {
+            setMensajeAlert(
+              `⚠️ Se encontraron ${cantidadDuplicados} producto(s) con id existente. Estos productos se actualizarán en lugar de crearse nuevos.`
+            );
+            handleisAlertOpen();
+          }
+        } catch (error) {
+          console.error("Error al verificar Ids:", error);
         }
       }
 
@@ -1006,6 +1051,107 @@ export const useListaProductos = (tipoUsuario: number) => {
     }
   };
 
+  const descargarProductosExcel = async () => {
+    try {
+      setProcesando(true);
+
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Productos");
+
+      // Mismas columnas que la plantilla
+      worksheet.columns = [
+        { header: "Id Producto", key: "id_producto", width: 10 },
+        { header: "Categoría", key: "categoria", width: 25 },
+        { header: "Nombre Producto", key: "nombre_producto", width: 30 },
+        { header: "Descripción", key: "descripcion", width: 40 },
+        { header: "Marca", key: "marca", width: 20 },
+        { header: "Proveedor", key: "proveedor", width: 25 },
+        { header: "SKU", key: "sku", width: 20 },
+        { header: "Color", key: "color", width: 15 },
+        { header: "Talla", key: "talla", width: 15 },
+        { header: "Costo con IVA", key: "costo_con_iva", width: 15 },
+        { header: "Costo sin IVA", key: "costo_sin_iva", width: 15 },
+        { header: "Costo Puntos con IVA", key: "costo_puntos_con_iva", width: 20 },
+        { header: "Costo Puntos sin IVA", key: "costo_puntos_sin_iva", width: 20 },
+        { header: "Fee Brimagy", key: "fee_brimagy", width: 15 },
+        { header: "Subtotal", key: "subtotal", width: 15 },
+        { header: "Envío Base", key: "envio_base", width: 15 },
+        { header: "Costo Caja", key: "costo_caja", width: 15 },
+        { header: "Envío Extra", key: "envio_extra", width: 15 },
+        { header: "Total Envío", key: "total_envio", width: 15 },
+        { header: "Total", key: "total", width: 15 },
+        { header: "Puntos", key: "puntos", width: 15 },
+        { header: "Factor", key: "factor", width: 15 },
+        { header: "Tipo Producto", key: "tipo_producto", width: 15 },
+        { header: "Plataforma", key: "plataforma", width: 15 },
+      ];
+
+      // Estilo del header (igual que la plantilla)
+      worksheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
+      worksheet.getRow(1).fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF084d6e" },
+      };
+      worksheet.getRow(1).alignment = { vertical: "middle", horizontal: "center" };
+
+      // ✅ Llenar con los productos del estado
+      productos.forEach((p) => {
+        const row = worksheet.addRow({
+          id_producto: p.id || "",
+          categoria: p.catalogo || "",
+          nombre_producto: p.nombre_producto || "",
+          descripcion: p.descripcion || "",
+          marca: p.marca || "",
+          proveedor: p.proveedor || "",
+          sku: p.sku || "",
+          color: p.color || "",
+          talla: p.talla || "",
+          costo_con_iva: p.costo_con_iva ?? 0,
+          costo_sin_iva: p.costo_sin_iva ?? 0,
+          costo_puntos_con_iva: p.costo_puntos_con_iva ?? 0,
+          costo_puntos_sin_iva: p.costo_puntos_sin_iva ?? 0,
+          fee_brimagy: p.fee_brimagy ?? 0,
+          subtotal: p.subtotal ?? 0,
+          envio_base: p.envio_base ?? 0,
+          costo_caja: p.costo_caja ?? 0,
+          envio_extra: p.envio_extra ?? 0,
+          total_envio: p.total_envio ?? 0,
+          total: p.total ?? 0,
+          puntos: p.puntos ?? 0,
+          factor: p.factor ?? 0,
+          tipo_producto: p.tipo_producto || "",
+          plataforma: p.nombre_plataforma || "",
+        });
+
+        // ✅ Formato numérico para columnas de dinero
+        const columnasNumericas = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+        columnasNumericas.forEach((col) => {
+          row.getCell(col).numFmt = "#,##0.00";
+        });
+      });
+
+      // Generar y descargar
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `productos_${moment().format("DDMMYYYY_HHmm")}.xlsx`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      console.error("Error al exportar productos:", error);
+      setMensajeAlert("Error al exportar los productos");
+      handleisAlertOpen();
+    }
+  };
+
   // Función para guardar productos
   const guardarProductosExcel = async () => {
     try {
@@ -1046,6 +1192,7 @@ export const useListaProductos = (tipoUsuario: number) => {
             total: producto.total,
             puntos: producto.puntos,
             factor: producto.factor,
+            id_producto_brimagy: producto.id_producto_brimagy,
             tipo_producto: producto.tipo_producto,
             nombre_plataforma: producto.plataforma,
             tipo_registro: "excel",
@@ -1285,6 +1432,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     guardarProductosExcel,
     procesandoExcel,
     descargarPlantillaExcel,
+    descargarProductosExcel,
     //Búsqueda intelimagy
     isAlertOpenBI,
     handleisAlertOpenBI,
@@ -1322,5 +1470,11 @@ export const useListaProductos = (tipoUsuario: number) => {
     handleisAlertOpenVerBitacoraProducto,
     handleisAlertCloseVerBitacoraProducto,
     getBitacoraProductoPorId,
+    //color picker
+    colorNameToHex,
+    esColorValido,
+    anchorEl,
+    setAnchorEl,
+    colorHex,
   };
 };

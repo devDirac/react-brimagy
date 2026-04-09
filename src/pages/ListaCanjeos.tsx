@@ -173,12 +173,15 @@ function ListaCanjeos(): JSX.Element {
     return estadosValidacionMap[estadoUpper] || estadoUpper;
   };
 
-  // Calcular las pólizas a mostrar en la página actual
+  const canjesFiltrados = useMemo(() => {
+    return canjes?.filter((p: any) => p.id_producto != null) || [];
+  }, [canjes]);
+
   const canjesPaginados = useMemo(() => {
     const startIndex = page * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     return canjes?.slice(startIndex, endIndex) || [];
-  }, [canjes, page, rowsPerPage]);
+  }, [canjesFiltrados, page, rowsPerPage]);
 
   return (
     <DashboardLayout>
@@ -252,180 +255,182 @@ function ListaCanjeos(): JSX.Element {
             )}
           </Grid>
         </Grid>
-        {canjes?.length > 0 && visualizacion === "cuadricula" ? (
+        {canjesFiltrados?.length > 0 && visualizacion === "cuadricula" ? (
           <>
             <Grid container spacing={2}>
-              {canjesPaginados.map((p: any, key: number) => {
-                return (
-                  <Grid item xs={12} sm={6} md={4} lg={4} key={key}>
-                    <Card
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        height: "100%",
-                        overflow: "hidden",
-                        transition: "all 0.3s",
-                        "&:hover": {
-                          boxShadow: 6,
-                          transform: "translateY(-4px)",
-                        },
-                      }}
-                    >
-                      <Chip
-                        icon={<AutoAwesomeIcon />}
-                        label={traducirEstadoValidacion(p.estado_validacion?.toUpperCase())}
+              {canjesPaginados
+                .filter((p: any) => p.id_producto != null)
+                .map((p: any, key: number) => {
+                  return (
+                    <Grid item xs={12} sm={6} md={4} lg={4} key={key}>
+                      <Card
                         sx={{
-                          position: "absolute",
-                          top: 0,
-                          right: 0,
-                          flexDirection: "row",
-                          bgcolor: pink[50],
-                          p: 1,
-                          fontWeight: 500,
-                          borderRadius: "0 0 0 20px",
-                          background: "#eb2fa5",
-                          maxWidth: "150px",
-                          height: "auto",
-                          whiteSpace: "normal",
-                          "& .MuiChip-label": {
-                            whiteSpace: "normal",
-                            overflow: "visible",
-                            textOverflow: "clip",
-                            display: "block",
-                            lineHeight: "12px",
-                            color: "#FFF9C4 !important",
-                          },
-                          "& .MuiChip-icon": {
-                            color: "#FFF9C4 !important",
-                            fontSize: "20px !important",
-                            width: "20px !important",
-                            height: "20px !important",
-                            marginTop: "2px",
-                            alignSelf: "flex-start",
-                          },
-                        }}
-                      />
-                      {/* Fila superior*/}
-                      <Box
-                        sx={{
-                          overflow: "hidden",
                           display: "flex",
-                          flexDirection: "row",
-                          bgcolor: "#a5eb2f",
-                          p: 1,
-                          borderBottom: `2px solid #02999e`,
+                          flexDirection: "column",
+                          height: "100%",
+                          overflow: "hidden",
+                          transition: "all 0.3s",
+                          "&:hover": {
+                            boxShadow: 6,
+                            transform: "translateY(-4px)",
+                          },
                         }}
                       >
-                        <Box
+                        <Chip
+                          icon={<AutoAwesomeIcon />}
+                          label={traducirEstadoValidacion(p.estado_validacion?.toUpperCase())}
                           sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
+                            position: "absolute",
+                            top: 0,
+                            right: 0,
+                            flexDirection: "row",
+                            bgcolor: pink[50],
                             p: 1,
+                            fontWeight: 500,
+                            borderRadius: "0 0 0 20px",
+                            background: "#eb2fa5",
+                            maxWidth: "150px",
+                            height: "auto",
+                            whiteSpace: "normal",
+                            "& .MuiChip-label": {
+                              whiteSpace: "normal",
+                              overflow: "visible",
+                              textOverflow: "clip",
+                              display: "block",
+                              lineHeight: "12px",
+                              color: "#FFF9C4 !important",
+                            },
+                            "& .MuiChip-icon": {
+                              color: "#FFF9C4 !important",
+                              fontSize: "20px !important",
+                              width: "20px !important",
+                              height: "20px !important",
+                              marginTop: "2px",
+                              alignSelf: "flex-start",
+                            },
                           }}
-                        >
-                          <TagIcon
-                            sx={{
-                              color: "#eb2fa5",
-                              fontSize: 48,
-                            }}
-                          />
-                        </Box>
+                        />
+                        {/* Fila superior*/}
                         <Box
                           sx={{
-                            flex: 1,
-                            display: "flex",
-                            alignItems: "center",
                             overflow: "hidden",
+                            display: "flex",
+                            flexDirection: "row",
+                            bgcolor: "#a5eb2f",
+                            p: 1,
+                            borderBottom: `2px solid #02999e`,
                           }}
                         >
-                          <MDTypography
-                            variant="caption"
-                            color="text"
+                          <Box
                             sx={{
-                              paddingLeft: "10px",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              fontWeight: 600,
-                              color: green[900],
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                              p: 1,
                             }}
                           >
-                            {p.folio}
-                          </MDTypography>
+                            <TagIcon
+                              sx={{
+                                color: "#eb2fa5",
+                                fontSize: 48,
+                              }}
+                            />
+                          </Box>
+                          <Box
+                            sx={{
+                              flex: 1,
+                              display: "flex",
+                              alignItems: "center",
+                              overflow: "hidden",
+                            }}
+                          >
+                            <MDTypography
+                              variant="caption"
+                              color="text"
+                              sx={{
+                                paddingLeft: "10px",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                fontWeight: 600,
+                                color: green[900],
+                              }}
+                            >
+                              {p.folio}
+                            </MDTypography>
+                          </Box>
                         </Box>
-                      </Box>
 
-                      {/* Fila inferior - Iconos a la izquierda, Info a la derecha */}
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "row",
-                          flex: 1,
-                          overflow: "hidden",
-                        }}
-                      >
-                        {/* Columna izquierda - Iconos de acción */}
+                        {/* Fila inferior - Iconos a la izquierda, Info a la derecha */}
                         <Box
                           sx={{
                             display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            gap: 1,
-                            p: 1.5,
-                            bgcolor: "grey.50",
-                            borderRight: "1px solid",
-                            borderColor: "grey.200",
-                          }}
-                        >
-                          <Tooltip title="Vista Previa">
-                            <IconButton
-                              aria-label="ver"
-                              size="small"
-                              color="default"
-                              onClick={() => {
-                                setVerCanje(p);
-                                console.log(verCanje);
-                                handleisAlertOpenVerCanje();
-                              }}
-                            >
-                              <VisibilityIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </Box>
-
-                        {/* Columna derecha - Información */}
-                        <CardContent
-                          sx={{
+                            flexDirection: "row",
                             flex: 1,
-                            p: 2,
-                            display: "flex",
-                            flexDirection: "column",
                             overflow: "hidden",
                           }}
                         >
-                          <Tooltip title={p.nombre_premio}>
-                            <Typography
-                              variant="button"
-                              gutterBottom
-                              noWrap
-                              sx={{ fontWeight: 600 }}
-                            >
-                              {p.nombre_premio}
-                            </Typography>
-                          </Tooltip>
-                        </CardContent>
-                      </Box>
-                    </Card>
-                  </Grid>
-                );
-              })}
+                          {/* Columna izquierda - Iconos de acción */}
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              gap: 1,
+                              p: 1.5,
+                              bgcolor: "grey.50",
+                              borderRight: "1px solid",
+                              borderColor: "grey.200",
+                            }}
+                          >
+                            <Tooltip title="Vista Previa">
+                              <IconButton
+                                aria-label="ver"
+                                size="small"
+                                color="default"
+                                onClick={() => {
+                                  setVerCanje(p);
+                                  console.log(verCanje);
+                                  handleisAlertOpenVerCanje();
+                                }}
+                              >
+                                <VisibilityIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+
+                          {/* Columna derecha - Información */}
+                          <CardContent
+                            sx={{
+                              flex: 1,
+                              p: 2,
+                              display: "flex",
+                              flexDirection: "column",
+                              overflow: "hidden",
+                            }}
+                          >
+                            <Tooltip title={p.nombre_premio}>
+                              <Typography
+                                variant="button"
+                                gutterBottom
+                                noWrap
+                                sx={{ fontWeight: 600 }}
+                              >
+                                {p.nombre_premio}
+                              </Typography>
+                            </Tooltip>
+                          </CardContent>
+                        </Box>
+                      </Card>
+                    </Grid>
+                  );
+                })}
             </Grid>
 
             {/* Componente de paginación */}
             <MDBox mt={3} sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
               <TablePagination
                 component="div"
-                count={canjes?.length}
+                count={canjesFiltrados?.length}
                 page={page}
                 onPageChange={handleChangePage}
                 rowsPerPage={rowsPerPage}

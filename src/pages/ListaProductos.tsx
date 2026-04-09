@@ -13,7 +13,7 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 
 // formik components
 import { Formik, Form } from "formik";
@@ -45,6 +45,7 @@ import {
   FormControlLabel,
   IconButton,
   InputAdornment,
+  Popover,
   MenuItem,
   Paper,
   Radio,
@@ -90,6 +91,10 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import HardwareIcon from "@mui/icons-material/Hardware";
 import ComputerIcon from "@mui/icons-material/Computer";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import DetallesProductoModal from "components/DetallesVistas/Producto";
+
+import { HexColorPicker } from "react-colorful";
 
 function ListaProductos(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -190,6 +195,7 @@ function ListaProductos(): JSX.Element {
     guardarProductosExcel,
     procesandoExcel,
     descargarPlantillaExcel,
+    descargarProductosExcel,
     //Búsqueda intelimagy
     isAlertOpenBI,
     handleisAlertOpenBI,
@@ -227,6 +233,12 @@ function ListaProductos(): JSX.Element {
     handleisAlertOpenVerBitacoraProducto,
     handleisAlertCloseVerBitacoraProducto,
     getBitacoraProductoPorId,
+    //color picker
+    colorNameToHex,
+    esColorValido,
+    anchorEl,
+    setAnchorEl,
+    colorHex,
   } = useListaProductos(tipoUsuario);
 
   const independiente = () => {
@@ -296,13 +308,15 @@ function ListaProductos(): JSX.Element {
             <Button
               variant="outlined"
               startIcon={<SimCardDownloadIcon />}
-              onClick={descargarPlantillaExcel}
+              onClick={productos?.length > 0 ? descargarProductosExcel : descargarPlantillaExcel}
               sx={{
                 borderColor: "#084d6e",
                 color: "#084d6e",
               }}
             >
-              Descargar Plantilla
+              {productos?.length > 0
+                ? intl.formatMessage({ id: "descargar_productos" })
+                : intl.formatMessage({ id: "descargar_plantilla" })}
             </Button>
 
             <Button
@@ -452,9 +466,9 @@ function ListaProductos(): JSX.Element {
                           overflow: "hidden",
                           display: "flex",
                           flexDirection: "row",
-                          bgcolor: pink[50],
+                          bgcolor: "#a5eb2f",
                           p: 1,
-                          borderBottom: `2px solid ${pink[100]}`,
+                          borderBottom: `2px solid #eb2fa5`,
                         }}
                       >
                         <Box
@@ -467,9 +481,10 @@ function ListaProductos(): JSX.Element {
                         >
                           <InventoryIcon
                             sx={{
-                              color: pink[500],
+                              color: "#eb2fa5",
                               fontSize: 48,
                             }}
+                            fontSize="small"
                           />
                         </Box>
                         <Box
@@ -481,12 +496,15 @@ function ListaProductos(): JSX.Element {
                           }}
                         >
                           <MDTypography
-                            variant="caption"
+                            variant="button"
                             color="text"
                             sx={{
-                              paddingLeft: "10px",
+                              fontSize: "14px",
+                              paddingLeft: "5px",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
+                              fontWeight: 600,
+                              color: "#121f09",
                             }}
                           >
                             {p.marca}
@@ -649,14 +667,44 @@ function ListaProductos(): JSX.Element {
                           alignItems: "center",
                           justifyContent: "center",
                           flexDirection: "row",
-                          bgcolor: "#dee4f0",
+                          bgcolor: "#a5eb2f",
                           p: 0,
-                          pt: 1,
+                          pt: 0,
+                          gap: 0,
                         }}
                       >
-                        <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
-                          {p.nombre_plataforma}
-                        </Typography>
+                        <Box
+                          sx={{
+                            width: "100%",
+                            textAlign: "center",
+                            overflow: "hidden",
+                            //bgcolor: "#1b5b69",
+                            p: 0,
+                          }}
+                        >
+                          <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
+                            {p.nombre_plataforma}
+                          </Typography>
+                        </Box>
+                        <Box
+                          sx={{
+                            borderLeft: "eb2fa5",
+                            width: "100%",
+                            textAlign: "center",
+                            overflow: "hidden",
+                            p: 0,
+                          }}
+                        >
+                          <EmojiEventsIcon />{" "}
+                          <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
+                            {numericFormatter(p.puntos + "", {
+                              thousandSeparator: ",",
+                              decimalScale: 2,
+                              fixedDecimalScale: false,
+                              prefix: "",
+                            })}
+                          </Typography>
+                        </Box>
                       </Box>
                     </Card>
                   </Grid>
@@ -828,6 +876,52 @@ function ListaProductos(): JSX.Element {
                   label={intl.formatMessage({ id: "input_color" })}
                   variant="standard"
                   name="colorEditar"
+                  value={colorEditar}
+                  onChange={(e) => setColorEditar(e.target.value)}
+                  onClick={(e) => setAnchorEl(e.currentTarget)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Box
+                          sx={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: "4px",
+                            backgroundColor: esColorValido(colorEditar)
+                              ? colorEditar
+                              : "transparent",
+                            border: "1px solid #ccc",
+                            cursor: "pointer",
+                          }}
+                        />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+
+                <Popover
+                  open={Boolean(anchorEl)}
+                  anchorEl={anchorEl}
+                  onClose={() => setAnchorEl(null)}
+                  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                >
+                  <Box sx={{ p: 2 }}>
+                    <HexColorPicker color={colorHex} onChange={(hex) => setColorEditar(hex)} />
+                    {/* Muestra el valor hex actual */}
+                    <Box sx={{ mt: 1, textAlign: "center", fontSize: 12, color: "text.secondary" }}>
+                      {colorHex}
+                    </Box>
+                  </Box>
+                </Popover>
+              </Grid>
+              <Grid item xs={6} sm={4}>
+                <TextField
+                  id="colorEditar"
+                  fullWidth
+                  label={intl.formatMessage({ id: "input_color" })}
+                  variant="standard"
+                  name="colorEditar"
+                  type="number"
                   value={colorEditar}
                   onChange={(e) => {
                     const value = e.target.value;
@@ -1293,6 +1387,11 @@ function ListaProductos(): JSX.Element {
                     fixedDecimalScale: true,
                     prefix: "$",
                   }),
+                  producto_status: p.id_producto_brimagy_vacio
+                    ? "⚠️ PRODUCTO NUEVO"
+                    : p.id_producto_brimagy_duplicado
+                    ? "🔄 " + p.id_producto_brimagy + " (Existente)"
+                    : p.id_producto_brimagy,
                   plataforma_status: p.plataforma_valida
                     ? "✓ " + p.plataforma
                     : "✗ " + p.plataforma,
@@ -1316,6 +1415,7 @@ function ListaProductos(): JSX.Element {
                   "sku_status",
                   "color",
                   "talla",
+                  "producto_status",
                   "plataforma_status",
                   "proveedor_status",
                   "catalogo_status",
@@ -1357,7 +1457,8 @@ function ListaProductos(): JSX.Element {
               ) : (
                 `Guardar ${
                   excelData?.filter(
-                    (p) => p?.proveedor_valido && p?.categoria_valida && p?.sku_vacio
+                    (p) =>
+                      p?.sku_vacio || (p?.proveedor_valido && p?.categoria_valida && !p?.sku_vacio)
                   ).length || 0
                 } productos válidos`
               )}
@@ -1395,243 +1496,7 @@ function ListaProductos(): JSX.Element {
         <Grid container spacing={2} style={{ textAlign: "center" }}>
           {verProducto ? (
             <>
-              <Grid item xs={12} mt={1}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "16px", fontWeight: 600 }}
-                >
-                  {verProducto?.nombre_producto}
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Divider />
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Descripción
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.descripcion}
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Marca
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.marca}
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  SKU
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.sku}
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Color
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.color}
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Proveedor
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.proveedor}
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Categoría
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.catalogo}
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Divider />
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Costo sin IVA
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.costo_sin_iva_format}
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Costo con IVA
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.costo_con_iva_format}
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Fee Bimagy
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.fee_brimagy}
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Divider />
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Costo puntos sin IVA
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.costo_puntos_sin_iva_format}
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Costo puntos con IVA
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.costo_puntos_con_iva_format}
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Subtotal
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.subtotal_format}
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Divider />
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Envío base
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.envio_base_format}
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Costo caja
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.costo_caja_format}
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Total envío
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.total_envio_format}
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Envio extra
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.envio_extra_format}
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Total
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.total_format}
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography
-                  variant="button"
-                  gutterBottom
-                  sx={{ fontSize: "14px", fontWeight: 600 }}
-                >
-                  Puntos
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  {verProducto?.puntos_format}
-                </Typography>
-              </Grid>
+              <DetallesProductoModal verProducto={verProducto} />
             </>
           ) : null}
         </Grid>

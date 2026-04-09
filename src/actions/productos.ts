@@ -30,7 +30,7 @@ export const getCatalogoProductosHttp = async (search?: string, fecha1?: Date, f
   try {
     const url = new URL(`${env.API_URL}/getCatalogoProductos`);
 
-    if (search) url.searchParams.append("search", encodeURIComponent(search));
+    if (search) url.searchParams.append("search", search);
     if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
     if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
 
@@ -48,7 +48,7 @@ export const getCatalogoProductosFisicosHttp = async (
   try {
     const url = new URL(`${env.API_URL}/getCatalogoProductosFisicos`);
 
-    if (search) url.searchParams.append("search", encodeURIComponent(search));
+    if (search) url.searchParams.append("search", search);
     if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
     if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
 
@@ -67,7 +67,7 @@ export const getCatalogoProductosDigitalesHttp = async (
   try {
     const url = new URL(`${env.API_URL}/getCatalogoProductosDigitales`);
 
-    if (search) url.searchParams.append("search", encodeURIComponent(search));
+    if (search) url.searchParams.append("search", search);
     if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
     if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
 
@@ -116,6 +116,20 @@ export const verificarSkusHttp = async (skus: string[]) => {
   }
 };
 
+export const verificarIdProductoBrimagyHttp = async (ids?: string[]) => {
+  try {
+    const response = await axios.get(`${env.API_URL}/verificarIdProductoBrimagy`, {
+      params: {
+        ids: ids,
+      },
+    });
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
 export const verificarSkuDisponibleHttp = async (sku: string) => {
   try {
     const response = await axios.post(`${env.API_URL}/verificarSkuDisponible`, { sku });
@@ -156,7 +170,7 @@ export const getCatalogoProductosDigitalesBrimagyHttp = async (
   try {
     const url = new URL(`${env.API_URL}/getCatalogoProductosDigitalesBrimagy`);
 
-    if (search) url.searchParams.append("search", encodeURIComponent(search));
+    if (search) url.searchParams.append("search", search);
     if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
     if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
 

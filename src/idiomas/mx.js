@@ -255,10 +255,14 @@ const textosMx = {
   validar_sin_proveedor: "Validar sin proveedor",
   registrar_nuevo_precio: "Registrar nuevo precio",
   input_precio_compra: "Precio de compra",
-  registrar_mei_y_no_serie: "Registrar MEI y No. Serie",
-  input_mei: "MEI",
+  registrar_imei_y_no_serie: "Registrar MEI y No. Serie",
+  input_imei: "IMEI",
   input_no_serie: "No. Serie",
   datos_registrados_correctamente: "Datos registrados correctamente",
+  descargar_productos: "Descargar productos",
+  descargar_plantilla: "Descargar plantilla",
+  validar_identidad_directa: "Validar identidad directamente",
+  validar_productos_digitales: "Validar productos digitales",
 };
 
 export default textosMx;
