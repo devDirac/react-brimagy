@@ -54,6 +54,8 @@ import {
   ToggleButtonGroup,
   Tooltip,
   Typography,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import ModalComponent from "components/Modal";
 import Header from "components/Header";
@@ -95,6 +97,27 @@ import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import DetallesProductoModal from "components/DetallesVistas/Producto";
 
 import { HexColorPicker } from "react-colorful";
+import ColoresProductoModal from "components/DetallesVistas/ColoresProducto";
+import ClickAwayListener from "@mui/material/ClickAwayListener";
+import CloseIcon from "@mui/icons-material/Close";
+import TallasProductoModal from "components/DetallesVistas/TallasProducto";
+import FotosProductoModal from "components/DetallesVistas/FotosProducto";
+import { MuiFileInput } from "mui-file-input";
+import env from "react-dotenv";
+import MDButton from "components/MDButton";
+import FotosPromoProductoModal from "components/DetallesVistas/FotosPromoProducto";
+
+function TabPanel({
+  children,
+  value,
+  current,
+}: {
+  children: React.ReactNode;
+  value: string;
+  current: string;
+}) {
+  return value === current ? <Box sx={{ p: 2 }}>{children}</Box> : null;
+}
 
 function ListaProductos(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -148,6 +171,8 @@ function ListaProductos(): JSX.Element {
     setSkuEditar,
     colorEditar,
     setColorEditar,
+    tallaEditar,
+    setTallaEditar,
     idProveedorEditar,
     setIdProveedorEditar,
     idCatalogoEditar,
@@ -239,6 +264,79 @@ function ListaProductos(): JSX.Element {
     anchorEl,
     setAnchorEl,
     colorHex,
+    //edicion con brimagy
+    valueTab,
+    setValueTab,
+    handleChangeTab,
+    //colores
+    crearEditarColorProducto,
+    getProductoColorPorId,
+    formikColor,
+    colores,
+    setVerEditarColor,
+    verEditarColor,
+    isAlertOpenEditarColor,
+    handleisAlertOpenEditarColor,
+    handleisAlertCloseEditarColor,
+    procesandoColor,
+    setEditaColor,
+    editaColor,
+    desactivarColorProducto,
+    activarColorProducto,
+    //tallas
+    crearEditarTallaProducto,
+    getProductoTallaPorId,
+    formikTalla,
+    tallas,
+    setVerEditarTalla,
+    verEditarTalla,
+    isAlertOpenEditarTalla,
+    handleisAlertOpenEditarTalla,
+    handleisAlertCloseEditarTalla,
+    procesandoTalla,
+    setEditaTalla,
+    editaTalla,
+    desactivarTallaProducto,
+    activarTallaProducto,
+    //fotos del producto
+    procesandoFotosProducto,
+    fotosProductoFiles,
+    setFotosProductoFiles,
+    isModalFotosProducto,
+    handleOpenFotosProducto,
+    handleCloseFotosProducto,
+    isModalVistaFotosProducto,
+    fotosProductoSeleccionada,
+    handleOpenVistaFotosProducto,
+    handleCloseVistaFotosProducto,
+    subirFotosProducto,
+    getProductoFotoPorId,
+    fotos,
+    desactivarFotosProducto,
+    activarFotosProducto,
+    //fotos promo
+    procesandoFotosPromoProducto,
+    fotosPromoProductoFiles,
+    setFotosPromoProductoFiles,
+    isModalFotosPromoProducto,
+    handleOpenFotosPromoProducto,
+    handleCloseFotosPromoProducto,
+    isModalVistaFotosPromoProducto,
+    fotosPromoProductoSeleccionada,
+    handleOpenVistaFotosPromoProducto,
+    handleCloseVistaFotosPromoProducto,
+    subirFotosPromoProducto,
+    getProductoFotoPromoPorId,
+    fotosPromo,
+    desactivarFotosPromoProducto,
+    activarFotosPromoProducto,
+    //foto principal del producto
+    fotoProductoPrincipalFile,
+    setFotoProductoPrincipalFile,
+    previewFoto,
+    setPreviewFoto,
+    handleChangeFotoProductoPrincipal,
+    fotoEditar,
   } = useListaProductos(tipoUsuario);
 
   const independiente = () => {
@@ -573,7 +671,14 @@ function ListaProductos(): JSX.Element {
                                 size="small"
                                 color="warning"
                                 onClick={() => {
+                                  const datos = {
+                                    id_producto: p?.id,
+                                  };
                                   setProductoEditar(p);
+                                  getProductoColorPorId(datos);
+                                  getProductoTallaPorId(datos);
+                                  getProductoFotoPorId(datos);
+                                  getProductoFotoPromoPorId(datos);
                                   handleisAlertOpenEditarProducto();
                                 }}
                               >
@@ -777,10 +882,7 @@ function ListaProductos(): JSX.Element {
         ) : null}
       </MDBox>
       <Footer />
-      <Backdrop
-        sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
-        open={procesando}
-      >
+      <Backdrop sx={(theme) => ({ color: "#fff", zIndex: 9999999 })} open={procesando}>
         <CircularProgress color="inherit" />
       </Backdrop>
       <ModalConfirm
@@ -813,72 +915,520 @@ function ListaProductos(): JSX.Element {
                 <h5>Editando producto: {productoEditar?.nombre_producto}</h5>
               </Grid>
 
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="nombreEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_nombre" })}
-                  variant="standard"
-                  name="nombreEditar"
-                  value={nombreProductoEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setNombreProductoEditar(e.target.value);
-                  }}
-                />
+              <Grid item xs={12} sm={12}>
+                <Box sx={{ width: "100%" }}>
+                  <Tabs
+                    value={valueTab}
+                    onChange={handleChangeTab}
+                    aria-label="wrapped label tabs example"
+                  >
+                    <Tab value="one" label="Valores" />
+                    <Tab value="two" label="Colores" />
+                    <Tab value="three" label="Tallas" />
+                    <Tab value="four" label="Fotos" />
+                    <Tab value="five" label="Fotos Ofertas" />
+                  </Tabs>
+                  <TabPanel value="one" current={valueTab}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={6} sm={4}>
+                        {previewFoto ||
+                          (fotoEditar != "" && (
+                            <Box mt={2} display="flex" justifyContent="center">
+                              <img
+                                src={previewFoto || fotoEditar}
+                                alt="Vista previa"
+                                style={{
+                                  width: 200,
+                                  height: 200,
+                                  objectFit: "cover",
+                                  borderRadius: 8,
+                                  border: "1px solid #ccc",
+                                }}
+                              />
+                            </Box>
+                          ))}
+                      </Grid>
+                      <Grid item xs={6} sm={4} sx={{ display: "flex", alignItems: "end" }}>
+                        <MuiFileInput
+                          value={fotoProductoPrincipalFile}
+                          onChange={handleChangeFotoProductoPrincipal}
+                          label="Selecciona la foto del producto"
+                          placeholder="Selecciona la foto a subir"
+                          inputProps={{
+                            accept: ".jpg,.jpeg,.png,image/jpeg,image/png",
+                            multiple: false,
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4} sx={{ display: "flex", alignItems: "end" }}>
+                        <TextField
+                          id="nombreEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_nombre" })}
+                          variant="standard"
+                          name="nombreEditar"
+                          value={nombreProductoEditar || ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setNombreProductoEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="descripcionEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_descripcion" })}
+                          variant="standard"
+                          name="descripcionEditar"
+                          value={descripcionEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setDescripcionEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="marcaEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_marca" })}
+                          variant="standard"
+                          name="marcaEditar"
+                          value={marcaEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setMarcaEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="skuEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_sku" })}
+                          variant="standard"
+                          name="skuEditar"
+                          value={skuEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setSkuEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="id_proveedor"
+                          select
+                          fullWidth
+                          label={`${intl.formatMessage({ id: "select_proveedores" })} *`}
+                          variant="standard"
+                          name="id_proveedor"
+                          value={idProveedorEditar}
+                          disabled={!proveedores || proveedores.length === 0}
+                          helperText={
+                            !proveedores || proveedores.length === 0
+                              ? intl.formatMessage({ id: "sin_proveedores_registrados" })
+                              : ""
+                          }
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setIdProveedorEditar(value);
+                          }}
+                          InputProps={{
+                            style: { padding: "5px" },
+                          }}
+                        >
+                          {proveedores?.map((option) => (
+                            <MenuItem key={option.id} value={option.id}>
+                              {option.nombre}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="id_categoria"
+                          select
+                          fullWidth
+                          label={`${intl.formatMessage({ id: "select_categoria_producto" })} *`}
+                          variant="standard"
+                          name="id_categoria"
+                          value={idCatalogoEditar}
+                          disabled={!categorias || categorias.length === 0}
+                          helperText={
+                            !categorias || categorias.length === 0
+                              ? intl.formatMessage({ id: "sin_categorias_registrados" })
+                              : ""
+                          }
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setIdCatalogoEditar(e.target.value);
+                          }}
+                          InputProps={{
+                            style: { padding: "5px" },
+                          }}
+                        >
+                          {categorias?.map((option) => (
+                            <MenuItem key={option.id} value={option.id}>
+                              {option.desc}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="costoConIvaEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_costo_con_iva" })}
+                          variant="standard"
+                          name="costoConIvaEditar"
+                          type="number"
+                          value={costoConIvaEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setCostoConIvaEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="costoSinIvaEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_costo_sin_iva" })}
+                          variant="standard"
+                          name="costoSinIvaEditar"
+                          type="number"
+                          value={costoSinIvaEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setCostoSinIvaEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="costoPuntosConIvaEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_costo_puntos_con_iva" })}
+                          variant="standard"
+                          name="costoPuntosConIvaEditar"
+                          type="number"
+                          value={costoPuntosConIvaEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setCostoPuntosConIvaEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="costoPuntosSinIvaEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_costo_puntos_sin_iva" })}
+                          variant="standard"
+                          name="costoPuntosSinIvaEditar"
+                          type="number"
+                          value={costoPuntosSinIvaEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setCostoPuntosSinIvaEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="feeBrimagyEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_fee_brimagy" })}
+                          variant="standard"
+                          name="feeBrimagyEditar"
+                          type="number"
+                          value={feeBrimagyEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFeeBrimagyEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="subtotalEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_subtotal" })}
+                          variant="standard"
+                          name="subtotalEditar"
+                          type="number"
+                          value={subtotalEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setSubtotalEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="envioBaseEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_envio_base" })}
+                          variant="standard"
+                          name="envioBase"
+                          type="number"
+                          value={envioBaseEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setEnvioBaseEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="costoCajaEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_costo_caja" })}
+                          variant="standard"
+                          name="costoCaja"
+                          type="number"
+                          value={costoCajaEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setCostoCajaEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="envioExtraEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_envio_extra" })}
+                          variant="standard"
+                          name="envioExtra"
+                          type="number"
+                          value={envioExtraEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setEnvioExtraEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="totalEnvioEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_total_envio" })}
+                          variant="standard"
+                          name="totalEnvio"
+                          type="number"
+                          value={totalEnvioEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setTotalEnvioEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="totalEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_total" })}
+                          variant="standard"
+                          name="total"
+                          type="number"
+                          value={totalEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setTotalEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="puntosEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_puntos" })}
+                          variant="standard"
+                          name="puntos"
+                          type="number"
+                          value={puntosEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setPuntosEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="factorEditar"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_factor" })}
+                          variant="standard"
+                          name="factor"
+                          type="number"
+                          value={factorEditar}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFactorEditar(e.target.value);
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={12} md={12}>
+                        <Button
+                          sx={{ color: "#fff", background: "#084d6e" }}
+                          variant="contained"
+                          endIcon={<EditIcon />}
+                          disabled={procesando}
+                          onClick={(e: any) => {
+                            const formData = new FormData();
+                            formData.append("id_producto", productoEditar?.id);
+                            formData.append("nombre_producto", nombreProductoEditar);
+                            formData.append("descripcion", descripcionEditar);
+                            formData.append("marca", marcaEditar);
+                            formData.append("sku", skuEditar);
+                            formData.append("color", colorEditar);
+                            formData.append("talla", tallaEditar);
+                            formData.append("id_proveedor", idProveedorEditar);
+                            formData.append("id_catalogo", idCatalogoEditar);
+                            formData.append("costo_con_iva", costoConIvaEditar);
+                            formData.append("costo_sin_iva", costoSinIvaEditar);
+                            formData.append("costo_puntos_con_iva", costoPuntosConIvaEditar);
+                            formData.append("costo_puntos_sin_iva", costoPuntosSinIvaEditar);
+                            formData.append("fee_brimagy", feeBrimagyEditar);
+                            formData.append("subtotal", subtotalEditar);
+                            formData.append("envio_base", envioBaseEditar);
+                            formData.append("costo_caja", costoCajaEditar);
+                            formData.append("envio_extra", envioExtraEditar);
+                            formData.append("total_envio", totalEnvioEditar);
+                            formData.append("total", totalEditar);
+                            formData.append("puntos", puntosEditar);
+                            formData.append("factor", factorEditar);
+                            formData.append("tipo_registro", "edicion");
+                            formData.append("nombre_plataforma", productoEditar?.nombre_plataforma);
+                            formData.append(
+                              "id_producto_brimagy",
+                              productoEditar?.id_producto_brimagy
+                            );
+
+                            if (fotoProductoPrincipalFile) {
+                              formData.append("foto_producto", fotoProductoPrincipalFile);
+                            }
+
+                            editaProducto(formData);
+                          }}
+                        >
+                          {procesandoEditar ? (
+                            <>
+                              <Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                role="status"
+                                aria-hidden="true"
+                              />
+                              {intl.formatMessage({ id: "general_editando" })}...{" "}
+                            </>
+                          ) : (
+                            intl.formatMessage({ id: "set_editar_producto" })
+                          )}
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </TabPanel>
+
+                  <TabPanel value="two" current={valueTab}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                        <ColoresProductoModal
+                          verColor={colores}
+                          datosProducto={productoEditar}
+                          procesandoColor={procesandoColor}
+                          crearEditarColorProducto={crearEditarColorProducto}
+                          setEditarColor={setVerEditarColor}
+                          handleisAlertOpenEditarColor={handleisAlertOpenEditarColor}
+                          desactivarColorProducto={desactivarColorProducto}
+                          activarColorProducto={activarColorProducto}
+                        />
+                      </Grid>
+                    </Grid>
+                  </TabPanel>
+
+                  <TabPanel value="three" current={valueTab}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                        <TallasProductoModal
+                          verTalla={tallas}
+                          datosProducto={productoEditar}
+                          procesandoTalla={procesandoTalla}
+                          crearEditarTallaProducto={crearEditarTallaProducto}
+                          setEditarTalla={setVerEditarTalla}
+                          handleisAlertOpenEditarTalla={handleisAlertOpenEditarTalla}
+                          desactivarTallaProducto={desactivarTallaProducto}
+                          activarTallaProducto={activarTallaProducto}
+                        />
+                      </Grid>
+                    </Grid>
+                  </TabPanel>
+                  <TabPanel value="four" current={valueTab}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                        <FotosProductoModal
+                          verFotos={fotos}
+                          datosProducto={productoEditar}
+                          procesandoFotosProducto={procesandoFotosProducto}
+                          subirFotosProducto={subirFotosProducto}
+                          fotosProductoFiles={fotosProductoFiles}
+                          setFotosProductoFiles={setFotosProductoFiles}
+                          handleOpenVistaFotosProducto={handleOpenVistaFotosProducto}
+                          desactivarFotosProducto={desactivarFotosProducto}
+                          activarFotosProducto={activarFotosProducto}
+                        />
+                      </Grid>
+                    </Grid>
+                  </TabPanel>
+                  <TabPanel value="five" current={valueTab}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                        <FotosPromoProductoModal
+                          verFotosPromo={fotosPromo}
+                          datosProducto={productoEditar}
+                          procesandoFotosPromoProducto={procesandoFotosPromoProducto}
+                          subirFotosPromoProducto={subirFotosPromoProducto}
+                          fotosPromoProductoFiles={fotosPromoProductoFiles}
+                          setFotosPromoProductoFiles={setFotosPromoProductoFiles}
+                          handleOpenVistaFotosPromoProducto={handleOpenVistaFotosPromoProducto}
+                          desactivarFotosPromoProducto={desactivarFotosPromoProducto}
+                          activarFotosPromoProducto={activarFotosPromoProducto}
+                        />
+                      </Grid>
+                    </Grid>
+                  </TabPanel>
+                </Box>
               </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="descripcionEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_descripcion" })}
-                  variant="standard"
-                  name="descripcionEditar"
-                  value={descripcionEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setDescripcionEditar(e.target.value);
-                  }}
-                />
+            </>
+          ) : null}
+        </Grid>
+      </ModalComponent>
+      {/* MODAL PARA EDITAR EL COLOR */}
+      <ModalComponent
+        handleClose={handleisAlertCloseEditarColor}
+        isOpen={isAlertOpenEditarColor}
+        key={"alertaEditarColor"}
+      >
+        <Grid container spacing={2} style={{ textAlign: "center" }}>
+          {verEditarColor && (
+            <>
+              <Grid item xs={12} mt={2}>
+                <h5>Editando color</h5>
               </Grid>
-              <Grid item xs={6} sm={4}>
+              <Grid item xs={6} sm={4} sx={{ position: "relative" }}>
                 <TextField
-                  id="marcaEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_marca" })}
-                  variant="standard"
-                  name="marcaEditar"
-                  value={marcaEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setMarcaEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="skuEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_sku" })}
-                  variant="standard"
-                  name="skuEditar"
-                  value={skuEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setSkuEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="colorEditar"
+                  id="editaColor"
                   fullWidth
                   label={intl.formatMessage({ id: "input_color" })}
                   variant="standard"
-                  name="colorEditar"
-                  value={colorEditar}
-                  onChange={(e) => setColorEditar(e.target.value)}
-                  onClick={(e) => setAnchorEl(e.currentTarget)}
+                  name="editaColor"
+                  value={editaColor}
+                  onChange={(e) => setEditaColor(e.target.value)}
+                  onClick={(e) => setAnchorEl((prev: any) => (prev ? null : e.currentTarget))}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -887,9 +1437,7 @@ function ListaProductos(): JSX.Element {
                             width: 20,
                             height: 20,
                             borderRadius: "4px",
-                            backgroundColor: esColorValido(colorEditar)
-                              ? colorEditar
-                              : "transparent",
+                            backgroundColor: esColorValido(editaColor) ? editaColor : "transparent",
                             border: "1px solid #ccc",
                             cursor: "pointer",
                           }}
@@ -899,292 +1447,51 @@ function ListaProductos(): JSX.Element {
                   }}
                 />
 
-                <Popover
-                  open={Boolean(anchorEl)}
-                  anchorEl={anchorEl}
-                  onClose={() => setAnchorEl(null)}
-                  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-                >
-                  <Box sx={{ p: 2 }}>
-                    <HexColorPicker color={colorHex} onChange={(hex) => setColorEditar(hex)} />
-                    {/* Muestra el valor hex actual */}
-                    <Box sx={{ mt: 1, textAlign: "center", fontSize: 12, color: "text.secondary" }}>
-                      {colorHex}
+                {Boolean(anchorEl) && (
+                  <ClickAwayListener onClickAway={() => setAnchorEl(null)}>
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: "100%",
+                        left: 0,
+                        zIndex: 99999,
+                        mt: 1,
+                        p: 2,
+                        backgroundColor: "#ffffff !important",
+                        opacity: 1,
+                        borderRadius: 2,
+                        boxShadow: 6,
+                        display: "inline-block",
+                      }}
+                    >
+                      <HexColorPicker color={colorHex} onChange={(hex) => setEditaColor(hex)} />
+                      <Box
+                        sx={{
+                          mt: 1,
+                          textAlign: "center",
+                          fontSize: 12,
+                          color: "text.secondary",
+                        }}
+                      >
+                        {colorHex}
+                      </Box>
+                      <Button
+                        variant="contained"
+                        component="label"
+                        endIcon={<CloseIcon />}
+                        onClick={() => setAnchorEl(null)}
+                        sx={{
+                          background: "#084d6e",
+                          color: "#fff",
+                        }}
+                      >
+                        Cerrar
+                      </Button>
                     </Box>
-                  </Box>
-                </Popover>
+                  </ClickAwayListener>
+                )}
               </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="colorEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_color" })}
-                  variant="standard"
-                  name="colorEditar"
-                  type="number"
-                  value={colorEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setColorEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="id_proveedor"
-                  select
-                  fullWidth
-                  label={`${intl.formatMessage({ id: "select_proveedores" })} *`}
-                  variant="standard"
-                  name="id_proveedor"
-                  value={idProveedorEditar}
-                  disabled={!proveedores || proveedores.length === 0}
-                  helperText={
-                    !proveedores || proveedores.length === 0
-                      ? intl.formatMessage({ id: "sin_proveedores_registrados" })
-                      : ""
-                  }
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setIdProveedorEditar(value);
-                  }}
-                  InputProps={{
-                    style: { padding: "5px" },
-                  }}
-                >
-                  {proveedores?.map((option) => (
-                    <MenuItem key={option.id} value={option.id}>
-                      {option.nombre}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="id_categoria"
-                  select
-                  fullWidth
-                  label={`${intl.formatMessage({ id: "select_categoria_producto" })} *`}
-                  variant="standard"
-                  name="id_categoria"
-                  value={idCatalogoEditar}
-                  disabled={!categorias || categorias.length === 0}
-                  helperText={
-                    !categorias || categorias.length === 0
-                      ? intl.formatMessage({ id: "sin_categorias_registrados" })
-                      : ""
-                  }
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setIdCatalogoEditar(e.target.value);
-                  }}
-                  InputProps={{
-                    style: { padding: "5px" },
-                  }}
-                >
-                  {categorias?.map((option) => (
-                    <MenuItem key={option.id} value={option.id}>
-                      {option.desc}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="costoConIvaEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_costo_con_iva" })}
-                  variant="standard"
-                  name="costoConIvaEditar"
-                  type="number"
-                  value={costoConIvaEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setCostoConIvaEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="costoSinIvaEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_costo_sin_iva" })}
-                  variant="standard"
-                  name="costoSinIvaEditar"
-                  type="number"
-                  value={costoSinIvaEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setCostoSinIvaEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="costoPuntosConIvaEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_costo_puntos_con_iva" })}
-                  variant="standard"
-                  name="costoPuntosConIvaEditar"
-                  type="number"
-                  value={costoPuntosConIvaEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setCostoPuntosConIvaEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="costoPuntosSinIvaEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_costo_puntos_sin_iva" })}
-                  variant="standard"
-                  name="costoPuntosSinIvaEditar"
-                  type="number"
-                  value={costoPuntosSinIvaEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setCostoPuntosSinIvaEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="feeBrimagyEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_fee_brimagy" })}
-                  variant="standard"
-                  name="feeBrimagyEditar"
-                  type="number"
-                  value={feeBrimagyEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFeeBrimagyEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="subtotalEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_subtotal" })}
-                  variant="standard"
-                  name="subtotalEditar"
-                  type="number"
-                  value={subtotalEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setSubtotalEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="envioBaseEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_envio_base" })}
-                  variant="standard"
-                  name="envioBase"
-                  type="number"
-                  value={envioBaseEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setEnvioBaseEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="costoCajaEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_costo_caja" })}
-                  variant="standard"
-                  name="costoCaja"
-                  type="number"
-                  value={costoCajaEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setCostoCajaEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="envioExtraEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_envio_extra" })}
-                  variant="standard"
-                  name="envioExtra"
-                  type="number"
-                  value={envioExtraEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setEnvioExtraEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="totalEnvioEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_total_envio" })}
-                  variant="standard"
-                  name="totalEnvio"
-                  type="number"
-                  value={totalEnvioEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setTotalEnvioEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="totalEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_total" })}
-                  variant="standard"
-                  name="total"
-                  type="number"
-                  value={totalEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setTotalEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="puntosEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_puntos" })}
-                  variant="standard"
-                  name="puntos"
-                  type="number"
-                  value={puntosEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setPuntosEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6} sm={4}>
-                <TextField
-                  id="factorEditar"
-                  fullWidth
-                  label={intl.formatMessage({ id: "input_factor" })}
-                  variant="standard"
-                  name="factor"
-                  type="number"
-                  value={factorEditar}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFactorEditar(e.target.value);
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} md={12}>
+              <Grid item xs={12} md={6}>
                 <Button
                   sx={{ color: "#fff", background: "#084d6e" }}
                   variant="contained"
@@ -1192,33 +1499,15 @@ function ListaProductos(): JSX.Element {
                   disabled={procesando}
                   onClick={(e: any) => {
                     const datos = {
-                      id_producto: productoEditar?.id,
-                      nombre_producto: nombreProductoEditar,
-                      descripcion: descripcionEditar,
-                      marca: marcaEditar,
-                      sku: skuEditar,
-                      color: colorEditar,
-                      id_proveedor: idProveedorEditar,
-                      id_catalogo: idCatalogoEditar,
-                      costo_con_iva: costoConIvaEditar,
-                      costo_sin_iva: costoSinIvaEditar,
-                      costo_puntos_con_iva: costoPuntosConIvaEditar,
-                      costo_puntos_sin_iva: costoPuntosSinIvaEditar,
-                      fee_brimagy: feeBrimagyEditar,
-                      subtotal: subtotalEditar,
-                      envio_base: envioBaseEditar,
-                      costo_caja: costoCajaEditar,
-                      envio_extra: envioExtraEditar,
-                      total_envio: totalEnvioEditar,
-                      total: totalEditar,
-                      puntos: puntosEditar,
-                      factor: factorEditar,
-                      tipo_registro: "edicion",
+                      id_producto_dirac: productoEditar?.id,
+                      id_color_brimagy: verEditarColor?.id_color_brimagy,
+                      id_color: verEditarColor?.id,
+                      color: editaColor,
                     };
-                    editaProducto(datos);
+                    crearEditarColorProducto(datos);
                   }}
                 >
-                  {procesandoEditar ? (
+                  {procesandoColor ? (
                     <>
                       <Spinner
                         as="span"
@@ -1230,12 +1519,189 @@ function ListaProductos(): JSX.Element {
                       {intl.formatMessage({ id: "general_editando" })}...{" "}
                     </>
                   ) : (
-                    intl.formatMessage({ id: "set_editar_producto" })
+                    intl.formatMessage({ id: "set_editar_color" })
                   )}
                 </Button>
               </Grid>
             </>
-          ) : null}
+          )}
+        </Grid>
+        <br />
+        <br />
+        <br />
+      </ModalComponent>
+      {/* MODAL PARA VER FOTO DE PRODUCTO INDIVIDUAL */}
+      <ModalComponent
+        handleClose={handleCloseVistaFotosProducto}
+        isOpen={isModalVistaFotosProducto}
+        key="vista-foto-individual"
+      >
+        {fotosProductoSeleccionada ? (
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <MDTypography variant="h5">
+                  {fotosProductoSeleccionada.nombre_original}
+                </MDTypography>
+                <IconButton onClick={handleCloseVistaFotosProducto} size="small">
+                  <CloseIcon />
+                </IconButton>
+              </MDBox>
+            </Grid>
+            <Grid item xs={12}>
+              <MDBox display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+                <img
+                  src={`${env.API_URL_ASSETS}${fotosProductoSeleccionada.url_foto}`}
+                  alt={fotosProductoSeleccionada.nombre_original}
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "70vh",
+                    objectFit: "contain",
+                    borderRadius: "8px",
+                  }}
+                />
+              </MDBox>
+            </Grid>
+            <Grid item xs={12}>
+              <MDBox display="flex" justifyContent="flex-end" gap={2}>
+                <MDButton
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleCloseVistaFotosProducto}
+                >
+                  Cerrar
+                </MDButton>
+                <MDButton
+                  variant="gradient"
+                  color="info"
+                  component="a"
+                  href={`${env.API_URL_ASSETS}${fotosProductoSeleccionada.url_foto}`}
+                  download={fotosProductoSeleccionada.nombre_original}
+                  target="_blank"
+                >
+                  Descargar
+                </MDButton>
+              </MDBox>
+            </Grid>
+          </Grid>
+        ) : null}
+      </ModalComponent>
+      {/* MODAL PARA VER FOTO DE PRODUCTO INDIVIDUAL (QUITAR Y UNIFICAR)*/}
+      <ModalComponent
+        handleClose={handleCloseVistaFotosPromoProducto}
+        isOpen={isModalVistaFotosPromoProducto}
+        key="vista-foto-promo-individual"
+      >
+        {fotosPromoProductoSeleccionada ? (
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <MDTypography variant="h5">
+                  {fotosPromoProductoSeleccionada.nombre_original}
+                </MDTypography>
+                <IconButton onClick={handleCloseVistaFotosPromoProducto} size="small">
+                  <CloseIcon />
+                </IconButton>
+              </MDBox>
+            </Grid>
+            <Grid item xs={12}>
+              <MDBox display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+                <img
+                  src={`${env.API_URL_ASSETS}${fotosPromoProductoSeleccionada.url_foto}`}
+                  alt={fotosPromoProductoSeleccionada.nombre_original}
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "70vh",
+                    objectFit: "contain",
+                    borderRadius: "8px",
+                  }}
+                />
+              </MDBox>
+            </Grid>
+            <Grid item xs={12}>
+              <MDBox display="flex" justifyContent="flex-end" gap={2}>
+                <MDButton
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleCloseVistaFotosPromoProducto}
+                >
+                  Cerrar
+                </MDButton>
+                <MDButton
+                  variant="gradient"
+                  color="info"
+                  component="a"
+                  href={`${env.API_URL_ASSETS}${fotosPromoProductoSeleccionada.url_foto}`}
+                  download={fotosPromoProductoSeleccionada.nombre_original}
+                  target="_blank"
+                >
+                  Descargar
+                </MDButton>
+              </MDBox>
+            </Grid>
+          </Grid>
+        ) : null}
+      </ModalComponent>
+      {/* MODAL PARA EDITAR LA TALLA */}
+      <ModalComponent
+        handleClose={handleisAlertCloseEditarTalla}
+        isOpen={isAlertOpenEditarTalla}
+        key={"alertaEditarTalla"}
+      >
+        <Grid container spacing={2} style={{ textAlign: "center" }}>
+          {verEditarTalla && (
+            <>
+              <Grid item xs={12} mt={2}>
+                <h5>Editando talla</h5>
+              </Grid>
+              <Grid item xs={6} sm={4} sx={{ position: "relative" }}>
+                <TextField
+                  id="editaTalla"
+                  fullWidth
+                  label={intl.formatMessage({ id: "input_talla" })}
+                  variant="standard"
+                  name="editaTalla"
+                  value={editaTalla}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setEditaTalla(e.target.value);
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Button
+                  sx={{ color: "#fff", background: "#084d6e" }}
+                  variant="contained"
+                  endIcon={<EditIcon />}
+                  disabled={procesando}
+                  onClick={(e: any) => {
+                    const datos = {
+                      id_producto_dirac: productoEditar?.id,
+                      id_talla_brimagy: verEditarTalla?.id_talla_brimagy,
+                      id_talla: verEditarTalla?.id,
+                      talla: editaTalla,
+                    };
+                    crearEditarTallaProducto(datos);
+                  }}
+                >
+                  {procesandoTalla ? (
+                    <>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                      {intl.formatMessage({ id: "general_editando" })}...{" "}
+                    </>
+                  ) : (
+                    intl.formatMessage({ id: "set_editar_talla" })
+                  )}
+                </Button>
+              </Grid>
+            </>
+          )}
         </Grid>
       </ModalComponent>
       {/* Modal para visualizar datos del Excel */}

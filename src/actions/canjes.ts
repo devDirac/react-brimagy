@@ -2,10 +2,16 @@ import { GeneralHttpResponse } from "../types/genericTypes";
 import axios from "axios";
 import env from "react-dotenv";
 
-export const getCanjesHttp = async (search?: string, fecha1?: Date, fecha2?: Date) => {
+export const getCanjesHttp = async (
+  tipo_producto?: string,
+  search?: string,
+  fecha1?: Date,
+  fecha2?: Date
+) => {
   try {
     const url = new URL(`${env.API_URL}/getCanjes`);
 
+    if (tipo_producto) url.searchParams.append("tipo_producto", tipo_producto);
     if (search) url.searchParams.append("search", search);
     if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
     if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());

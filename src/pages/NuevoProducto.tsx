@@ -13,6 +13,7 @@ import { StoreType } from "types/genericTypes";
 import { FormikProvider } from "formik";
 import {
   Backdrop,
+  Box,
   Button,
   CardContent,
   CircularProgress,
@@ -25,6 +26,7 @@ import { useNuevoProducto } from "./customHooksPages/useNuevoProducto";
 import { Card, Spinner } from "react-bootstrap";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ModalComponent from "components/Modal";
+import { MuiFileInput } from "mui-file-input";
 
 function NuevoProducto(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -46,6 +48,9 @@ function NuevoProducto(): JSX.Element {
     formik,
     getFieldColor,
     plataformas,
+    fotoProductoPrincipalFile,
+    previewFoto,
+    handleChangeFotoProductoPrincipal,
   } = useNuevoProducto();
 
   return (
@@ -82,6 +87,35 @@ function NuevoProducto(): JSX.Element {
               </Typography>
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={4}>
+                  {previewFoto && (
+                    <Box mt={2} display="flex" justifyContent="center">
+                      <img
+                        src={previewFoto}
+                        alt="Vista previa"
+                        style={{
+                          width: 200,
+                          height: 200,
+                          objectFit: "cover",
+                          borderRadius: 8,
+                          border: "1px solid #ccc",
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Grid>
+                <Grid item xs={12} sm={4} sx={{ display: "flex", alignItems: "end" }}>
+                  <MuiFileInput
+                    value={fotoProductoPrincipalFile}
+                    onChange={handleChangeFotoProductoPrincipal}
+                    label="Selecciona la foto del producto"
+                    placeholder="Selecciona la foto a subir"
+                    inputProps={{
+                      accept: ".jpg,.jpeg,.png,image/jpeg,image/png",
+                      multiple: false,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} sx={{ display: "flex", alignItems: "end" }}>
                   <TextField
                     id="id_catalogo"
                     select
@@ -891,13 +925,11 @@ function NuevoProducto(): JSX.Element {
                     endIcon={<AddCircleIcon />}
                     disabled={procesando || !formik.dirty || !formik.isValid}
                     onClick={(e: any) => {
-                      const datos = {
+                      /*const datos = {
                         nombre_producto: formik.values.nombre_producto,
                         descripcion: formik.values.descripcion,
                         marca: formik.values.marca,
                         sku: formik.values.sku,
-                        color: formik.values.color,
-                        talla: formik.values.talla,
                         id_proveedor: formik.values.id_proveedor,
                         id_catalogo: formik.values.id_catalogo,
                         costo_con_iva: formik.values.costo_con_iva,
@@ -916,8 +948,36 @@ function NuevoProducto(): JSX.Element {
                         tipo_registro: "individual",
                         tipo_producto: formik.values.tipo_producto,
                         id_plataforma: formik.values.plataforma,
-                      };
-                      crearProducto(datos);
+                        foto_producto: fotoProductoPrincipalFile,
+                      };*/
+                      const formData = new FormData();
+                      formData.append("nombre_producto", formik.values.nombre_producto);
+                      formData.append("descripcion", formik.values.descripcion);
+                      formData.append("marca", formik.values.marca);
+                      formData.append("sku", formik.values.sku);
+                      formData.append("id_proveedor", formik.values.id_proveedor);
+                      formData.append("id_catalogo", formik.values.id_catalogo);
+                      formData.append("costo_con_iva", formik.values.costo_con_iva);
+                      formData.append("costo_sin_iva", formik.values.costo_sin_iva);
+                      formData.append("costo_puntos_con_iva", formik.values.costo_puntos_con_iva);
+                      formData.append("costo_puntos_sin_iva", formik.values.costo_puntos_sin_iva);
+                      formData.append("fee_brimagy", formik.values.fee_brimagy);
+                      formData.append("subtotal", formik.values.subtotal);
+                      formData.append("envio_base", formik.values.envio_base);
+                      formData.append("costo_caja", formik.values.costo_caja);
+                      formData.append("envio_extra", formik.values.envio_extra);
+                      formData.append("total_envio", formik.values.total_envio);
+                      formData.append("total", formik.values.total);
+                      formData.append("puntos", formik.values.puntos);
+                      formData.append("factor", formik.values.factor);
+                      formData.append("tipo_registro", "individual");
+                      formData.append("tipo_producto", formik.values.tipo_producto);
+                      formData.append("id_plataforma", formik.values.plataforma);
+
+                      if (fotoProductoPrincipalFile) {
+                        formData.append("foto_producto", fotoProductoPrincipalFile);
+                      }
+                      crearProducto(formData);
                     }}
                   >
                     {procesandoProducto ? (

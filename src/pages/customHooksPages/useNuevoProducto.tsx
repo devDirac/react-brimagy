@@ -29,6 +29,20 @@ export const useNuevoProducto = () => {
   const [categorias, setCategorias] = useState<any[]>([]);
   const [plataformas, setPlataformas] = useState<any[]>([]);
 
+  const [fotoProductoPrincipalFile, setFotoProductoPrincipalFile] = useState<File | null>(null);
+  const [previewFoto, setPreviewFoto] = useState<string | null>(null);
+
+  const handleChangeFotoProductoPrincipal = (file: File | null) => {
+    setFotoProductoPrincipalFile(file);
+
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPreviewFoto(url);
+    } else {
+      setPreviewFoto(null);
+    }
+  };
+
   useEffect(() => {
     setAuth(token);
   }, [token]);
@@ -176,7 +190,7 @@ export const useNuevoProducto = () => {
     }
   }, []);
 
-  const crearProducto = async (datos: any) => {
+  const crearProducto = async (datos: FormData) => {
     try {
       setProcesandoProducto(true);
       const producto = await crearProductoHttp(datos);
@@ -227,5 +241,8 @@ export const useNuevoProducto = () => {
     formik,
     getFieldColor,
     plataformas,
+    fotoProductoPrincipalFile,
+    previewFoto,
+    handleChangeFotoProductoPrincipal,
   };
 };

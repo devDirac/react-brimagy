@@ -535,7 +535,7 @@ export const useCatalogoProductos = (tipoUsuario: number) => {
             tipo_registro: "excel",
           };
 
-          await crearProductoHttp(datos);
+          //await crearProductoHttp(datos);
           exitosos++;
         } catch (error) {
           fallidos++;
