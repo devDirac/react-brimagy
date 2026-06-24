@@ -1,12 +1,17 @@
 import { GeneralHttpResponse } from "../types/genericTypes";
 import axios, { AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 import env from "react-dotenv";
 
+export const crearProductoHttp = async (data: FormData) => {
 export const crearProductoHttp = async (data: FormData) => {
   try {
     const response: AxiosResponse = await axios.post(`${env.API_URL}/crearProducto`, data);
     return response.data;
+    const response: AxiosResponse = await axios.post(`${env.API_URL}/crearProducto`, data);
+    return response.data;
   } catch (error) {
+    throw error;
     throw error;
   }
 };
@@ -28,9 +33,16 @@ export const getCatalogoProductosHttp = async (
   fecha1?: Date,
   fecha2?: Date
 ) => {
+export const getCatalogoProductosHttp = async (
+  tipo_producto?: string,
+  search?: string,
+  fecha1?: Date,
+  fecha2?: Date
+) => {
   try {
     const url = new URL(`${env.API_URL}/getCatalogoProductos`);
 
+    if (tipo_producto) url.searchParams.append("tipo_producto", tipo_producto);
     if (tipo_producto) url.searchParams.append("tipo_producto", tipo_producto);
     if (search) url.searchParams.append("search", search);
     if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
@@ -143,10 +155,14 @@ export const verificarSkuDisponibleHttp = async (sku: string) => {
 };
 
 export const editarProductoHttp = async (data: FormData) => {
+export const editarProductoHttp = async (data: FormData) => {
   try {
     const response: AxiosResponse = await axios.post(`${env.API_URL}/editarProducto`, data);
     return response.data;
+    const response: AxiosResponse = await axios.post(`${env.API_URL}/editarProducto`, data);
+    return response.data;
   } catch (error) {
+    throw error;
     throw error;
   }
 };

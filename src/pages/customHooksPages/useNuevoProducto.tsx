@@ -43,6 +43,20 @@ export const useNuevoProducto = () => {
     }
   };
 
+  const [fotoProductoPrincipalFile, setFotoProductoPrincipalFile] = useState<File | null>(null);
+  const [previewFoto, setPreviewFoto] = useState<string | null>(null);
+
+  const handleChangeFotoProductoPrincipal = (file: File | null) => {
+    setFotoProductoPrincipalFile(file);
+
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPreviewFoto(url);
+    } else {
+      setPreviewFoto(null);
+    }
+  };
+
   useEffect(() => {
     setAuth(token);
   }, [token]);
@@ -204,6 +218,7 @@ export const useNuevoProducto = () => {
     }
   }, []);
 
+  const crearProducto = async (datos: FormData) => {
   const crearProducto = async (datos: FormData) => {
     try {
       setProcesandoProducto(true);

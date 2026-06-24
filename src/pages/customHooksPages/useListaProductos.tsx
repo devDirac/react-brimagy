@@ -7,6 +7,8 @@ import { useIntl } from "react-intl";
 import { setAuth } from "../../actions/auth";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import {
   activarColorProductoHttp,
   activarFotoMontoHttp,
@@ -47,6 +49,8 @@ import { crearProveedorHttp, getProveedoresHttp } from "actions/proveedores";
 import { crearCategoriaHttp, getCategoriasHttp } from "actions/categorias";
 import ExcelJS from "exceljs";
 import { crearPlataformaHttp, getPlataformasHttp } from "actions/configuracion";
+import { C } from "@fullcalendar/core/internal-common";
+import env from "react-dotenv";
 import { C } from "@fullcalendar/core/internal-common";
 import env from "react-dotenv";
 
@@ -105,9 +109,11 @@ export const useListaProductos = (tipoUsuario: number) => {
   const [puntosEditar, setPuntosEditar] = useState("");
   const [factorEditar, setFactorEditar] = useState("");
   const [fotoEditar, setFotoEditar] = useState("");
+  const [fotoEditar, setFotoEditar] = useState("");
   const [tipoProductoEditar, setTipoProductoEditar] = useState("");
   const [tipoPlataformaEditar, setPlataformaEditar] = useState("");
   const [productoId, setProductoId] = useState("");
+  const [valueTab, setValueTab] = useState("one");
   const [valueTab, setValueTab] = useState("one");
 
   const [proveedores, setProveedores] = useState<any[]>([]);
@@ -584,6 +590,11 @@ export const useListaProductos = (tipoUsuario: number) => {
           ? `${env.API_URL_ASSETS}fotos_producto/${productoEditar?.id}/${productoEditar.foto_producto}`
           : ""
       );
+      setFotoEditar(
+        productoEditar.foto_producto
+          ? `${env.API_URL_ASSETS}fotos_producto/${productoEditar?.id}/${productoEditar.foto_producto}`
+          : ""
+      );
     }
   }, [productoEditar]);
   // Debounce para evitar muchas peticiones
@@ -606,6 +617,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         setProcesando(true);
         const productosData = await getCatalogoProductosHttp(
           esDigital ? "digital" : esFisico ? "fisico" : "todos",
+          esDigital ? "digital" : esFisico ? "fisico" : "todos",
           params?.search,
           params?.fecha1 ? new Date(params.fecha1) : undefined,
           params?.fecha2 ? new Date(params.fecha2) : undefined
@@ -620,6 +632,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         handleisAlertOpen();
       }
     },
+    [esDigital, esFisico]
     [esDigital, esFisico]
   );
 
@@ -1185,6 +1198,7 @@ export const useListaProductos = (tipoUsuario: number) => {
 
       productos.forEach((p) => {
         const row = worksheet.addRow({
+          id_producto: p.id_producto_brimagy || "",
           id_producto: p.id_producto_brimagy || "",
           categoria: p.catalogo || "",
           nombre_producto: p.nombre_producto || "",
@@ -2081,6 +2095,8 @@ export const useListaProductos = (tipoUsuario: number) => {
     setSkuEditar,
     colorEditar,
     setColorEditar,
+    tallaEditar,
+    setTallaEditar,
     tallaEditar,
     setTallaEditar,
     idProveedorEditar,

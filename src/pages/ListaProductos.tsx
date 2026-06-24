@@ -56,6 +56,8 @@ import {
   Typography,
   Tabs,
   Tab,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import ModalComponent from "components/Modal";
 import Header from "components/Header";
@@ -173,6 +175,8 @@ function ListaProductos(): JSX.Element {
     setSkuEditar,
     colorEditar,
     setColorEditar,
+    tallaEditar,
+    setTallaEditar,
     tallaEditar,
     setTallaEditar,
     idProveedorEditar,
@@ -711,6 +715,9 @@ function ListaProductos(): JSX.Element {
                                   const datos = {
                                     id_producto: p?.id,
                                   };
+                                  const datos = {
+                                    id_producto: p?.id,
+                                  };
                                   setProductoEditar(p);
                                   getFotoMontoPorId(datos);
                                   getProductoColorPorId(datos);
@@ -921,6 +928,7 @@ function ListaProductos(): JSX.Element {
         ) : null}
       </MDBox>
       <Footer />
+      <Backdrop sx={(theme) => ({ color: "#fff", zIndex: 9999999 })} open={procesando}>
       <Backdrop sx={(theme) => ({ color: "#fff", zIndex: 9999999 })} open={procesando}>
         <CircularProgress color="inherit" />
       </Backdrop>

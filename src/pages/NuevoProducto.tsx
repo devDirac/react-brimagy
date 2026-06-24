@@ -14,6 +14,7 @@ import { FormikProvider } from "formik";
 import {
   Backdrop,
   Box,
+  Box,
   Button,
   CardContent,
   CircularProgress,
@@ -105,6 +106,35 @@ function NuevoProducto(): JSX.Element {
               </Typography>
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={4}>
+                  {previewFoto && (
+                    <Box mt={2} display="flex" justifyContent="center">
+                      <img
+                        src={previewFoto}
+                        alt="Vista previa"
+                        style={{
+                          width: 200,
+                          height: 200,
+                          objectFit: "cover",
+                          borderRadius: 8,
+                          border: "1px solid #ccc",
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Grid>
+                <Grid item xs={12} sm={4} sx={{ display: "flex", alignItems: "end" }}>
+                  <MuiFileInput
+                    value={fotoProductoPrincipalFile}
+                    onChange={handleChangeFotoProductoPrincipal}
+                    label="Selecciona la foto del producto"
+                    placeholder="Selecciona la foto a subir"
+                    inputProps={{
+                      accept: ".jpg,.jpeg,.png,image/jpeg,image/png",
+                      multiple: false,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} sx={{ display: "flex", alignItems: "end" }}>
                   {previewFoto && (
                     <Box mt={2} display="flex" justifyContent="center">
                       <img
