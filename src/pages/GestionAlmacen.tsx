@@ -50,6 +50,7 @@ import {
   TextField,
   Tooltip,
   Typography,
+  Switch,
 } from "@mui/material";
 import ModalComponent from "components/Modal";
 import Header from "components/Header";
@@ -89,6 +90,58 @@ function GestionAlmacen(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
   const userName = useSelector((state: StoreType) => state?.app?.user?.data?.name || false);
   const fotoUser: any = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
+
+  const MaterialUISwitch = styled(Switch)(({ theme }) => ({
+    width: 62,
+    height: 34,
+    padding: 7,
+    "& .MuiSwitch-switchBase": {
+      margin: 1,
+      padding: 0,
+      transform: "translateX(6px)",
+      "&.Mui-checked": {
+        color: "#fff",
+        transform: "translateX(22px)",
+        "& .MuiSwitch-thumb:before": {
+          backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 24 24"><path fill="${encodeURIComponent(
+            "#fff"
+          )}" d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>')`,
+        },
+        "& + .MuiSwitch-track": {
+          opacity: 1,
+          backgroundColor: "#aab4be",
+        },
+      },
+      // ← clave: apuntar al track desde el switchBase unchecked
+      "&:not(.Mui-checked) + .MuiSwitch-track": {
+        opacity: "1 !important",
+        backgroundColor: "#aab4be !important",
+      },
+    },
+    "& .MuiSwitch-thumb": {
+      backgroundColor: "#001e3c",
+      width: 32,
+      height: 32,
+      "&::before": {
+        content: "''",
+        position: "absolute",
+        width: "100%",
+        height: "100%",
+        left: 0,
+        top: 0,
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center",
+        backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 24 24"><path fill="${encodeURIComponent(
+          "#fff"
+        )}" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>')`,
+      },
+    },
+    "& .MuiSwitch-track": {
+      opacity: "1 !important",
+      backgroundColor: "#aab4be !important",
+      borderRadius: 20 / 2,
+    },
+  }));
 
   // Estados para la paginación
   const [page, setPage] = useState(0);
@@ -197,6 +250,11 @@ function GestionAlmacen(): JSX.Element {
     handleisAlertOpenProductosTecnologicos,
     handleisAlerCloseProductosTecnologicos,
     registrarImeiNoSerie,
+    //precios individuales
+    formikCantidad,
+    getFieldColorCantidad,
+    handleAccionProducto,
+    accionProducto,
   } = useGestionAlmacen(tipoUsuario);
 
   const handleChangeEvidencias = (newFiles: File[] | null) => {
@@ -392,7 +450,7 @@ function GestionAlmacen(): JSX.Element {
                                 onClick={() => {
                                   console.log(p);
                                   const datos = {
-                                    no_orden: p.no_orden,
+                                    id_orden_compra: p.id_orden_compra,
                                     id_producto_almacen: p.id,
                                   };
                                   getProductoAlmacenPorId(datos);
@@ -555,82 +613,303 @@ function GestionAlmacen(): JSX.Element {
           </Grid>
         </Grid>
       </ModalComponent>
+      {/* MODAL PARA RECIBIR PRODUCTO CON O SIN PRECIO NUEVO */}
       <ModalComponent
         handleClose={handleisAlertCloseCantidad}
         isOpen={isAlertOpenCantidad}
         key={"alertaCantidad"}
       >
         {verProducto ? (
-          <Grid container spacing={2} style={{ textAlign: "center" }}>
-            <Grid item xs={12}>
-              <Typography variant="h6" color="primary" gutterBottom>
-                ¿Cuántos productos está recibiendo?
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Cantidad total: {verProducto.cantidad_producto || 0} | Ya recibida:{" "}
-                {verProducto.cantidad_almacen || 0} | Pendiente: {cantidadMaximaPermitida}
-              </Typography>
-            </Grid>
-            <Grid item xs={6} sm={6}>
-              <TextField
-                id="cantidadProducto"
-                fullWidth
-                label={`${intl.formatMessage({ id: "input_cantidad_producto" })} *`}
-                variant="standard"
-                name="cantidadProducto"
-                type="number"
-                value={cantidadProducto || ""}
-                onChange={handleCantidadChange}
-                inputProps={{
-                  min: 1,
-                  max: cantidadMaximaPermitida,
-                  step: 1,
-                }}
-                helperText={`Máximo: ${cantidadMaximaPermitida} unidades`}
-                error={
-                  cantidadProducto !== "" &&
-                  (parseInt(cantidadProducto) > cantidadMaximaPermitida ||
-                    parseInt(cantidadProducto) < 1)
-                }
-              />
-            </Grid>
-            <Grid item xs={6} sm={6} display="flex" alignContent="center" justifyContent="center">
-              <Button
-                sx={{ color: "#fff", background: "#084d6e" }}
-                variant="contained"
-                endIcon={<AddCircleIcon />}
-                disabled={
-                  procesandoRecibirProducto ||
-                  !cantidadProducto ||
-                  parseInt(cantidadProducto) < 1 ||
-                  parseInt(cantidadProducto) > cantidadMaximaPermitida ||
-                  cantidadMaximaPermitida === 0
-                }
-                onClick={(e: any) => {
-                  const datos = {
-                    id_producto_almacen: verProducto?.id_producto_almacen,
-                    cantidad_producto: parseInt(cantidadProducto),
-                  };
-                  addProductoAlmacen(datos);
-                }}
-              >
-                {procesandoRecibirProducto ? (
-                  <>
-                    <Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
+          <FormikProvider value={formikCantidad!}>
+            <Grid container spacing={2} style={{ textAlign: "center" }}>
+              <Grid item xs={12}>
+                <Typography variant="h6" color="primary" gutterBottom>
+                  ¿Cuántos productos está recibiendo?
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Cantidad total: {verProducto.cantidad_producto || 0} | Ya recibida:{" "}
+                  {verProducto.cantidad_almacen || 0} | Pendiente: {cantidadMaximaPermitida}
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControlLabel
+                  control={
+                    <MaterialUISwitch
+                      sx={{ m: 1 }}
+                      defaultChecked
+                      checked={accionProducto}
+                      onChange={(e: any) => handleAccionProducto(e.target.checked)}
                     />
-                    {intl.formatMessage({ id: "general_añadiendo" })}...{" "}
-                  </>
-                ) : (
-                  intl.formatMessage({ id: "set_añadir_producto_almacen" })
-                )}
-              </Button>
+                  }
+                  label={accionProducto ? "Registro normal" : "Registrar nuevo precio"}
+                  labelPlacement="bottom"
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    margin: 0,
+                    gap: 0,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  id="cantidadProducto"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_cantidad_producto" })} *`}
+                  variant="standard"
+                  name="cantidadProducto"
+                  type="number"
+                  value={formikCantidad.values.cantidadProducto || ""}
+                  disabled={!proveedoresSelect || proveedoresSelect.length === 0}
+                  helperText={
+                    formikCantidad.touched.cantidadProducto &&
+                    formikCantidad.errors.cantidadProducto
+                      ? formikCantidad.errors.cantidadProducto
+                      : `Máximo: ${cantidadMaximaPermitida} unidades`
+                  }
+                  error={
+                    formikCantidad.touched.cantidadProducto &&
+                    Boolean(formikCantidad.errors.cantidadProducto)
+                  }
+                  onChange={handleCantidadChange}
+                  inputProps={{
+                    min: 1,
+                    max: cantidadMaximaPermitida,
+                    step: 1,
+                  }}
+                  onBlur={formikCantidad.handleBlur}
+                  sx={{
+                    "& .MuiInputLabel-root": {
+                      color: getFieldColorCantidad("cantidadProducto"),
+                    },
+                    "& .MuiInput-underline:after": {
+                      borderBottomColor: getFieldColorCantidad("cantidadProducto"),
+                    },
+                    "& .MuiInput-underline:before": {
+                      borderBottomColor: getFieldColorCantidad("cantidadProducto"),
+                    },
+                    "& .MuiInputBase-input": {
+                      color: getFieldColorCantidad("cantidadProducto"),
+                    },
+                  }}
+                ></TextField>
+              </Grid>
+              {(!accionProducto || (accionProducto && !verProducto?.nombre_proveedor)) && (
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    id="id_proveedor"
+                    select
+                    fullWidth
+                    label={`${intl.formatMessage({ id: "select_proveedores" })} *`}
+                    variant="standard"
+                    name="id_proveedor"
+                    value={formikCantidad.values.id_proveedor || ""}
+                    disabled={!proveedoresSelect || proveedoresSelect.length === 0}
+                    helperText={
+                      !proveedoresSelect || proveedoresSelect.length === 0
+                        ? intl.formatMessage({ id: "sin_proveedores_registrados" })
+                        : formikCantidad.touched.id_proveedor && formikCantidad.errors.id_proveedor
+                    }
+                    error={
+                      formikCantidad.touched.id_proveedor &&
+                      Boolean(formikCantidad.errors.id_proveedor)
+                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      formikCantidad.setFieldValue("id_proveedor", value);
+                    }}
+                    InputProps={{
+                      style: { padding: "5px" },
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <Tooltip title="Agregar proveedor">
+                            <IconButton
+                              size="medium"
+                              color="primary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleisAlertOpenNuevoProveedor();
+                              }}
+                            >
+                              <AddBoxIcon fontSize="medium" />
+                            </IconButton>
+                          </Tooltip>
+                        </InputAdornment>
+                      ),
+                    }}
+                    onBlur={formikCantidad.handleBlur}
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: getFieldColorCantidad("id_proveedor"),
+                      },
+                      "& .MuiInput-underline:after": {
+                        borderBottomColor: getFieldColorCantidad("id_proveedor"),
+                      },
+                      "& .MuiInput-underline:before": {
+                        borderBottomColor: getFieldColorCantidad("id_proveedor"),
+                      },
+                      "& .MuiInputBase-input": {
+                        color: getFieldColorCantidad("id_proveedor"),
+                      },
+                    }}
+                  >
+                    {proveedoresSelect?.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.nombre}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+              )}
+
+              {!accionProducto && (
+                <>
+                  <Grid item xs={12} sm={accionProducto ? 6 : 4}>
+                    <TextField
+                      id="precio_compra"
+                      fullWidth
+                      label={`${intl.formatMessage({ id: "input_precio_compra" })} *`}
+                      variant="standard"
+                      name="precio_compra"
+                      value={formikCantidad.values.precio_compra || ""}
+                      disabled={!proveedoresSelect || proveedoresSelect.length === 0}
+                      helperText={
+                        formikCantidad.touched.precio_compra && formikCantidad.errors.precio_compra
+                      }
+                      error={
+                        formikCantidad.touched.precio_compra &&
+                        Boolean(formikCantidad.errors.precio_compra)
+                      }
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        formikCantidad.setFieldValue("precio_compra", value);
+                      }}
+                      onBlur={formikCantidad.handleBlur}
+                      sx={{
+                        "& .MuiInputLabel-root": {
+                          color: getFieldColor("precio_compra"),
+                        },
+                        "& .MuiInput-underline:after": {
+                          borderBottomColor: getFieldColor("precio_compra"),
+                        },
+                        "& .MuiInput-underline:before": {
+                          borderBottomColor: getFieldColor("precio_compra"),
+                        },
+                        "& .MuiInputBase-input": {
+                          color: getFieldColor("precio_compra"),
+                        },
+                      }}
+                    ></TextField>
+                  </Grid>
+                </>
+              )}
+
+              {(!accionProducto || (accionProducto && !verProducto.imei)) && (
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    id="imei"
+                    fullWidth
+                    label={`${intl.formatMessage({ id: "input_imei" })}`}
+                    variant="standard"
+                    name="imei"
+                    value={formikCantidad.values.imei || ""}
+                    disabled={!proveedoresSelect || proveedoresSelect.length === 0}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      formikCantidad.setFieldValue("imei", value);
+                    }}
+                  ></TextField>
+                </Grid>
+              )}
+              {(!accionProducto || (accionProducto && !verProducto.no_serie)) && (
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    id="no_serie"
+                    fullWidth
+                    label={`${intl.formatMessage({ id: "input_no_serie" })}`}
+                    variant="standard"
+                    name="no_serie"
+                    value={formikCantidad.values.no_serie || ""}
+                    disabled={!proveedoresSelect || proveedoresSelect.length === 0}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      formikCantidad.setFieldValue("no_serie", value);
+                    }}
+                  ></TextField>
+                </Grid>
+              )}
+              {(!accionProducto || (accionProducto && !verProducto.comentarios)) && (
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    id="comentarios"
+                    fullWidth
+                    label={`${intl.formatMessage({ id: "input_comentarios" })}`}
+                    variant="standard"
+                    name="comentarios"
+                    value={formikCantidad.values.comentarios || ""}
+                    disabled={!proveedoresSelect || proveedoresSelect.length === 0}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      formikCantidad.setFieldValue("comentarios", value);
+                    }}
+                  ></TextField>
+                </Grid>
+              )}
+
+              <Grid
+                item
+                xs={12}
+                sm={accionProducto ? 4 : 12}
+                display="flex"
+                alignContent="center"
+                justifyContent="center"
+              >
+                <Button
+                  sx={{ color: "#fff", background: "#084d6e" }}
+                  variant="contained"
+                  endIcon={<AddCircleIcon />}
+                  disabled={
+                    !formikCantidad.isValid ||
+                    procesandoRecibirProducto ||
+                    !cantidadProducto ||
+                    parseInt(cantidadProducto) < 1 ||
+                    parseInt(cantidadProducto) > cantidadMaximaPermitida ||
+                    cantidadMaximaPermitida === 0
+                  }
+                  onClick={(e: any) => {
+                    const datos = {
+                      id_producto_almacen: verProducto?.id_producto_almacen,
+                      cantidad_producto: parseInt(cantidadProducto),
+                      id_proveedor: formikCantidad.values.id_proveedor,
+                      precio_compra: formikCantidad.values.precio_compra,
+                      imei: formikCantidad.values.imei,
+                      no_serie: formikCantidad.values.no_serie,
+                      comentarios: formikCantidad.values.comentarios,
+                      id_producto: verProducto?.id_producto,
+                      tipo_registro: accionProducto ? "normal" : "nuevo_precio",
+                    };
+                    addProductoAlmacen(datos);
+                  }}
+                >
+                  {procesandoRecibirProducto ? (
+                    <>
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                      {intl.formatMessage({ id: "general_añadiendo" })}...{" "}
+                    </>
+                  ) : (
+                    intl.formatMessage({ id: "set_añadir_producto_almacen" })
+                  )}
+                </Button>
+              </Grid>
             </Grid>
-          </Grid>
+          </FormikProvider>
         ) : null}
       </ModalComponent>
       <ModalComponent
@@ -667,7 +946,7 @@ function GestionAlmacen(): JSX.Element {
                 disabled={procesandoGuiaProducto}
                 onClick={(e: any) => {
                   const datos = {
-                    id_producto_almacen: verProducto?.id_producto_almacen,
+                    id_orden_compra: verProducto?.id_orden_compra,
                     guia_producto: guiaProducto,
                   };
                   addGuiaProductoAlmacen(datos);
@@ -1015,170 +1294,6 @@ function GestionAlmacen(): JSX.Element {
           </Grid>
         ) : null}
       </ModalComponent>
-      {/* REGISTRAR UN NUEVO PRECIO DEL PRODUCTO EN ALMACEN */}
-      <ModalComponent
-        handleClose={handleisAlerCloseNuevoPrecio}
-        isOpen={isAlertOpenNuevoPrecio}
-        key={"alertaNuevoPrecio"}
-      >
-        {productoSeleccionado ? (
-          <FormikProvider value={formikPrecio!}>
-            <Grid container spacing={2} style={{ textAlign: "center" }}>
-              <Grid item xs={12}>
-                <br />
-                <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
-                  Registrar nuevo precio a {productoSeleccionado?.nombre_producto}
-                </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  Selecciona o registra un nuevo proveedor y su precio de compra
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  id="id_proveedor"
-                  select
-                  fullWidth
-                  label={`${intl.formatMessage({ id: "select_proveedores" })} *`}
-                  variant="standard"
-                  name="id_proveedor"
-                  value={formikPrecio.values.id_proveedor || ""}
-                  disabled={!proveedoresSelect || proveedoresSelect.length === 0}
-                  helperText={
-                    !proveedoresSelect || proveedoresSelect.length === 0
-                      ? intl.formatMessage({ id: "sin_proveedores_registrados" })
-                      : formikPrecio.touched.id_proveedor && formikPrecio.errors.id_proveedor
-                  }
-                  error={
-                    formikPrecio.touched.id_proveedor && Boolean(formikPrecio.errors.id_proveedor)
-                  }
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    formikPrecio.setFieldValue("id_proveedor", value);
-                  }}
-                  InputProps={{
-                    style: { padding: "5px" },
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Tooltip title="Agregar proveedor">
-                          <IconButton
-                            size="medium"
-                            color="primary"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleisAlertOpenNuevoProveedor();
-                            }}
-                          >
-                            <AddBoxIcon fontSize="medium" />
-                          </IconButton>
-                        </Tooltip>
-                      </InputAdornment>
-                    ),
-                  }}
-                  onBlur={formikPrecio.handleBlur}
-                  sx={{
-                    "& .MuiInputLabel-root": {
-                      color: getFieldColor("id_proveedor"),
-                    },
-                    "& .MuiInput-underline:after": {
-                      borderBottomColor: getFieldColor("id_proveedor"),
-                    },
-                    "& .MuiInput-underline:before": {
-                      borderBottomColor: getFieldColor("id_proveedor"),
-                    },
-                    "& .MuiInputBase-input": {
-                      color: getFieldColor("id_proveedor"),
-                    },
-                  }}
-                >
-                  {proveedoresSelect?.map((option) => (
-                    <MenuItem key={option.id} value={option.id}>
-                      {option.nombre}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  id="precio_compra"
-                  fullWidth
-                  label={`${intl.formatMessage({ id: "input_precio_compra" })} *`}
-                  variant="standard"
-                  name="precio_compra"
-                  type="number"
-                  value={formikPrecio.values.precio_compra || ""}
-                  disabled={!proveedoresSelect || proveedoresSelect.length === 0}
-                  helperText={
-                    formikPrecio.touched.precio_compra && formikPrecio.errors.precio_compra
-                  }
-                  error={
-                    formikPrecio.touched.precio_compra && Boolean(formikPrecio.errors.precio_compra)
-                  }
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    formikPrecio.setFieldValue("precio_compra", value);
-                  }}
-                  onBlur={formikPrecio.handleBlur}
-                  sx={{
-                    "& .MuiInputLabel-root": {
-                      color: getFieldColor("precio_compra"),
-                    },
-                    "& .MuiInput-underline:after": {
-                      borderBottomColor: getFieldColor("precio_compra"),
-                    },
-                    "& .MuiInput-underline:before": {
-                      borderBottomColor: getFieldColor("precio_compra"),
-                    },
-                    "& .MuiInputBase-input": {
-                      color: getFieldColor("precio_compra"),
-                    },
-                  }}
-                ></TextField>
-              </Grid>
-              <Grid
-                item
-                xs={12}
-                sm={4}
-                display="flex"
-                alignContent="center"
-                justifyContent="center"
-              >
-                <Button
-                  sx={{ color: "#fff", background: "#084d6e" }}
-                  variant="contained"
-                  endIcon={<AddCircleIcon />}
-                  disabled={procesando || !formikPrecio.dirty || !formikPrecio.isValid}
-                  onClick={(e: any) => {
-                    const datos = {
-                      id_proveedor: formikPrecio.values.id_proveedor,
-                      precio_compra: formikPrecio.values.precio_compra,
-                      id_producto: productoSeleccionado?.id_producto,
-                      id_producto_almacen: productoSeleccionado?.id_producto_almacen,
-                    };
-                    registrarNuevoPrecio(datos);
-                  }}
-                >
-                  {procesandoNuevoPrecio ? (
-                    <>
-                      <Spinner
-                        as="span"
-                        animation="border"
-                        size="sm"
-                        role="status"
-                        aria-hidden="true"
-                      />
-                      {intl.formatMessage({ id: "general_registrando" })}
-                      ...{" "}
-                    </>
-                  ) : (
-                    intl.formatMessage({ id: "set_registrar" })
-                  )}
-                </Button>
-              </Grid>
-            </Grid>
-          </FormikProvider>
-        ) : null}
-      </ModalComponent>
       {/* REGISTRAR PROVEEDOR NUEVO */}
       <ModalComponent
         handleClose={handleisAlerCloseNuevoProveedor}
@@ -1286,85 +1401,6 @@ function GestionAlmacen(): JSX.Element {
                     </>
                   ) : (
                     intl.formatMessage({ id: "set_añadir" })
-                  )}
-                </Button>
-              </Grid>
-            </Grid>
-          </FormikProvider>
-        ) : null}
-      </ModalComponent>
-      {/* REGISTRAR MEI Y NO. DE SERIE PARA PRODUCTOS TECNOLOGICOS */}
-      <ModalComponent
-        handleClose={handleisAlerCloseProductosTecnologicos}
-        isOpen={isAlertOpenProductosTecnologicos}
-        key={"alertaProductosTecnologicos"}
-      >
-        {productoSeleccionado ? (
-          <FormikProvider value={formikTecnologico!}>
-            <Grid container spacing={2} style={{ textAlign: "center" }}>
-              <Grid item xs={12}>
-                <br />
-                <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
-                  Registrar IMEI y No. serie a {productoSeleccionado?.nombre_producto}
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12} sm={4}>
-                <TextFieldValidado
-                  id="imei"
-                  fullWidth
-                  label={`${intl.formatMessage({ id: "input_imei" })} *`}
-                  variant="standard"
-                  name="imei"
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextFieldValidado
-                  id="no_serie"
-                  fullWidth
-                  label={`${intl.formatMessage({ id: "input_no_serie" })} *`}
-                  variant="standard"
-                  name="no_serie"
-                />
-              </Grid>
-              <Grid
-                item
-                xs={12}
-                sm={4}
-                display="flex"
-                alignContent="center"
-                justifyContent="center"
-              >
-                <Button
-                  sx={{ color: "#fff", background: "#084d6e" }}
-                  variant="contained"
-                  endIcon={<AddCircleIcon />}
-                  disabled={
-                    procesandoImeiNoOrden || !formikTecnologico.dirty || !formikTecnologico.isValid
-                  }
-                  onClick={(e: any) => {
-                    const datos = {
-                      mei: formikTecnologico.values.imei,
-                      no_serie: formikTecnologico.values.no_serie,
-                      id_producto_almacen: productoSeleccionado?.id_producto_almacen,
-                    };
-                    registrarImeiNoSerie(datos);
-                  }}
-                >
-                  {procesandoImeiNoOrden ? (
-                    <>
-                      <Spinner
-                        as="span"
-                        animation="border"
-                        size="sm"
-                        role="status"
-                        aria-hidden="true"
-                      />
-                      {intl.formatMessage({ id: "general_registrando" })}
-                      ...{" "}
-                    </>
-                  ) : (
-                    intl.formatMessage({ id: "set_registrar" })
                   )}
                 </Button>
               </Grid>

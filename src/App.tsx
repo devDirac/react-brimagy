@@ -244,12 +244,13 @@ export default function App() {
             <Route path="/plataformas" element={<Plataformas />} />
             {/* PRODUCTOS */}
             <Route path="/nuevo-producto" element={<NuevoProducto />} />
-            <Route path="/productos-digitales" element={<ListaProductosDigitales />} />
-            <Route path="/productos-fisicos" element={<ListaProductosFisicos />} />
+            <Route path="/productos-digitales" element={<ListaProductos />} />
+            <Route path="/productos-fisicos" element={<ListaProductos />} />
             <Route path="/catalogo-productos" element={<ListaProductos />} />
             <Route path="/categorias-proveedores" element={<CategoriasProveedores />} />
             {/* CANJES */}
-            <Route path="/catalogo-canjes" element={<ListaCanjeos />} />
+            <Route path="/canjes-fisicos" element={<ListaCanjeos />} />
+            <Route path="/canjes-digitales" element={<ListaCanjeos />} />
             {/* ORDENES DE COMPRA */}
             <Route path="/generar-orden-de-compra" element={<GenerarOrdenCompra />} />
             {/* ALMACEN */}

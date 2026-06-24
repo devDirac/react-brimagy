@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getErrorHttpMessage } from "../../utils";
 import { StoreType } from "../../types/genericTypes";
 import { useIntl } from "react-intl";
@@ -17,6 +17,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
   const dispatch = useDispatch();
   const intl = useIntl();
   const navigate = useNavigate();
+  const location = useLocation();
   const [procesando, setProcesando] = useState<boolean>(false);
   const [procesandoEditar, setProcesandoEditar] = useState<boolean>(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
@@ -61,6 +62,8 @@ export const useListaCanjeos = (tipoUsuario: number) => {
   const [fecha1, setFecha1] = useState("");
   const [fecha2, setFecha2] = useState("");
 
+  const esDigital = location.pathname.includes("canjes-digitales");
+
   const handleVisualizacion = (
     event: React.MouseEvent<HTMLElement>,
     nuevaVisualizacion: string | null
@@ -102,15 +105,20 @@ export const useListaCanjeos = (tipoUsuario: number) => {
   };
 
   const getCanjes = useCallback(
-    async (params?: { search?: string; fecha1?: string; fecha2?: string }) => {
+    async (params?: {
+      tipo_producto?: string;
+      search?: string;
+      fecha1?: string;
+      fecha2?: string;
+    }) => {
       try {
         setProcesando(true);
         const productosData = await getCanjesHttp(
+          esDigital ? "digital" : "fisico",
           params?.search,
           params?.fecha1 ? new Date(params.fecha1) : undefined,
           params?.fecha2 ? new Date(params.fecha2) : undefined
         );
-        //const productosData = await getCanjesHttp(search);
 
         const datosFormateados = productosData.map((e: any) => {
           return {
@@ -135,7 +143,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
         handleisAlertOpen();
       }
     },
-    []
+    [esDigital]
   );
 
   const validarIdentidad = async (data: any) => {

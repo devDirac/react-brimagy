@@ -24,6 +24,8 @@ import {
   editarCategoriaHttp,
   eliminarCategoriaHttp,
   getCategoriasHttp,
+  getCategoriasPrincipalHttp,
+  reactivarCategoriaHttp,
 } from "actions/categorias";
 
 export const useCategoriasProveedores = (tipoUsuario: number) => {
@@ -46,6 +48,7 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
   const isSuperAdmin = tipoUsuario === 4;
 
   const [proveedores, setProveedores] = useState<any[]>([]);
+  const [subcategorias, setSubCategorias] = useState<any[]>([]);
   const [categorias, setCategorias] = useState<any[]>([]);
 
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
@@ -139,14 +142,29 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
   const formikCategoria = useFormik({
     initialValues: {
       nombre: "",
+      category_id: "",
     },
     validationSchema: Yup.object({
       nombre: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      category_id: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
     }),
     onSubmit: async (values) => {
       console.log("Formulario enviado:", values);
     },
   });
+
+  const isFieldValid = (fieldName: keyof typeof formikCategoria.values) => {
+    return (
+      formikCategoria.touched[fieldName] &&
+      !formikCategoria.errors[fieldName] &&
+      formikCategoria.values[fieldName] &&
+      formikCategoria.values[fieldName] !== ""
+    );
+  };
+
+  const getFieldColor = (fieldName: keyof typeof formikCategoria.values) => {
+    return isFieldValid(fieldName) ? "#00AB16" : undefined;
+  };
 
   const getProveedores = useCallback(async () => {
     try {
@@ -166,6 +184,20 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
     try {
       setProcesando(true);
       const categoriasData = await getCategoriasHttp();
+      setSubCategorias(categoriasData);
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+      handleisAlertOpen();
+    }
+  }, []);
+
+  const getCategoriasPrincipal = useCallback(async () => {
+    try {
+      setProcesando(true);
+      const categoriasData = await getCategoriasPrincipalHttp();
       setCategorias(categoriasData);
       setProcesando(false);
     } catch (error) {
@@ -212,6 +244,22 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
     }
   };
 
+  const reactivarCategoria = async (datos: any) => {
+    try {
+      setProcesandoEditar(true);
+      const categoriaData: any = await reactivarCategoriaHttp(datos);
+      await getCategorias();
+      setProcesandoEditar(false);
+      setMensajeAlert(intl.formatMessage({ id: "general_reactivado_correctamente" }));
+      handleisAlertOpen();
+    } catch (error) {
+      setProcesandoEditar(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "general_reactivado_error" }));
+      handleisAlertOpen();
+    }
+  };
+
   const crearProveedor = async (datos: any) => {
     try {
       setProcesandoProveedor(true);
@@ -235,7 +283,7 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
     try {
       setProcesandoCategoria(true);
       const categoriaData: any = await crearCategoriaHttp(datos);
-      setCategorias((prevCategorias) => [...prevCategorias, categoriaData]);
+      setSubCategorias((prevCategorias) => [...prevCategorias, categoriaData]);
       formikCategoria.resetForm();
       setTableKeyCategoria((prev) => prev + 1);
       setProcesandoCategoria(false);
@@ -261,6 +309,9 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
         setGeneralId(row?.id);
         handleisAlertOpenConfirm();
         break;
+      case "reactivar_categoria":
+        reactivarCategoria(row?.id);
+        break;
       case "editar_proveedor":
         setTipoEditando("proveedor");
         setGeneralEditar(row);
@@ -279,7 +330,8 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
   useEffect(() => {
     getProveedores();
     getCategorias();
-  }, [getProveedores, getCategorias]);
+    getCategoriasPrincipal();
+  }, [getProveedores, getCategorias, getCategoriasPrincipal]);
 
   return {
     nombreContactoEditar,
@@ -333,5 +385,7 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
     usuarios,
     tipoUsuario,
     editaGeneral,
+    subcategorias,
+    getFieldColor,
   };
 };

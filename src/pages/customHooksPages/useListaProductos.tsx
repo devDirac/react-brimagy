@@ -5,13 +5,39 @@ import { getErrorHttpMessage } from "../../utils";
 import { StoreType } from "../../types/genericTypes";
 import { useIntl } from "react-intl";
 import { setAuth } from "../../actions/auth";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import {
+  activarColorProductoHttp,
+  activarFotoMontoHttp,
+  activarFotosProductoHttp,
+  activarFotosPromoProductoHttp,
+  activarMontoProductoHttp,
+  activarTallaProductoHttp,
+  crearEditarColorProductoHttp,
+  crearEditarMontoProductoHttp,
+  crearEditarTallaProductoHttp,
   crearProductoHttp,
+  desactivarColorProductoHttp,
+  desactivarFotoMontoHttp,
+  desactivarFotosProductoHttp,
+  desactivarFotosPromoProductoHttp,
+  desactivarMontoProductoHttp,
+  desactivarTallaProductoHttp,
   editarProductoHttp,
   eliminarProductoHttp,
   getBitacoraProductoPorIdHttp,
   getBusquedaInteligenteHttp,
   getCatalogoProductosHttp,
+  getFotoMontoPorIdHttp,
+  getProductoColorPorIdHttp,
+  getProductoFotoPorIdHttp,
+  getProductoFotoPromoPorIdHttp,
+  getProductoMontoPorIdHttp,
+  getProductoTallaPorIdHttp,
+  subirFotoMontoHttp,
+  subirFotosProductoHttp,
+  subirFotosPromoProductoHttp,
   verificarIdProductoBrimagyHttp,
   verificarSkusHttp,
 } from "actions/productos";
@@ -21,6 +47,8 @@ import { crearProveedorHttp, getProveedoresHttp } from "actions/proveedores";
 import { crearCategoriaHttp, getCategoriasHttp } from "actions/categorias";
 import ExcelJS from "exceljs";
 import { crearPlataformaHttp, getPlataformasHttp } from "actions/configuracion";
+import { C } from "@fullcalendar/core/internal-common";
+import env from "react-dotenv";
 
 export const useListaProductos = (tipoUsuario: number) => {
   const dispatch = useDispatch();
@@ -76,9 +104,11 @@ export const useListaProductos = (tipoUsuario: number) => {
   const [totalEditar, setTotalEditar] = useState("");
   const [puntosEditar, setPuntosEditar] = useState("");
   const [factorEditar, setFactorEditar] = useState("");
+  const [fotoEditar, setFotoEditar] = useState("");
   const [tipoProductoEditar, setTipoProductoEditar] = useState("");
   const [tipoPlataformaEditar, setPlataformaEditar] = useState("");
   const [productoId, setProductoId] = useState("");
+  const [valueTab, setValueTab] = useState("one");
 
   const [proveedores, setProveedores] = useState<any[]>([]);
   const [categorias, setCategorias] = useState<any[]>([]);
@@ -129,6 +159,174 @@ export const useListaProductos = (tipoUsuario: number) => {
   const [visualizacion, setVisualizacion] = useState<string | null>("cuadricula");
   const [fecha1, setFecha1] = useState("");
   const [fecha2, setFecha2] = useState("");
+
+  const handleChangeTab = (event: React.SyntheticEvent, newValue: string) => {
+    setValueTab(newValue);
+  };
+
+  //colores
+  const [verEditarColor, setVerEditarColor] = useState<any>(null);
+  const [procesandoColor, setProcesandoColor] = useState(false);
+  const [colores, setColores] = useState<any[]>([]);
+  const [isAlertOpenEditarColor, setIsAlertOpenEditarColor] = useState(false);
+  const handleisAlertOpenEditarColor = () => setIsAlertOpenEditarColor(true);
+  const handleisAlertCloseEditarColor = () => setIsAlertOpenEditarColor(false);
+  const [editaColor, setEditaColor] = useState("");
+
+  //tallas
+  const [verEditarTalla, setVerEditarTalla] = useState<any>(null);
+  const [procesandoTalla, setProcesandoTalla] = useState(false);
+  const [tallas, setTallas] = useState<any[]>([]);
+  const [isAlertOpenEditarTalla, setIsAlertOpenEditarTalla] = useState(false);
+  const handleisAlertOpenEditarTalla = () => setIsAlertOpenEditarTalla(true);
+  const handleisAlertCloseEditarTalla = () => setIsAlertOpenEditarTalla(false);
+  const [editaTalla, setEditaTalla] = useState("");
+
+  //Para fotos del producto
+  const [fotos, setFotos] = useState<any[]>([]);
+  const [procesandoFotosProducto, setProcesandoFotosProducto] = useState<boolean>(false);
+  const [fotosProductoFiles, setFotosProductoFiles] = useState<File[]>([]);
+  const [isModalFotosProducto, setIsModalFotosProducto] = useState(false);
+  const handleOpenFotosProducto = () => setIsModalFotosProducto(true);
+  const handleCloseFotosProducto = () => setIsModalFotosProducto(false);
+
+  const [isModalVistaFotosProducto, setIsModalVistaFotosProducto] = useState(false);
+  const [fotosProductoSeleccionada, setFotosProductoSeleccionada] = useState<any>(null);
+
+  //Para fotos monto digital
+  const [fotoMonto, setFotoMonto] = useState<any[]>([]);
+  const [procesandoFotoMonto, setProcesandoFotoMonto] = useState<boolean>(false);
+  const [fotoMontoFiles, setFotoMontoFiles] = useState<File[]>([]);
+  const [isModalFotoMonto, setIsModalFotoMonto] = useState(false);
+  const handleOpenFotoMonto = () => setIsModalFotoMonto(true);
+  const handleCloseFotoMonto = () => setIsModalFotoMonto(false);
+
+  const [isModalVistaFotoMonto, setIsModalVistaFotoMonto] = useState(false);
+  const [fotoMontoSeleccionada, setFotoMontoSeleccionada] = useState<any>(null);
+
+  //Para fotos promo del producto
+  const [fotosPromo, setFotosPromo] = useState<any[]>([]);
+  const [procesandoFotosPromoProducto, setProcesandoFotosPromoProducto] = useState<boolean>(false);
+  const [fotosPromoProductoFiles, setFotosPromoProductoFiles] = useState<File[]>([]);
+  const [isModalFotosPromoProducto, setIsModalFotosPromoProducto] = useState(false);
+  const handleOpenFotosPromoProducto = () => setIsModalFotosPromoProducto(true);
+  const handleCloseFotosPromoProducto = () => setIsModalFotosPromoProducto(false);
+
+  const [isModalVistaFotosPromoProducto, setIsModalVistaFotosPromoProducto] = useState(false);
+  const [fotosPromoProductoSeleccionada, setFotosPromoProductoSeleccionada] = useState<any>(null);
+
+  //montos digital
+  const [verEditarMonto, setVerEditarMonto] = useState<any>(null);
+  const [procesandoMonto, setProcesandoMonto] = useState(false);
+  const [montos, setMontos] = useState<any[]>([]);
+  const [isAlertOpenEditarMonto, setIsAlertOpenEditarMonto] = useState(false);
+  const handleisAlertOpenEditarMonto = () => setIsAlertOpenEditarMonto(true);
+  const handleisAlertCloseEditarMonto = () => setIsAlertOpenEditarMonto(false);
+  const [editaMonto, setEditaMonto] = useState("");
+  const [editaPuntos, setEditaPuntos] = useState("");
+  const [editaDescripcion, setEditaDescripcion] = useState("");
+
+  //foto monto
+  const handleOpenVistaFotoMonto = (fotos_producto: any) => {
+    setFotoMontoSeleccionada(fotos_producto);
+    setIsModalVistaFotoMonto(true);
+  };
+
+  const handleCloseVistaFotoMonto = () => {
+    setIsModalVistaFotoMonto(false);
+    setFotoMontoSeleccionada(null);
+  };
+
+  const handleOpenVistaFotosProducto = (fotos_producto: any) => {
+    setFotosProductoSeleccionada(fotos_producto);
+    setIsModalVistaFotosProducto(true);
+  };
+
+  const handleCloseVistaFotosProducto = () => {
+    setIsModalVistaFotosProducto(false);
+    setFotosProductoSeleccionada(null);
+  };
+
+  const handleOpenVistaFotosPromoProducto = (fotos_producto: any) => {
+    setFotosPromoProductoSeleccionada(fotos_producto);
+    setIsModalVistaFotosPromoProducto(true);
+  };
+
+  const handleCloseVistaFotosPromoProducto = () => {
+    setIsModalVistaFotosPromoProducto(false);
+    setFotosPromoProductoSeleccionada(null);
+  };
+
+  const [fotoProductoPrincipalFile, setFotoProductoPrincipalFile] = useState<File | null>(null);
+  const [previewFoto, setPreviewFoto] = useState<string | null>(null);
+  //foto de monto digital
+  const [fotoMontoFile, setFotoMontoFile] = useState<File | null>(null);
+  const [previewFotoMonto, setPreviewFotoMonto] = useState<string | null>(null);
+
+  const handleChangeFotoMonto = (file: File | null) => {
+    setFotoMontoFile(file);
+
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPreviewFotoMonto(url);
+    } else {
+      setPreviewFotoMonto(null);
+    }
+  };
+
+  const esDigital = location.pathname.includes("productos-digitales");
+  const esFisico = location.pathname.includes("productos-fisicos");
+
+  const handleChangeFotoProductoPrincipal = (file: File | null) => {
+    setFotoProductoPrincipalFile(file);
+
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPreviewFoto(url);
+    } else {
+      setPreviewFoto(null);
+    }
+  };
+
+  const formikColor = useFormik({
+    initialValues: {
+      color: "",
+    },
+    validationSchema: Yup.object({
+      color: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+    }),
+    onSubmit: async (values) => {
+      //console.log("Formulario enviado:", values);
+    },
+  });
+
+  const formikTalla = useFormik({
+    initialValues: {
+      talla: "",
+    },
+    validationSchema: Yup.object({
+      talla: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+    }),
+    onSubmit: async (values) => {
+      //console.log("Formulario enviado:", values);
+    },
+  });
+
+  const formikMonto = useFormik({
+    initialValues: {
+      monto: "",
+      puntos: "",
+      descripcion: "",
+    },
+    validationSchema: Yup.object({
+      monto: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      puntos: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      descripcion: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+    }),
+    onSubmit: async (values) => {
+      //console.log("Formulario enviado:", values);
+    },
+  });
 
   // Convierte nombres de color (red, blue) a hex
   const colorNameToHex = (color: string): string => {
@@ -381,9 +579,13 @@ export const useListaProductos = (tipoUsuario: number) => {
       setFactorEditar(productoEditar.factor || "");
       setTipoProductoEditar(productoEditar.tipo_producto || "");
       setPlataformaEditar(productoEditar.id_plataforma || "");
+      setFotoEditar(
+        productoEditar.foto_producto
+          ? `${env.API_URL_ASSETS}fotos_producto/${productoEditar?.id}/${productoEditar.foto_producto}`
+          : ""
+      );
     }
   }, [productoEditar]);
-
   // Debounce para evitar muchas peticiones
   const handleBuscadorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -403,97 +605,11 @@ export const useListaProductos = (tipoUsuario: number) => {
       try {
         setProcesando(true);
         const productosData = await getCatalogoProductosHttp(
+          esDigital ? "digital" : esFisico ? "fisico" : "todos",
           params?.search,
           params?.fecha1 ? new Date(params.fecha1) : undefined,
           params?.fecha2 ? new Date(params.fecha2) : undefined
         );
-
-        /*const datosFormateados = productosData.map((e: any) => {
-          return {
-            ...e,
-            ...{
-              costo_con_iva_format: numericFormatter(e?.costo_con_iva + "", {
-                thousandSeparator: ",",
-                decimalScale: 2,
-                fixedDecimalScale: true,
-                prefix: "$",
-              }),
-              costo_sin_iva_format: numericFormatter(e?.costo_sin_iva + "", {
-                thousandSeparator: ",",
-                decimalScale: 2,
-                fixedDecimalScale: true,
-                prefix: "$",
-              }),
-              costo_puntos_con_iva_format: numericFormatter(e?.costo_puntos_con_iva + "", {
-                thousandSeparator: ",",
-                decimalScale: 2,
-                fixedDecimalScale: true,
-                prefix: "$",
-              }),
-              costo_puntos_sin_iva_format: numericFormatter(e?.costo_puntos_sin_iva + "", {
-                thousandSeparator: ",",
-                decimalScale: 2,
-                fixedDecimalScale: true,
-                prefix: "$",
-              }),
-              subtotal_format: numericFormatter(e?.subtotal + "", {
-                thousandSeparator: ",",
-                decimalScale: 2,
-                fixedDecimalScale: true,
-                prefix: "$",
-              }),
-              envio_base_format: numericFormatter(e?.envio_base + "", {
-                thousandSeparator: ",",
-                decimalScale: 2,
-                fixedDecimalScale: true,
-                prefix: "$",
-              }),
-              costo_caja_format: numericFormatter(e?.costo_caja + "", {
-                thousandSeparator: ",",
-                decimalScale: 2,
-                fixedDecimalScale: true,
-                prefix: "$",
-              }),
-              envio_extra_format: numericFormatter(e?.envio_extra + "", {
-                thousandSeparator: ",",
-                decimalScale: 2,
-                fixedDecimalScale: true,
-                prefix: "$",
-              }),
-              total_envio_format: numericFormatter(e?.total_envio + "", {
-                thousandSeparator: ",",
-                decimalScale: 2,
-                fixedDecimalScale: true,
-                prefix: "$",
-              }),
-              total_format: numericFormatter(e?.total + "", {
-                thousandSeparator: ",",
-                decimalScale: 2,
-                fixedDecimalScale: true,
-                prefix: "$",
-              }),
-              fee_brimagy_format: numericFormatter(e?.fee_brimagy + "", {
-                thousandSeparator: ",",
-                decimalScale: 2,
-                fixedDecimalScale: true,
-                prefix: "$",
-              }),
-              puntos_format: numericFormatter(e?.puntos + "", {
-                thousandSeparator: ",",
-                decimalScale: 2,
-                fixedDecimalScale: true,
-                prefix: "",
-              }),
-              factor_format: numericFormatter(e?.factor + "", {
-                thousandSeparator: ",",
-                decimalScale: 2,
-                fixedDecimalScale: true,
-                prefix: "",
-              }),
-              fecha_creacion: moment(e?.fecha_ejecucion).format("DD-MM-YYYY"),
-            },
-          };
-        });*/
         setProductos(productosData);
         setTableKey((prev) => prev + 1);
         setProcesando(false);
@@ -504,7 +620,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         handleisAlertOpen();
       }
     },
-    []
+    [esDigital, esFisico]
   );
 
   const getBitacoraProductoPorId = async (datos: any) => {
@@ -882,7 +998,6 @@ export const useListaProductos = (tipoUsuario: number) => {
         }
       });
 
-      // Si hay errores de validación, mostrarlos y no continuar
       if (erroresValidacion.length > 0) {
         setProcesando(false);
         setMensajeAlert(
@@ -897,47 +1012,20 @@ export const useListaProductos = (tipoUsuario: number) => {
         return;
       }
 
-      // Verificar SKUs duplicados en la BD
       const skus = datosFormateados.map((p) => p.sku).filter(Boolean);
       const ids = datosFormateados.map((p) => p.id_producto_brimagy).filter(Boolean);
 
-      /*if (skus.length > 0) {
-        try {
-          const skusExistentesResponse = await verificarSkusHttp(skus);
-          const skusExistentes = skusExistentesResponse?.skus_existentes || [];
-
-          // Marcar productos con SKU duplicado
-          datosFormateados.forEach((producto) => {
-            if (skusExistentes.includes(producto.sku)) {
-              producto.sku_duplicado = true;
-            }
-          });
-
-          // Mostrar alerta si hay SKUs duplicados
-          const cantidadDuplicados = datosFormateados.filter((p) => p.sku_duplicado).length;
-          if (cantidadDuplicados > 0) {
-            setMensajeAlert(
-              `⚠️ Se encontraron ${cantidadDuplicados} producto(s) con SKU existente. Estos productos se actualizarán en lugar de crearse nuevos.`
-            );
-            handleisAlertOpen();
-          }
-        } catch (error) {
-          console.error("Error al verificar SKUs:", error);
-        }
-      }*/
       if (ids.length > 0) {
         try {
           const idsExistentesResponse = await verificarIdProductoBrimagyHttp(ids);
           const idsExistentes = idsExistentesResponse?.ids_existentes || [];
 
-          // Marcar productos con SKU duplicado
           datosFormateados.forEach((producto) => {
             if (idsExistentes.includes(producto.id_producto_brimagy)) {
               producto.id_producto_brimagy_duplicado = true;
             }
           });
 
-          // Mostrar alerta si hay SKUs duplicados
           const cantidadDuplicados = datosFormateados.filter(
             (p) => p.id_producto_brimagy_duplicado
           ).length;
@@ -973,6 +1061,7 @@ export const useListaProductos = (tipoUsuario: number) => {
 
       // Definir columnas con formato
       worksheet.columns = [
+        { header: "Id brimagy", key: "id_producto_brimagy", width: 25 },
         { header: "Categoría", key: "categoria", width: 25 },
         { header: "Nombre Producto", key: "nombre_producto", width: 30 },
         { header: "Descripción", key: "descripcion", width: 40 },
@@ -982,18 +1071,18 @@ export const useListaProductos = (tipoUsuario: number) => {
         { header: "Color", key: "color", width: 15 },
         { header: "Talla", key: "talla", width: 15 },
         { header: "Costo con IVA", key: "costo_con_iva", width: 15 },
-        { header: "Costo sin IVA", key: "costo_sin_iva", width: 15 },
+        //{ header: "Costo sin IVA", key: "costo_sin_iva", width: 15 },
         { header: "Costo Puntos con IVA", key: "costo_puntos_con_iva", width: 20 },
-        { header: "Costo Puntos sin IVA", key: "costo_puntos_sin_iva", width: 20 },
+        /*{ header: "Costo Puntos sin IVA", key: "costo_puntos_sin_iva", width: 20 },
         { header: "Fee Brimagy", key: "fee_brimagy", width: 15 },
         { header: "Subtotal", key: "subtotal", width: 15 },
         { header: "Envío Base", key: "envio_base", width: 15 },
-        { header: "Costo Caja", key: "costo_caja", width: 15 },
+        { header: "Costo Caja", key: "costo_caja", width: 15 },*/
         { header: "Envío Extra", key: "envio_extra", width: 15 },
-        { header: "Total Envío", key: "total_envio", width: 15 },
+        /*{ header: "Total Envío", key: "total_envio", width: 15 },
         { header: "Total", key: "total", width: 15 },
         { header: "Puntos", key: "puntos", width: 15 },
-        { header: "Factor", key: "factor", width: 15 },
+        { header: "Factor", key: "factor", width: 15 },*/
         { header: "Tipo Producto", key: "tipo_producto", width: 15 },
         { header: "Plataforma", key: "plataforma", width: 15 },
       ];
@@ -1007,8 +1096,8 @@ export const useListaProductos = (tipoUsuario: number) => {
       };
       worksheet.getRow(1).alignment = { vertical: "middle", horizontal: "center" };
 
-      // Agregar una fila de ejemplo
       worksheet.addRow({
+        id_producto_brimagy: 12345,
         categoria: "Categoria1",
         nombre_producto: "Producto Ejemplo",
         descripcion: "Descripción del producto",
@@ -1018,18 +1107,18 @@ export const useListaProductos = (tipoUsuario: number) => {
         color: "Rojo",
         talla: "",
         costo_con_iva: 100,
-        costo_sin_iva: 86,
+        //costo_sin_iva: 86,
         costo_puntos_con_iva: 100,
-        costo_puntos_sin_iva: 86,
+        /*costo_puntos_sin_iva: 86,
         fee_brimagy: 10,
         subtotal: 90,
         envio_base: 50,
-        costo_caja: 20,
+        costo_caja: 20,*/
         envio_extra: 10,
-        total_envio: 60,
+        /*total_envio: 60,
         total: 150,
         puntos: 150,
-        factor: 15,
+        factor: 15,*/
         tipo_producto: "fisico",
         plataforma: "ejemplo1",
       });
@@ -1058,7 +1147,6 @@ export const useListaProductos = (tipoUsuario: number) => {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet("Productos");
 
-      // Mismas columnas que la plantilla
       worksheet.columns = [
         { header: "Id Producto", key: "id_producto", width: 10 },
         { header: "Categoría", key: "categoria", width: 25 },
@@ -1070,18 +1158,18 @@ export const useListaProductos = (tipoUsuario: number) => {
         { header: "Color", key: "color", width: 15 },
         { header: "Talla", key: "talla", width: 15 },
         { header: "Costo con IVA", key: "costo_con_iva", width: 15 },
-        { header: "Costo sin IVA", key: "costo_sin_iva", width: 15 },
+        //{ header: "Costo sin IVA", key: "costo_sin_iva", width: 15 },
         { header: "Costo Puntos con IVA", key: "costo_puntos_con_iva", width: 20 },
-        { header: "Costo Puntos sin IVA", key: "costo_puntos_sin_iva", width: 20 },
+        /*{ header: "Costo Puntos sin IVA", key: "costo_puntos_sin_iva", width: 20 },
         { header: "Fee Brimagy", key: "fee_brimagy", width: 15 },
         { header: "Subtotal", key: "subtotal", width: 15 },
         { header: "Envío Base", key: "envio_base", width: 15 },
-        { header: "Costo Caja", key: "costo_caja", width: 15 },
+        { header: "Costo Caja", key: "costo_caja", width: 15 },*/
         { header: "Envío Extra", key: "envio_extra", width: 15 },
-        { header: "Total Envío", key: "total_envio", width: 15 },
+        /*{ header: "Total Envío", key: "total_envio", width: 15 },
         { header: "Total", key: "total", width: 15 },
         { header: "Puntos", key: "puntos", width: 15 },
-        { header: "Factor", key: "factor", width: 15 },
+        { header: "Factor", key: "factor", width: 15 },*/
         { header: "Tipo Producto", key: "tipo_producto", width: 15 },
         { header: "Plataforma", key: "plataforma", width: 15 },
       ];
@@ -1095,10 +1183,9 @@ export const useListaProductos = (tipoUsuario: number) => {
       };
       worksheet.getRow(1).alignment = { vertical: "middle", horizontal: "center" };
 
-      // ✅ Llenar con los productos del estado
       productos.forEach((p) => {
         const row = worksheet.addRow({
-          id_producto: p.id || "",
+          id_producto: p.id_producto_brimagy || "",
           categoria: p.catalogo || "",
           nombre_producto: p.nombre_producto || "",
           descripcion: p.descripcion || "",
@@ -1108,24 +1195,23 @@ export const useListaProductos = (tipoUsuario: number) => {
           color: p.color || "",
           talla: p.talla || "",
           costo_con_iva: p.costo_con_iva ?? 0,
-          costo_sin_iva: p.costo_sin_iva ?? 0,
+          //costo_sin_iva: p.costo_sin_iva ?? 0,
           costo_puntos_con_iva: p.costo_puntos_con_iva ?? 0,
-          costo_puntos_sin_iva: p.costo_puntos_sin_iva ?? 0,
+          /*costo_puntos_sin_iva: p.costo_puntos_sin_iva ?? 0,
           fee_brimagy: p.fee_brimagy ?? 0,
           subtotal: p.subtotal ?? 0,
           envio_base: p.envio_base ?? 0,
-          costo_caja: p.costo_caja ?? 0,
+          costo_caja: p.costo_caja ?? 0,*/
           envio_extra: p.envio_extra ?? 0,
-          total_envio: p.total_envio ?? 0,
+          /*total_envio: p.total_envio ?? 0,
           total: p.total ?? 0,
           puntos: p.puntos ?? 0,
-          factor: p.factor ?? 0,
+          factor: p.factor ?? 0,*/
           tipo_producto: p.tipo_producto || "",
           plataforma: p.nombre_plataforma || "",
         });
 
-        // ✅ Formato numérico para columnas de dinero
-        const columnasNumericas = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+        const columnasNumericas = [10, 11, 12];
         columnasNumericas.forEach((col) => {
           row.getCell(col).numFmt = "#,##0.00";
         });
@@ -1168,37 +1254,36 @@ export const useListaProductos = (tipoUsuario: number) => {
 
       for (const producto of excelData) {
         try {
-          const datos = {
-            id_catalogo: producto.id_catalogo,
-            catalogo: producto.catalogo,
-            nombre_producto: producto.nombre_producto,
-            descripcion: producto.descripcion,
-            marca: producto.marca,
-            proveedor: producto.proveedor,
-            id_proveedor: producto.id_proveedor,
-            sku: producto.sku,
-            color: producto.color,
-            talla: producto.talla,
-            costo_con_iva: producto.costo_con_iva,
-            costo_sin_iva: producto.costo_sin_iva,
-            costo_puntos_con_iva: producto.costo_puntos_con_iva,
-            costo_puntos_sin_iva: producto.costo_puntos_sin_iva,
-            fee_brimagy: producto.fee_brimagy,
-            subtotal: producto.subtotal,
-            envio_base: producto.envio_base,
-            costo_caja: producto.costo_caja,
-            envio_extra: producto.envio_extra,
-            total_envio: producto.total_envio,
-            total: producto.total,
-            puntos: producto.puntos,
-            factor: producto.factor,
-            id_producto_brimagy: producto.id_producto_brimagy,
-            tipo_producto: producto.tipo_producto,
-            nombre_plataforma: producto.plataforma,
-            tipo_registro: "excel",
-          };
+          const formData = new FormData();
+          formData.append("id_catalogo", producto.id_catalogo);
+          formData.append("catalogo", producto.catalogo);
+          formData.append("nombre_producto", producto.nombre_producto);
+          formData.append("descripcion", producto.descripcion);
+          formData.append("marca", producto.marca);
+          formData.append("proveedor", producto.proveedor);
+          formData.append("id_proveedor", producto.id_proveedor ?? "");
+          formData.append("sku", producto.sku);
+          formData.append("color", producto.color);
+          formData.append("talla", producto.talla);
+          formData.append("costo_con_iva", producto.costo_con_iva);
+          formData.append("costo_sin_iva", producto.costo_sin_iva);
+          formData.append("costo_puntos_con_iva", producto.costo_puntos_con_iva);
+          formData.append("costo_puntos_sin_iva", producto.costo_puntos_sin_iva);
+          formData.append("fee_brimagy", producto.fee_brimagy);
+          formData.append("subtotal", producto.subtotal);
+          formData.append("envio_base", producto.envio_base);
+          formData.append("costo_caja", producto.costo_caja);
+          formData.append("envio_extra", producto.envio_extra);
+          formData.append("total_envio", producto.total_envio);
+          formData.append("total", producto.total);
+          formData.append("puntos", producto.puntos);
+          formData.append("factor", producto.factor);
+          formData.append("id_producto_brimagy", producto.id_producto_brimagy);
+          formData.append("tipo_producto", producto.tipo_producto);
+          formData.append("nombre_plataforma", producto.plataforma);
+          formData.append("tipo_registro", "excel");
 
-          const response: any = await crearProductoHttp(datos);
+          const response: any = await crearProductoHttp(formData);
 
           if (response.data?.actualizado) {
             actualizados++;
@@ -1342,6 +1427,617 @@ export const useListaProductos = (tipoUsuario: number) => {
     }
   }, []);
 
+  //colores
+  const getProductoColorPorId = useCallback(async (datos: any) => {
+    try {
+      setProcesando(true);
+      const colores = await getProductoColorPorIdHttp(datos);
+      setColores(colores);
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+      handleisAlertOpen();
+    }
+  }, []);
+  const crearEditarColorProducto = async (datos: any) => {
+    try {
+      setProcesandoColor(true);
+      const response: any = await crearEditarColorProductoHttp(datos);
+      const colorData = response?.data;
+
+      const esEdicion = !!datos?.id_color;
+
+      console.log("response completo:", response);
+
+      if (esEdicion) {
+        setColores((prevColores: any[]) =>
+          prevColores.map((c) =>
+            c.id === colorData?.id
+              ? { ...c, color: colorData?.color, status: colorData?.status }
+              : c
+          )
+        );
+      } else if (colorData) {
+        setColores((prevColores: any[]) => [...prevColores, colorData]);
+      }
+
+      const datosRefresh = {
+        id_producto: colorData?.id_producto ?? datos?.id_producto_dirac,
+      };
+      await getProductoColorPorId(datosRefresh);
+
+      setMensajeAlert(
+        esEdicion ? "Color actualizado exitosamente." : "Color registrado exitosamente."
+      );
+      formikColor.resetForm();
+      if (esEdicion) {
+        handleisAlertCloseEditarColor();
+      }
+      handleisAlertOpen();
+      setProcesandoColor(false);
+    } catch (error) {
+      setProcesandoColor(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(
+        message
+          ? message
+          : !!datos?.id_color
+          ? intl.formatMessage({ id: "error_editar_color" })
+          : intl.formatMessage({ id: "error_crear_color" })
+      );
+      handleisAlertOpen();
+    }
+  };
+
+  const desactivarColorProducto = async (datos: any) => {
+    try {
+      setProcesando(true);
+      const color: any = await desactivarColorProductoHttp(datos);
+      setColores((prevColores: any[]) => {
+        return prevColores.map((c) => {
+          if (c.id === color.id) {
+            return {
+              ...c,
+              status: color.status,
+            };
+          }
+          return c;
+        });
+      });
+      setMensajeAlert(intl.formatMessage({ id: "color_desactivado_correctamente" }));
+      handleisAlertOpen();
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "color_desactivado_error" }));
+      handleisAlertOpen();
+    }
+  };
+  const activarColorProducto = async (datos: any) => {
+    try {
+      setProcesando(true);
+      const color: any = await activarColorProductoHttp(datos);
+      setColores((prevColores: any[]) => {
+        return prevColores.map((c) => {
+          if (c.id === color.id) {
+            return {
+              ...c,
+              status: color.status,
+            };
+          }
+          return c;
+        });
+      });
+      setMensajeAlert(intl.formatMessage({ id: "color_activado_correctamente" }));
+      handleisAlertOpen();
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "color_activado_error" }));
+      handleisAlertOpen();
+    }
+  };
+  //tallas
+  //colores y tallas
+  const getProductoTallaPorId = useCallback(async (datos: any) => {
+    try {
+      setProcesando(true);
+      const tallas = await getProductoTallaPorIdHttp(datos);
+      setTallas(tallas);
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+      handleisAlertOpen();
+    }
+  }, []);
+  const crearEditarTallaProducto = async (datos: any) => {
+    try {
+      setProcesandoTalla(true);
+      const response: any = await crearEditarTallaProductoHttp(datos);
+      const tallaData = response?.data;
+
+      const esEdicion = !!datos?.id_talla;
+
+      console.log("response completo:", response);
+
+      if (esEdicion) {
+        setTallas((prevTallas: any[]) =>
+          prevTallas.map((t) =>
+            t.id === tallaData?.id
+              ? { ...t, color: tallaData?.color, status: tallaData?.status }
+              : t
+          )
+        );
+      } else if (tallaData) {
+        setTallas((prevTallas: any[]) => [...prevTallas, tallaData]);
+      }
+
+      const datosRefresh = {
+        id_producto: tallaData?.id_producto ?? datos?.id_producto_dirac,
+      };
+      await getProductoTallaPorId(datosRefresh);
+
+      setMensajeAlert(
+        esEdicion ? "Talla actualizada exitosamente." : "Talla registrada exitosamente."
+      );
+      formikTalla.resetForm();
+      if (esEdicion) {
+        handleisAlertCloseEditarTalla();
+      }
+      handleisAlertOpen();
+      setProcesandoTalla(false);
+    } catch (error) {
+      setProcesandoTalla(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(
+        message
+          ? message
+          : !!datos?.id_tall
+          ? intl.formatMessage({ id: "error_editar_talla" })
+          : intl.formatMessage({ id: "error_crear_talla" })
+      );
+      handleisAlertOpen();
+    }
+  };
+
+  const desactivarTallaProducto = async (datos: any) => {
+    try {
+      setProcesando(true);
+      const color: any = await desactivarTallaProductoHttp(datos);
+      setTallas((prevTallas: any[]) => {
+        return prevTallas.map((c) => {
+          if (c.id === color.id) {
+            return {
+              ...c,
+              status: color.status,
+            };
+          }
+          return c;
+        });
+      });
+      setMensajeAlert(intl.formatMessage({ id: "talla_desactivada_correctamente" }));
+      handleisAlertOpen();
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "talla_desactivada_error" }));
+      handleisAlertOpen();
+    }
+  };
+  const activarTallaProducto = async (datos: any) => {
+    try {
+      setProcesando(true);
+      const talla: any = await activarTallaProductoHttp(datos);
+      setTallas((prevTallas: any[]) => {
+        return prevTallas.map((t) => {
+          if (t.id === talla.id) {
+            return {
+              ...t,
+              status: talla.status,
+            };
+          }
+          return t;
+        });
+      });
+      setMensajeAlert(intl.formatMessage({ id: "talla_activada_correctamente" }));
+      handleisAlertOpen();
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "talla_activada_error" }));
+      handleisAlertOpen();
+    }
+  };
+  //fotos del producto
+  const subirFotosProducto = async (data: FormData) => {
+    try {
+      setProcesandoFotosProducto(true);
+      const resultado = await subirFotosProductoHttp(data);
+      if (resultado && Array.isArray(resultado)) {
+        setFotos(resultado);
+      }
+      setMensajeAlert(intl.formatMessage({ id: "http_exito_fotos_subidas" }));
+      handleisAlertOpen();
+      setProcesandoFotosProducto(false);
+    } catch (error) {
+      setProcesandoFotosProducto(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "fotos_subidas_error" }));
+      handleisAlertOpen();
+    }
+  };
+  const getProductoFotoPorId = useCallback(async (datos: any) => {
+    try {
+      setProcesando(true);
+      const fotos = await getProductoFotoPorIdHttp(datos);
+      setFotos(fotos);
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+      handleisAlertOpen();
+    }
+  }, []);
+  const desactivarFotosProducto = async (datos: any) => {
+    try {
+      setProcesando(true);
+      const fotos: any = await desactivarFotosProductoHttp(datos);
+      setFotos((prevFotos: any[]) => {
+        return prevFotos.map((f) => {
+          if (f.id === fotos.id) {
+            return {
+              ...f,
+              status: fotos.status,
+            };
+          }
+          return f;
+        });
+      });
+      setMensajeAlert(intl.formatMessage({ id: "foto_desactivada_correctamente" }));
+      handleisAlertOpen();
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "foto_desactivada_error" }));
+      handleisAlertOpen();
+    }
+  };
+  const activarFotosProducto = async (datos: any) => {
+    try {
+      setProcesando(true);
+      const fotos: any = await activarFotosProductoHttp(datos);
+      setFotos((prevFotos: any[]) => {
+        return prevFotos.map((f) => {
+          if (f.id === fotos.id) {
+            return {
+              ...f,
+              status: fotos.status,
+            };
+          }
+          return f;
+        });
+      });
+      setMensajeAlert(intl.formatMessage({ id: "foto_activada_correctamente" }));
+      handleisAlertOpen();
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "foto_activada_error" }));
+      handleisAlertOpen();
+    }
+  };
+  //fotos promo del producto
+  const subirFotosPromoProducto = async (data: FormData) => {
+    try {
+      setProcesandoFotosPromoProducto(true);
+      const resultado = await subirFotosPromoProductoHttp(data);
+      if (resultado && Array.isArray(resultado)) {
+        setFotosPromo(resultado);
+      }
+      setMensajeAlert(intl.formatMessage({ id: "http_exito_fotos_subidas" }));
+      handleisAlertOpen();
+      setProcesandoFotosPromoProducto(false);
+    } catch (error) {
+      setProcesandoFotosPromoProducto(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "fotos_subidas_error" }));
+      handleisAlertOpen();
+    }
+  };
+  const getProductoFotoPromoPorId = useCallback(async (datos: any) => {
+    try {
+      setProcesando(true);
+      const fotos = await getProductoFotoPromoPorIdHttp(datos);
+      setFotosPromo(fotos);
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+      handleisAlertOpen();
+    }
+  }, []);
+
+  const desactivarFotosPromoProducto = async (datos: any) => {
+    try {
+      setProcesando(true);
+      const fotos: any = await desactivarFotosPromoProductoHttp(datos);
+      setFotosPromo((prevFotos: any[]) => {
+        return prevFotos.map((f) => {
+          if (f.id === fotos.id) {
+            return {
+              ...f,
+              status: fotos.status,
+            };
+          }
+          return f;
+        });
+      });
+      setMensajeAlert(intl.formatMessage({ id: "foto_desactivada_correctamente" }));
+      handleisAlertOpen();
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "foto_desactivada_error" }));
+      handleisAlertOpen();
+    }
+  };
+  const activarFotosPromoProducto = async (datos: any) => {
+    try {
+      setProcesando(true);
+      const fotos: any = await activarFotosPromoProductoHttp(datos);
+      setFotosPromo((prevFotos: any[]) => {
+        return prevFotos.map((f) => {
+          if (f.id === fotos.id) {
+            return {
+              ...f,
+              status: fotos.status,
+            };
+          }
+          return f;
+        });
+      });
+      setMensajeAlert(intl.formatMessage({ id: "foto_activada_correctamente" }));
+      handleisAlertOpen();
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "foto_activada_error" }));
+      handleisAlertOpen();
+    }
+  };
+  //montos para digital
+  const getProductoMontoPorId = useCallback(async (datos: any) => {
+    try {
+      setProcesando(true);
+      const montos = await getProductoMontoPorIdHttp(datos);
+      setMontos(montos);
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+      handleisAlertOpen();
+    }
+  }, []);
+  const crearEditarMontoProducto = async (datos: any) => {
+    try {
+      setProcesandoMonto(true);
+      const response: any = await crearEditarMontoProductoHttp(datos);
+      const montoData = response?.data;
+
+      const esEdicion = !!datos?.id_monto;
+
+      if (esEdicion) {
+        setMontos((prevMontos: any[]) =>
+          prevMontos.map((t) =>
+            t.id === montoData?.id
+              ? {
+                  ...t,
+                  monto: montoData?.monto,
+                  puntos: montoData?.puntos,
+                  descripcion: montoData?.descripcion,
+                  status: montoData?.status,
+                }
+              : t
+          )
+        );
+      } else if (montoData) {
+        setMontos((prevMontos: any[]) => [...prevMontos, montoData]);
+      }
+
+      const datosRefresh = {
+        id_producto: montoData?.id_producto ?? datos?.id_producto_dirac,
+      };
+      await getProductoMontoPorId(datosRefresh);
+
+      setMensajeAlert(
+        esEdicion ? "Monto actualizado exitosamente." : "Monto registrado exitosamente."
+      );
+      formikMonto.resetForm();
+      if (esEdicion) {
+        handleisAlertCloseEditarMonto();
+      }
+      handleisAlertOpen();
+      setProcesandoMonto(false);
+    } catch (error) {
+      setProcesandoMonto(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(
+        message
+          ? message
+          : !!datos?.id_monto
+          ? intl.formatMessage({ id: "error_editar_monto" })
+          : intl.formatMessage({ id: "error_crear_monto" })
+      );
+      handleisAlertOpen();
+    }
+  };
+
+  const desactivarMontoProducto = async (datos: any) => {
+    try {
+      setProcesando(true);
+      const monto: any = await desactivarMontoProductoHttp(datos);
+      setMontos((prevMontos: any[]) => {
+        return prevMontos.map((c) => {
+          if (c.id === monto.id) {
+            return {
+              ...c,
+              status: monto.status,
+            };
+          }
+          return c;
+        });
+      });
+      setMensajeAlert(intl.formatMessage({ id: "monto_desactivado_correctamente" }));
+      handleisAlertOpen();
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "monto_desactivado_error" }));
+      handleisAlertOpen();
+    }
+  };
+  const activarMontoProducto = async (datos: any) => {
+    try {
+      setProcesando(true);
+      const monto: any = await activarMontoProductoHttp(datos);
+      setMontos((prevMontos: any[]) => {
+        return prevMontos.map((t) => {
+          if (t.id === monto.id) {
+            return {
+              ...t,
+              status: monto.status,
+            };
+          }
+          return t;
+        });
+      });
+      setMensajeAlert(intl.formatMessage({ id: "monto_activado_correctamente" }));
+      handleisAlertOpen();
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "monto_activado_error" }));
+      handleisAlertOpen();
+    }
+  };
+  //foto de monto digital
+  const subirFotoMonto = async (data: FormData) => {
+    try {
+      setProcesandoFotoMonto(true);
+      const resultado = await subirFotoMontoHttp(data);
+      setFotoMonto(Array.isArray(resultado) ? resultado : [resultado]);
+      setMensajeAlert(intl.formatMessage({ id: "http_exito_foto_subida" }));
+      handleisAlertOpen();
+      setProcesandoFotoMonto(false);
+    } catch (error) {
+      setProcesandoFotoMonto(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "foto_subida_error" }));
+      handleisAlertOpen();
+    }
+  };
+  const getFotoMontoPorId = useCallback(async (datos: any) => {
+    try {
+      setProcesando(true);
+      const fotos = await getFotoMontoPorIdHttp(datos);
+      setFotoMonto(fotos);
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+      handleisAlertOpen();
+    }
+  }, []);
+
+  const desactivarFotoMonto = async (datos: any) => {
+    try {
+      setProcesando(true);
+      const fotos: any = await desactivarFotoMontoHttp(datos);
+      setFotoMonto((prevFotoMonto: any[]) => {
+        return prevFotoMonto.map((f) => {
+          if (f.id === fotos.id) {
+            return {
+              ...f,
+              status: fotos.status,
+            };
+          }
+          return f;
+        });
+      });
+      setMensajeAlert(intl.formatMessage({ id: "foto_desactivada_correctamente" }));
+      handleisAlertOpen();
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "foto_desactivada_error" }));
+      handleisAlertOpen();
+    }
+  };
+  const activarFotoMonto = async (datos: any) => {
+    try {
+      setProcesando(true);
+      const fotos: any = await activarFotoMontoHttp(datos);
+      setFotoMonto((prevFotoMonto: any[]) => {
+        return prevFotoMonto.map((f) => {
+          if (f.id === fotos.id) {
+            return {
+              ...f,
+              status: fotos.status,
+            };
+          }
+          return f;
+        });
+      });
+      setMensajeAlert(intl.formatMessage({ id: "foto_activada_correctamente" }));
+      handleisAlertOpen();
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "foto_activada_error" }));
+      handleisAlertOpen();
+    }
+  };
+
+  useEffect(() => {
+    if (verEditarColor) {
+      setEditaColor(verEditarColor.color || "");
+    }
+  }, [verEditarColor]);
+
+  useEffect(() => {
+    if (verEditarTalla) {
+      setEditaTalla(verEditarTalla.talla || "");
+    }
+  }, [verEditarTalla]);
+
+  useEffect(() => {
+    if (verEditarMonto) {
+      setEditaMonto(verEditarMonto.monto || "");
+      setEditaPuntos(verEditarMonto.puntos || 0);
+      setEditaDescripcion(verEditarMonto.descripcion || "");
+    }
+  }, [verEditarMonto]);
+
   return {
     busquedaInteligenteBrimagy,
     verProducto,
@@ -1385,6 +2081,8 @@ export const useListaProductos = (tipoUsuario: number) => {
     setSkuEditar,
     colorEditar,
     setColorEditar,
+    tallaEditar,
+    setTallaEditar,
     idProveedorEditar,
     setIdProveedorEditar,
     idCatalogoEditar,
@@ -1476,5 +2174,113 @@ export const useListaProductos = (tipoUsuario: number) => {
     anchorEl,
     setAnchorEl,
     colorHex,
+    //edicion con brimagy
+    valueTab,
+    setValueTab,
+    handleChangeTab,
+    //colores
+    crearEditarColorProducto,
+    getProductoColorPorId,
+    formikColor,
+    colores,
+    setVerEditarColor,
+    verEditarColor,
+    isAlertOpenEditarColor,
+    handleisAlertOpenEditarColor,
+    handleisAlertCloseEditarColor,
+    procesandoColor,
+    setEditaColor,
+    editaColor,
+    desactivarColorProducto,
+    activarColorProducto,
+    //tallas
+    crearEditarTallaProducto,
+    getProductoTallaPorId,
+    formikTalla,
+    tallas,
+    setVerEditarTalla,
+    verEditarTalla,
+    isAlertOpenEditarTalla,
+    handleisAlertOpenEditarTalla,
+    handleisAlertCloseEditarTalla,
+    procesandoTalla,
+    setEditaTalla,
+    editaTalla,
+    desactivarTallaProducto,
+    activarTallaProducto,
+    //fotos del producto
+    procesandoFotosProducto,
+    fotosProductoFiles,
+    setFotosProductoFiles,
+    isModalFotosProducto,
+    handleOpenFotosProducto,
+    handleCloseFotosProducto,
+    isModalVistaFotosProducto,
+    fotosProductoSeleccionada,
+    handleOpenVistaFotosProducto,
+    handleCloseVistaFotosProducto,
+    subirFotosProducto,
+    getProductoFotoPorId,
+    fotos,
+    desactivarFotosProducto,
+    activarFotosProducto,
+    //fotos promo
+    procesandoFotosPromoProducto,
+    fotosPromoProductoFiles,
+    setFotosPromoProductoFiles,
+    isModalFotosPromoProducto,
+    handleOpenFotosPromoProducto,
+    handleCloseFotosPromoProducto,
+    isModalVistaFotosPromoProducto,
+    fotosPromoProductoSeleccionada,
+    handleOpenVistaFotosPromoProducto,
+    handleCloseVistaFotosPromoProducto,
+    subirFotosPromoProducto,
+    getProductoFotoPromoPorId,
+    fotosPromo,
+    desactivarFotosPromoProducto,
+    activarFotosPromoProducto,
+    //foto principal del producto
+    fotoProductoPrincipalFile,
+    setFotoProductoPrincipalFile,
+    previewFoto,
+    setPreviewFoto,
+    handleChangeFotoProductoPrincipal,
+    fotoEditar,
+    //montos digital
+    crearEditarMontoProducto,
+    getProductoMontoPorId,
+    formikMonto,
+    montos,
+    setVerEditarMonto,
+    verEditarMonto,
+    isAlertOpenEditarMonto,
+    handleisAlertOpenEditarMonto,
+    handleisAlertCloseEditarMonto,
+    procesandoMonto,
+    setEditaMonto,
+    editaMonto,
+    editaPuntos,
+    setEditaPuntos,
+    editaDescripcion,
+    setEditaDescripcion,
+    desactivarMontoProducto,
+    activarMontoProducto,
+    //fotos del monto
+    procesandoFotoMonto,
+    fotoMontoFiles,
+    setFotoMontoFiles,
+    isModalFotoMonto,
+    handleOpenFotoMonto,
+    handleCloseFotoMonto,
+    isModalVistaFotoMonto,
+    fotoMontoSeleccionada,
+    handleOpenVistaFotoMonto,
+    handleCloseVistaFotoMonto,
+    subirFotoMonto,
+    getFotoMontoPorId,
+    fotoMonto,
+    desactivarFotoMonto,
+    activarFotoMonto,
   };
 };

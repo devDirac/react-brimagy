@@ -129,6 +129,7 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
   const [isAlertOpenProductosTecnologicos, setIsAlertOpenProductosTecnologicos] = useState(false);
   const handleisAlertOpenProductosTecnologicos = () => setIsAlertOpenProductosTecnologicos(true);
   const handleisAlerCloseProductosTecnologicos = () => setIsAlertOpenProductosTecnologicos(false);
+  const [accionProducto, setAccionProducto] = useState(true);
 
   useEffect(() => {
     setAuth(token);
@@ -203,6 +204,19 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     return isFieldValid(fieldName) ? "#00AB16" : undefined;
   };
 
+  const isFieldValidCantidad = (fieldName: keyof typeof formikCantidad.values) => {
+    return (
+      formikCantidad.touched[fieldName] &&
+      !formikCantidad.errors[fieldName] &&
+      formikCantidad.values[fieldName] &&
+      formikCantidad.values[fieldName] !== ""
+    );
+  };
+
+  const getFieldColorCantidad = (fieldName: keyof typeof formikCantidad.values) => {
+    return isFieldValidCantidad(fieldName) ? "#00AB16" : undefined;
+  };
+
   // Debounce para evitar muchas peticiones
   const handleBuscadorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -263,11 +277,17 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     try {
       setProcesandoRecibirProducto(true);
       const recibirProducto: any = await recibirProductoAlmacenHttp(datos);
-      setVerProducto((prevProducto: any) => ({
+      /*setVerProducto((prevProducto: any) => ({
         ...prevProducto,
         estatus: recibirProducto?.estatus,
         cantidad_almacen: recibirProducto?.cantidad_recibida,
-      }));
+      }));*/
+
+      const datosRefresh = {
+        id_orden_compra: verProducto?.id_orden_compra,
+        id_producto_almacen: verProducto?.id_producto_almacen,
+      };
+      await getProductoAlmacenPorId(datosRefresh);
 
       setMensajeAlert(
         `${intl.formatMessage({ id: "exito_recibir_producto" })}. ${
@@ -276,7 +296,9 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
             : `Pendiente: ${recibirProducto.cantidad_pendiente} unidades.`
         }`
       );
+      formikCantidad.resetForm();
       setCantidadProducto("");
+      handleisAlertCloseCantidad();
       handleisAlertOpen();
       setProcesandoRecibirProducto(false);
     } catch (error) {
@@ -419,13 +441,16 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
 
     if (isNaN(value) || value < 0) {
       setCantidadProducto("");
+      formikCantidad.setFieldValue("cantidadProducto", "");
       return;
     }
     if (value > cantidadMaximaPermitida) {
       setCantidadProducto(cantidadMaximaPermitida.toString());
+      formikCantidad.setFieldValue("cantidadProducto", cantidadMaximaPermitida);
       return;
     }
     setCantidadProducto(value.toString());
+    formikCantidad.setFieldValue("cantidadProducto", value);
   };
 
   const getProveedores = useCallback(async () => {
@@ -502,6 +527,60 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       setMensajeAlert(message || intl.formatMessage({ id: "datos_registrados_error" }));
       handleisAlertOpen();
     }
+  };
+
+  const validationSchemaCantidad = useMemo(
+    () =>
+      Yup.object({
+        cantidadProducto: accionProducto
+          ? Yup.number()
+              .required(intl.formatMessage({ id: "input_validation_requerido" }))
+              .min(1, intl.formatMessage({ id: "input_validation_minimo" }, { min: 1 }))
+              .max(cantidadMaximaPermitida, `Máximo: ${cantidadMaximaPermitida} unidades`)
+          : Yup.number().notRequired(),
+        id_proveedor:
+          accionProducto && !verProducto?.nombre_proveedor
+            ? Yup.number().required(intl.formatMessage({ id: "input_validation_requerido" }))
+            : !accionProducto
+            ? Yup.number().required(intl.formatMessage({ id: "input_validation_requerido" }))
+            : Yup.number().notRequired(),
+        precio_compra: !accionProducto
+          ? Yup.number().required(intl.formatMessage({ id: "input_validation_requerido" }))
+          : Yup.number().notRequired(),
+        imei: Yup.string().notRequired(),
+        no_serie: Yup.string().notRequired(),
+        comentarios: Yup.string().notRequired(),
+      }),
+    [accionProducto, cantidadMaximaPermitida, verProducto?.id_proveedor]
+  );
+
+  const formikCantidad = useFormik({
+    initialValues: {
+      cantidadProducto: "",
+      id_proveedor: "",
+      precio_compra: "",
+      imei: "",
+      no_serie: "",
+      comentarios: "",
+    },
+    validationSchema: validationSchemaCantidad,
+    onSubmit: async (values) => {
+      console.log("Formulario enviado:", values);
+    },
+  });
+
+  const handleAccionProducto = (checked: boolean) => {
+    setAccionProducto(checked);
+    formikCantidad.resetForm({
+      values: {
+        cantidadProducto: "",
+        id_proveedor: "",
+        precio_compra: "",
+        imei: "",
+        no_serie: "",
+        comentarios: "",
+      },
+    });
   };
 
   useEffect(() => {
@@ -616,5 +695,10 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     handleisAlertOpenProductosTecnologicos,
     handleisAlerCloseProductosTecnologicos,
     registrarImeiNoSerie,
+    //precios individuales
+    formikCantidad,
+    getFieldColorCantidad,
+    handleAccionProducto,
+    accionProducto,
   };
 };

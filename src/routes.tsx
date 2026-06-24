@@ -137,10 +137,18 @@ const routes = [
     allow: [1, 2, 3, 4, 5, 6],
     collapse: [
       {
-        name: "Catálogo de Canjes",
-        key: "catalogo-canjes",
+        name: "Canjes fisicos",
+        key: "canjes-fisicos",
         icon: "ShoppingBagIcon",
-        route: "/catalogo-canjes",
+        route: "/canjes-fisicos",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6],
+      },
+      {
+        name: "Canjes Digitales",
+        key: "canjes-digitales",
+        icon: "ShoppingBagIcon",
+        route: "/canjes-digitales",
         component: null,
         allow: [1, 2, 3, 4, 5, 6],
       },

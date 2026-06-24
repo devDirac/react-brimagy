@@ -23,7 +23,7 @@ import {
 } from "@mui/material";
 import { useSelector } from "react-redux";
 import { StoreType } from "../types/genericTypes";
-import logo from "assets/images/profile_icon.png";
+import logo from "assets/images/logo_puntotes_2026.png";
 import { useValidarIdentidad } from "./customHooksPages/useValidarIdentidad";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -125,152 +125,139 @@ function ValidarIdentidad(): JSX.Element {
     return estadosValidacionMap[estadoUpper] || estadoUpper;
   };
 
+  const calle = canje?.calle ?? "";
+  const numero_calle = canje?.numero_calle ?? "";
+  const colony = canje?.colony ?? "";
+  const municipio = canje?.municipio ?? "";
+  const codigo_postal = canje?.codigo_postal ?? "";
+
+  const direccion_completa = `${calle} ${numero_calle}, ${colony} ${municipio}, ${codigo_postal}`;
+
   return (
-    <DashboardLayout withSidebar={false}>
-      <MDBox py={0} mb={0}>
-        <Grid container spacing={3} justifyContent="center" alignItems="center">
-          <Grid item xs={12} md={10} lg={9}>
-            <Card>
-              <CardContent sx={{ p: 4 }}>
-                {canje ? (
-                  <Box sx={{ textAlign: "center", mb: 3 }}>
-                    <VerifiedIcon sx={{ fontSize: 60, color: green[500], mb: 2 }} />
-                    <Typography variant="h4" gutterBottom>
-                      VALIDACIÓN DE IDENTIDAD
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Hola <b style={{ color: "#A5EB2F" }}>{canje.nombre_usuario}</b>, a
-                      continuación se muestran los detalles de tu canje, da click en el botón para
-                      enviarte un código y cólocalo en las casillas para verificar tu identidad
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Box sx={{ textAlign: "center", mb: 3 }}>
-                    <GppBadIcon sx={{ fontSize: 80, color: red[500], mb: 2 }} />
-                    <Typography variant="h4" gutterBottom>
-                      Canje no existente
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Por favor introduce un código de canje válido
-                    </Typography>
-                  </Box>
-                )}
-                {canje && !verificado && (
-                  <Grid
-                    item
-                    xs={12}
-                    md={12}
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    flexDirection="column"
-                  >
-                    <Box>
-                      {!codigoVerificacion ? (
-                        <Button
-                          sx={{
-                            color: "#2f2f2f",
-                            background: "#3ec972",
-                            fontSize: "0.75rem",
-                            padding: "6px 8px",
-                            mt: 0,
-                            "&:hover": {
-                              background: "#2fb85e",
-                            },
-                          }}
-                          variant="contained"
-                          endIcon={<HttpsIcon />}
-                          //disabled={}
-                          onClick={(e: any) => {
-                            //setShowInput(true);
-                            solicitarCodigoValidacion(canje);
-                          }}
-                        >
-                          {procesandoCodigo ? (
-                            <>
-                              <Spinner
-                                as="span"
-                                animation="border"
-                                size="sm"
-                                role="status"
-                                aria-hidden="true"
-                              />
-                              Solicitando código...{" "}
-                            </>
-                          ) : (
-                            intl.formatMessage({ id: "solicitar_codigo_input" })
-                          )}
-                        </Button>
-                      ) : codigoVerificacion ? (
+    <Box sx={{ fontFamily: "Poppins !important" }}>
+      <MDBox p={0} m={0}>
+        <Grid container spacing={0} justifyContent="center" alignItems="center">
+          <Grid item xs={12} md={12} lg={12}>
+            <Box
+              sx={{
+                background:
+                  "linear-gradient(180deg,rgba(0, 181, 225, 1) 0%, rgba(0, 132, 171, 1) 100%);",
+              }}
+            >
+              <Grid container spacing={2}>
+                <Grid
+                  item
+                  xs={5}
+                  md={4}
+                  lg={3}
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <Box
+                    component="img"
+                    src={logo}
+                    alt="Puntotes"
+                    sx={{
+                      width: {
+                        xs: 120,
+                        sm: 150,
+                        md: 200,
+                        lg: 200,
+                        xl: 200,
+                      },
+                      padding: "15px 0",
+                      height: "auto",
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={2} md={4} lg={6}></Grid>
+                <Grid
+                  item
+                  xs={5}
+                  md={4}
+                  lg={3}
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <Typography variant="h4" gutterBottom sx={{ color: "#fff" }}>
+                    Hola, {canje && canje.nombre_usuario}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={12} lg={12}>
+            <Grid container spacing={0}>
+              <Card style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                <Grid item xs={11} md={9} lg={9}>
+                  <CardContent sx={{ p: 4 }}>
+                    {canje ? (
+                      <>
+                        {!codigoVerificacion && !verificado && (
+                          <Box sx={{ textAlign: "center", mb: 3 }}>
+                            <Typography variant="h4" gutterBottom sx={{ color: "#00506E" }}>
+                              Validación de Canje
+                            </Typography>
+                            <Typography variant="h6" sx={{ color: "#000" }}>
+                              Hemos identificado un canje asociado a tu cuenta. Si lo reconoces, por
+                              favor confírmalo haciendo clic en el botón para recibir tu código de
+                              verificación.
+                            </Typography>
+                          </Box>
+                        )}
+                        {verificado && (
+                          <Box sx={{ textAlign: "center", mb: 3 }}>
+                            <Typography variant="h4" gutterBottom sx={{ color: "#00506E" }}>
+                              ¡Felicidades!
+                            </Typography>
+                            <Typography variant="h6" sx={{ color: "#000" }}>
+                              Tu canje se ha procesado correctamente <br />
+                              El tiempo estimado de entrega es de 30 días naturales a partir de la
+                              fecha en que realizaste tu canje. <br />
+                              <br />
+                              Cualquier duda o pregunta contáctanos en atencion@puntotes.com.mx
+                            </Typography>
+                          </Box>
+                        )}
+                      </>
+                    ) : (
+                      <Box sx={{ textAlign: "center", mb: 3 }}>
+                        <Typography variant="h4" gutterBottom sx={{ color: "#00506E" }}>
+                          Canje no existente
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: "#000" }}>
+                          Por favor introduce un código de canje válido
+                        </Typography>
+                      </Box>
+                    )}
+                    {canje && !verificado && (
+                      <Grid
+                        item
+                        xs={12}
+                        md={12}
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        flexDirection="column"
+                      >
                         <Box>
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            display="flex"
-                            justifyContent="center"
-                            alignItems="center"
-                            flexDirection="column"
-                          >
-                            Ingresar código de validación
-                          </Typography>
-                          <Stack direction="row" spacing={1} mb={1}>
-                            {otp.map((digit, index) => (
-                              <TextField
-                                key={index}
-                                value={digit}
-                                onChange={(e) => handleChange(index, e.target.value)}
-                                inputRef={(el) => (inputRefs.current[index] = el)}
-                                inputProps={{
-                                  maxLength: 1,
-                                  style: {
-                                    textAlign: "center",
-                                    fontSize: "14px",
-                                    fontWeight: 600,
-                                  },
-                                }}
-                                sx={{ width: { xs: 30, sm: 40 } }}
-                                autoFocus={index === 0}
-                              />
-                            ))}
-                          </Stack>
-                          <Stack direction="row" spacing={1} justifyContent="center">
+                          {!codigoVerificacion ? (
                             <Button
                               sx={{
-                                color: "#2f2f2f",
-                                background: "#3ec972",
+                                color: "#fff",
+                                background: "#00506E",
                                 fontSize: "0.75rem",
-                                padding: "6px 8px",
-                                mt: 2,
-                                "&:hover": {
-                                  background: "#2fb85e",
-                                },
-                              }}
-                              variant="contained"
-                              size="small"
-                              onClick={(e: any) => {
-                                handleVerify(canje.id);
-                              }}
-                              disabled={otp.some((d) => !d)}
-                            >
-                              Verificar
-                            </Button>
-                            <Button
-                              sx={{
-                                color: "#2f2f2f",
-                                background: "#ffffbf",
-                                fontSize: "0.75rem",
-                                padding: "6px 8px",
+                                padding: "10px 20px",
+                                borderRadius: "30px",
                                 mt: 0,
                                 "&:hover": {
-                                  background: "#f0f075",
+                                  background: "#0a6b8f",
                                 },
                               }}
                               variant="contained"
-                              endIcon={<Forward10Icon />}
-                              //disabled={}
                               onClick={(e: any) => {
-                                //setShowInput(true);
-                                setOtp(["", "", "", "", "", ""]);
                                 solicitarCodigoValidacion(canje);
                               }}
                             >
@@ -283,333 +270,269 @@ function ValidarIdentidad(): JSX.Element {
                                     role="status"
                                     aria-hidden="true"
                                   />
-                                  Reenviando código...{" "}
+                                  Solicitando código...{" "}
                                 </>
                               ) : (
-                                intl.formatMessage({ id: "reenviar_codigo_verificacion" })
+                                intl.formatMessage({ id: "solicitar_codigo_input" })
                               )}
                             </Button>
-                            {/*<Button
+                          ) : codigoVerificacion ? (
+                            <Box>
+                              <Typography
+                                variant="h6"
+                                gutterBottom
+                                sx={{ textAlign: "center", color: "#00506E" }}
+                              >
+                                Ingresa tu código de Verificación
+                              </Typography>
+                              <Stack direction="row" spacing={1} mb={1} mt={1}>
+                                {otp.map((digit, index) => (
+                                  <TextField
+                                    key={index}
+                                    value={digit}
+                                    onChange={(e) => handleChange(index, e.target.value)}
+                                    inputRef={(el) => (inputRefs.current[index] = el)}
+                                    inputProps={{
+                                      maxLength: 1,
+                                      style: {
+                                        textAlign: "center",
+                                        fontSize: "14px",
+                                        fontWeight: 600,
+                                      },
+                                    }}
+                                    sx={{
+                                      width: { xs: 50, sm: 50 },
+                                      "& .MuiOutlinedInput-root": {
+                                        width: 50,
+                                        height: 40,
+                                        borderRadius: "20px",
+                                        "& fieldset": {
+                                          border: "5px solid #00506E",
+                                          borderRadius: "20px",
+                                        },
+                                        "&:hover fieldset": {
+                                          border: "5px solid #00506E",
+                                        },
+                                        "&.Mui-focused fieldset": {
+                                          border: "5px solid #00506E",
+                                        },
+                                      },
+                                    }}
+                                    autoFocus={index === 0}
+                                  />
+                                ))}
+                              </Stack>
+                              <Stack direction="row" spacing={1} justifyContent="center">
+                                <Button
+                                  sx={{
+                                    color: "#fff",
+                                    background: "#00506E",
+                                    fontSize: "0.75rem",
+                                    padding: "10px 20px",
+                                    borderRadius: "30px",
+                                    mt: 2,
+                                    "&:hover": {
+                                      background: "#0e749a",
+                                    },
+                                  }}
+                                  variant="contained"
                                   size="small"
-                                  onClick={() => {
-                                    setShowInput(false);
+                                  onClick={(e: any) => {
+                                    handleVerify(canje.id);
+                                  }}
+                                  disabled={otp.some((d) => !d)}
+                                >
+                                  Verificar
+                                </Button>
+                                <Button
+                                  sx={{
+                                    color: "#fff",
+                                    background: "#bdcdd1",
+                                    padding: "10px 20px",
+                                    borderRadius: "30px",
+                                    mt: 0,
+                                    "&:hover": {
+                                      background: "#a5bcc2",
+                                    },
+                                  }}
+                                  variant="contained"
+                                  endIcon={<Forward10Icon />}
+                                  onClick={(e: any) => {
                                     setOtp(["", "", "", "", "", ""]);
+                                    solicitarCodigoValidacion(canje);
                                   }}
                                 >
-                                  Cancelar
-                                </Button>*/}
-                          </Stack>
-                        </Box>
-                      ) : null}
-                    </Box>
-                  </Grid>
-                )}
-
-                <Divider sx={{ my: 3 }} />
-
-                {/* Información del Canje */}
-                {canje && (
-                  <Paper elevation={2} sx={{ mt: 3, p: 3 }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        mb: 2,
-                      }}
-                    >
-                      <Typography variant="h5" color={"#eb2fa5"}>
-                        Datos de mi canje
-                      </Typography>
-                    </Box>
-
-                    <Divider sx={{ my: 2 }} />
-
-                    <Grid container spacing={2}>
-                      <Grid
-                        item
-                        xs={12}
-                        md={4}
-                        display="flex"
-                        justifyContent="center"
-                        alignItems="center"
-                        flexDirection="column"
-                      >
-                        <Typography variant="caption" color="text.secondary">
-                          Folio
-                        </Typography>
-                        <Typography variant="body1" fontWeight="bold">
-                          {canje.folio}
-                        </Typography>
-                      </Grid>
-                      <Grid
-                        item
-                        xs={12}
-                        md={4}
-                        display="flex"
-                        justifyContent="center"
-                        alignItems="center"
-                        flexDirection="column"
-                      >
-                        <Typography variant="caption" color="text.secondary">
-                          Estado de validación
-                        </Typography>
-                        <Box>
-                          <Chip
-                            label={traducirEstadoValidacion(canje.estado_validacion?.toUpperCase())}
-                            color={getEstadoColor(canje.estado_validacion)}
-                            size="small"
-                          />
+                                  {procesandoCodigo ? (
+                                    <>
+                                      <Spinner
+                                        as="span"
+                                        animation="border"
+                                        size="sm"
+                                        role="status"
+                                        aria-hidden="true"
+                                      />
+                                      Reenviando código...{" "}
+                                    </>
+                                  ) : (
+                                    intl.formatMessage({ id: "reenviar_codigo_verificacion" })
+                                  )}
+                                </Button>
+                              </Stack>
+                            </Box>
+                          ) : null}
                         </Box>
                       </Grid>
-                      <Grid
-                        item
-                        xs={12}
-                        md={4}
-                        display="flex"
-                        justifyContent="center"
-                        alignItems="center"
-                        flexDirection="column"
-                      >
-                        <Typography variant="caption" color="text.secondary">
-                          Estatus del canje
-                        </Typography>
-                        <Box>
-                          <Chip
-                            label={traducirEstadoCanje(canje.estado_canje?.toUpperCase())}
-                            color={getEstadoCanjeColor(canje.estado_canje)}
-                            size="small"
-                          />
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Divider />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Typography variant="h5" color={"#eb2fa5"}>
-                            Mis datos
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Divider />
-                      </Grid>
+                    )}
 
-                      <Grid item xs={12} md={6}>
-                        <Typography variant="caption" color="text.secondary">
-                          Cliente
-                        </Typography>
-                        <Typography variant="body2">{canje.nombre_usuario}</Typography>
-                      </Grid>
-
-                      <Grid item xs={12} md={6}>
-                        <Typography variant="caption" color="text.secondary">
-                          Correo
-                        </Typography>
-                        <Typography variant="body2">{canje.email}</Typography>
-                      </Grid>
-
-                      <Grid item xs={12} md={6}>
-                        <Typography variant="caption" color="text.secondary">
-                          Teléfono
-                        </Typography>
-                        <Typography variant="body2">{canje.phone}</Typography>
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <Divider />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Typography variant="h5" color={"#eb2fa5"}>
-                            Datos del premio
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Divider />
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <Typography variant="caption" color="text.secondary">
-                          Premio
-                        </Typography>
-                        <Typography variant="body2">{canje.nombre_premio}</Typography>
-                      </Grid>
-
-                      <Grid item xs={6} md={3}>
-                        <Typography variant="caption" color="text.secondary">
-                          Tamaño
-                        </Typography>
-                        <Typography variant="body2">{canje.size}</Typography>
-                      </Grid>
-                      <Grid item xs={6} md={3}>
-                        <Typography variant="caption" color="text.secondary">
-                          Color
-                        </Typography>
-                        <Stack>
-                          <Tooltip title={canje.color}>
-                            <Box sx={{ bgcolor: canje.color, width: 60, height: 20 }} />
-                          </Tooltip>
-                        </Stack>
-                      </Grid>
-                      <Grid item xs={6} md={3}>
-                        <Typography variant="caption" color="text.secondary">
-                          Categoría
-                        </Typography>
-                        <Typography variant="body2">{canje.category}</Typography>
-                      </Grid>
-                      <Grid item xs={6} md={3}>
-                        <Typography variant="caption" color="text.secondary">
-                          SKU
-                        </Typography>
-                        <Typography variant="body2">{canje.sku}</Typography>
-                      </Grid>
-
-                      <Grid item xs={6} md={3}>
-                        <Typography variant="caption" color="text.secondary">
-                          SKU
-                        </Typography>
-                        <Typography variant="body2">{canje.sku}</Typography>
-                      </Grid>
-                      <Grid item xs={6} md={3}>
-                        <Typography variant="caption" color="text.secondary">
-                          Costo
-                        </Typography>
-                        <Typography variant="body2">
-                          {numericFormatter(canje.costo_premio + "", {
-                            thousandSeparator: ",",
-                            fixedDecimalScale: false,
-                            prefix: "",
-                          })}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={6} md={3}>
-                        <Typography variant="caption" color="text.secondary">
-                          Premios solicitados
-                        </Typography>
-                        <Typography variant="body2">{canje.number_of_awards}</Typography>
-                      </Grid>
-                      <Grid item xs={6} md={3}>
-                        <Typography variant="caption" color="text.secondary">
-                          Puntos Canjeados
-                        </Typography>
-                        <Typography variant="body2">
-                          {numericFormatter(canje.puntos_canjeados + "", {
-                            thousandSeparator: ",",
-                            fixedDecimalScale: false,
-                            prefix: "",
-                          })}
-                        </Typography>
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <Divider />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Typography variant="h5" color={"#eb2fa5"}>
-                            Dirección del envío
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Divider />
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <Typography variant="caption" color="text.secondary">
-                          Calle
-                        </Typography>
-                        <Typography variant="body2">{canje.calle}</Typography>
-                      </Grid>
-
-                      <Grid item xs={6} md={4}>
-                        <Typography variant="caption" color="text.secondary">
-                          Número exterior
-                        </Typography>
-                        <Typography variant="body2">{canje.numero_calle}</Typography>
-                      </Grid>
-                      <Grid item xs={6} md={4}>
-                        <Typography variant="caption" color="text.secondary">
-                          Número interior
-                        </Typography>
-                        <Typography variant="body2">{canje.numero_interior}</Typography>
-                      </Grid>
-                      <Grid item xs={6} md={4}>
-                        <Typography variant="caption" color="text.secondary">
-                          Colonia
-                        </Typography>
-                        <Typography variant="body2">{canje.colonia}</Typography>
-                      </Grid>
-                      <Grid item xs={6} md={4}>
-                        <Typography variant="caption" color="text.secondary">
-                          Municipio
-                        </Typography>
-                        <Typography variant="body2">{canje.municipio}</Typography>
-                      </Grid>
-                      <Grid item xs={6} md={4}>
-                        <Typography variant="caption" color="text.secondary">
-                          Código postal
-                        </Typography>
-                        <Typography variant="body2">{canje.codigo_postal}</Typography>
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Typography variant="h6" color={"#eb2fa5"}>
-                            Entre calles
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Divider />
-                      </Grid>
-
-                      <Grid item xs={12} md={6}>
-                        <Typography variant="caption" color="text.secondary">
-                          Calle 1
-                        </Typography>
-                        <Typography variant="body2">{canje.between_1}</Typography>
-                      </Grid>
-                      <Grid item xs={12} md={6}>
-                        <Typography variant="caption" color="text.secondary">
-                          Calle 2
-                        </Typography>
-                        <Typography variant="body2">{canje.between_2}</Typography>
-                      </Grid>
-
-                      {/* Información de la dirección de envío */}
+                    <Grid item xs={12} md={12}>
+                      <Divider
+                        sx={{
+                          my: 3,
+                          borderStyle: "dotted",
+                          borderColor: "#000",
+                          opacity: 1,
+                          mb: 0,
+                        }}
+                      />
                     </Grid>
-                  </Paper>
-                )}
-              </CardContent>
-            </Card>
+
+                    {/* Información del Canje */}
+                    {canje && (
+                      <Paper elevation={0} sx={{ mt: 1, p: 3 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            mb: 2,
+                          }}
+                        >
+                          <Typography variant="h4" gutterBottom sx={{ color: "#00506E" }}>
+                            Datos de tu canje
+                          </Typography>
+                        </Box>
+                        <Grid container spacing={1}>
+                          <Grid
+                            item
+                            xs={12}
+                            md={12}
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            flexDirection="column"
+                          >
+                            <Typography
+                              variant="caption"
+                              fontWeight="bold"
+                              fontSize="14px"
+                              sx={{ color: "#000" }}
+                            >
+                              Folio Canje
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              fontSize="14px"
+                              sx={{ color: "#00506E" }}
+                            >
+                              {canje.folio}
+                            </Typography>
+                          </Grid>
+                          <Grid
+                            item
+                            xs={12}
+                            md={12}
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            flexDirection="column"
+                          >
+                            <Typography
+                              variant="caption"
+                              fontWeight="bold"
+                              fontSize="14px"
+                              sx={{ color: "#000" }}
+                            >
+                              Premio seleccionado
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              fontSize="14px"
+                              sx={{ color: "#00506E" }}
+                            >
+                              {canje.nombre_premio}
+                            </Typography>
+                          </Grid>
+                          <Grid
+                            item
+                            xs={12}
+                            md={12}
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            flexDirection="column"
+                          >
+                            <Typography
+                              variant="caption"
+                              fontWeight="bold"
+                              fontSize="14px"
+                              sx={{ color: "#000" }}
+                            >
+                              Dirección de entrega
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              fontSize="14px"
+                              sx={{ color: "#00506E" }}
+                            >
+                              {direccion_completa}
+                            </Typography>
+                          </Grid>
+                          {/* Información de la dirección de envío */}
+                        </Grid>
+                      </Paper>
+                    )}
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} md={12} lg={12}>
+                        <Box
+                          sx={{
+                            background: "#00506E",
+                            padding: "20px 0",
+                            borderRadius: "16px",
+                          }}
+                          display="flex"
+                          justifyContent="center"
+                          alignItems="center"
+                          flexDirection="column"
+                        >
+                          <Typography variant="h5" sx={{ color: "#fff" }}>
+                            Atención a Cliente
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: "#fff" }}>
+                            Tienes dudas o comentarios, contáctanos:
+                          </Typography>
+                          <Typography variant="h6" sx={{ color: "#fff" }}>
+                            atencion@puntotes.com.mx
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: "#fff" }}>
+                            Atención de lunes a viernes de 9:00 a 7:00 pm horario CDMX
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} md={12} lg={12}>
+                        <Typography variant="body2" sx={{ textAlign: "center", fontSize: "14px" }}>
+                          © TODOS LOS DERECHOS RESERVADOS Controladora Mabe SA de CV Pase de las
+                          palmas 100, Col. Lomas de Chapultepec, Ciudad de México Código Postal
+                          11000
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Grid>
+              </Card>
+            </Grid>
           </Grid>
         </Grid>
       </MDBox>
@@ -628,7 +551,7 @@ function ValidarIdentidad(): JSX.Element {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-    </DashboardLayout>
+    </Box>
   );
 }
 

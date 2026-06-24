@@ -23,6 +23,15 @@ export const getCategoriasHttp = async () => {
     return promise;
   }
 };
+export const getCategoriasPrincipalHttp = async () => {
+  try {
+    const response = await axios.get(`${env.API_URL}${"/getCategoriasPrincipal"}`);
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
 
 export const editarCategoriaHttp = async (data: any) => {
   try {
@@ -36,8 +45,20 @@ export const editarCategoriaHttp = async (data: any) => {
 
 export const eliminarCategoriaHttp = async (id: number) => {
   try {
-    const response: GeneralHttpResponse = await axios.delete(
+    const response: GeneralHttpResponse = await axios.put(
       `${env.API_URL}${"/eliminarCategoria"}?id=${id}`
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const reactivarCategoriaHttp = async (id: number) => {
+  try {
+    const response: GeneralHttpResponse = await axios.put(
+      `${env.API_URL}${"/reactivarCategoria"}?id=${id}`
     );
     return response?.data || [];
   } catch (error) {

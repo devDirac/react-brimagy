@@ -1036,13 +1036,8 @@ export const useListaProductosFisicos = (tipoUsuario: number) => {
             tipo_registro: "excel",
           };
 
-          const response: any = await crearProductoHttp(datos);
-
-          if (response.data?.actualizado) {
-            actualizados++;
-          } else {
-            exitosos++;
-          }
+          //await crearProductoHttp(datos);
+          exitosos++;
         } catch (error) {
           fallidos++;
           errores.push(`SKU ${producto.sku}: ${getErrorHttpMessage(error)}`);
