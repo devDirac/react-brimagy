@@ -35,6 +35,7 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  MenuItem,
   Tab,
   Tabs,
   TextField,
@@ -122,6 +123,8 @@ function CategoriasProveedores(): JSX.Element {
     usuarios,
     setProcesando,
     editaGeneral,
+    subcategorias,
+    getFieldColor,
   } = useCategoriasProveedores(tipoUsuario);
 
   const independiente = () => {
@@ -262,17 +265,13 @@ function CategoriasProveedores(): JSX.Element {
                       {proveedores.length && !procesando ? (
                         <DinamicTable
                           actions
-                          //key={tabableKeyProveedor}
-                          //sinBusqueda
                           columnsToShow={[
                             "nombre",
                             "nombre_contacto",
                             "razon_social",
                             "descripcion",
                           ]}
-                          //sinExport
                           esListaProveedores
-                          //showCheckBox
                           data={proveedores}
                           enAccion={(accion, row) => {
                             handleAccionCallback(accion, row);
@@ -288,7 +287,7 @@ function CategoriasProveedores(): JSX.Element {
               <CustomTabPanel value={valueTab} index={1}>
                 <FormikProvider value={formikCategoria!}>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} sm={12}>
+                    <Grid item xs={12} sm={6}>
                       <TextFieldValidado
                         id="nombre"
                         fullWidth
@@ -296,6 +295,58 @@ function CategoriasProveedores(): JSX.Element {
                         variant="standard"
                         name="nombre"
                       />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        id="category_id"
+                        select
+                        fullWidth
+                        label={`${intl.formatMessage({
+                          id: "select_categoria_producto_principal",
+                        })} *`}
+                        variant="standard"
+                        name="category_id"
+                        value={formikCategoria.values.category_id || ""}
+                        disabled={!categorias || categorias.length === 0}
+                        helperText={
+                          !categorias || categorias.length === 0
+                            ? intl.formatMessage({ id: "sin_categorias_registradas" })
+                            : formikCategoria.touched.category_id &&
+                              formikCategoria.errors.category_id
+                        }
+                        error={
+                          formikCategoria.touched.category_id &&
+                          Boolean(formikCategoria.errors.category_id)
+                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          formikCategoria.setFieldValue("category_id", value);
+                        }}
+                        InputProps={{
+                          style: { padding: "5px" },
+                        }}
+                        onBlur={formikCategoria.handleBlur}
+                        sx={{
+                          "& .MuiInputLabel-root": {
+                            color: getFieldColor("category_id"),
+                          },
+                          "& .MuiInput-underline:after": {
+                            borderBottomColor: getFieldColor("category_id"),
+                          },
+                          "& .MuiInput-underline:before": {
+                            borderBottomColor: getFieldColor("category_id"),
+                          },
+                          "& .MuiInputBase-input": {
+                            color: getFieldColor("category_id"),
+                          },
+                        }}
+                      >
+                        {categorias?.map((option) => (
+                          <MenuItem key={option.id} value={option.id}>
+                            {option.desc}
+                          </MenuItem>
+                        ))}
+                      </TextField>
                     </Grid>
                     <Grid
                       item
@@ -313,6 +364,7 @@ function CategoriasProveedores(): JSX.Element {
                         onClick={(e: any) => {
                           const datos = {
                             nombre: formikCategoria.values.nombre,
+                            category_id: formikCategoria.values.category_id,
                           };
                           crearCategoria(datos);
                         }}
@@ -337,13 +389,10 @@ function CategoriasProveedores(): JSX.Element {
                       {categorias.length && !procesando ? (
                         <DinamicTable
                           actions
-                          //key={tableKeyCategoria}
-                          //sinBusqueda
-                          columnsToShow={["desc"]}
+                          columnsToShow={["desc", "status"]}
                           sinExport
                           esListaCategorias
-                          //showCheckBox
-                          data={categorias}
+                          data={subcategorias}
                           enAccion={(accion, row) => {
                             handleAccionCallback(accion, row);
                           }}
@@ -534,6 +583,10 @@ function CategoriasProveedores(): JSX.Element {
           tipoEditando === "proveedor"
             ? intl.formatMessage({
                 id: "eliminar_proveedor_confirmar",
+              })
+            : tipoEditando === "reactivar_categoria"
+            ? intl.formatMessage({
+                id: "reactivar_categoria_confirmar",
               })
             : intl.formatMessage({
                 id: "eliminar_categoria_confirmar",

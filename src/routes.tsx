@@ -4,6 +4,7 @@ import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
+import BarChartIcon from "@mui/icons-material/BarChart";
 
 const routes = [
   {
@@ -50,6 +51,55 @@ const routes = [
         key: "variables-globales",
         icon: "ShoppingBagIcon",
         route: "/variables-globales",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6],
+      },
+    ],
+  },
+  {
+    type: "collapse",
+    name: "Estadísticas",
+    key: "estadisticas",
+    icon: <BarChartIcon />,
+    allow: [1, 2, 3, 4, 5, 6],
+    collapse: [
+      {
+        name: "Principal",
+        key: "estadistica-principal",
+        icon: "BarChartIcon",
+        route: "/estadistica-principal",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6],
+      },
+      {
+        name: "Productos canjeados",
+        key: "productos-canjeados",
+        icon: "BarChartIcon",
+        route: "/productos-canjeados",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6],
+      },
+      {
+        name: "Categorías por tipo",
+        key: "puntos-categoria",
+        icon: "BarChartIcon",
+        route: "/puntos-categoria",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6],
+      },
+      {
+        name: "Puntos por tipo",
+        key: "puntos-por-tipo",
+        icon: "BarChartIcon",
+        route: "/puntos-por-tipo",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6],
+      },
+      {
+        name: "Comparativo de puntos",
+        key: "comparativa-puntos",
+        icon: "BarChartIcon",
+        route: "/comparativa-puntos",
         component: null,
         allow: [1, 2, 3, 4, 5, 6],
       },
@@ -137,10 +187,18 @@ const routes = [
     allow: [1, 2, 3, 4, 5, 6],
     collapse: [
       {
-        name: "Catálogo de Canjes",
-        key: "catalogo-canjes",
+        name: "Canjes fisicos",
+        key: "canjes-fisicos",
         icon: "ShoppingBagIcon",
-        route: "/catalogo-canjes",
+        route: "/canjes-fisicos",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6],
+      },
+      {
+        name: "Canjes Digitales",
+        key: "canjes-digitales",
+        icon: "ShoppingBagIcon",
+        route: "/canjes-digitales",
         component: null,
         allow: [1, 2, 3, 4, 5, 6],
       },

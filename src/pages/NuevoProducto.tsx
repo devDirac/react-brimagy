@@ -13,10 +13,12 @@ import { StoreType } from "types/genericTypes";
 import { FormikProvider } from "formik";
 import {
   Backdrop,
+  Box,
   Button,
   CardContent,
   CircularProgress,
   Grid,
+  InputAdornment,
   MenuItem,
   TextField,
   Typography,
@@ -25,6 +27,18 @@ import { useNuevoProducto } from "./customHooksPages/useNuevoProducto";
 import { Card, Spinner } from "react-bootstrap";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import ModalComponent from "components/Modal";
+import { MuiFileInput } from "mui-file-input";
+
+import dayjs from "dayjs";
+import "dayjs/locale/es";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+
+import { HexColorPicker } from "react-colorful";
+import ClickAwayListener from "@mui/material/ClickAwayListener";
+import AddBoxIcon from "@mui/icons-material/AddBox";
+import CloseIcon from "@mui/icons-material/Close";
 
 function NuevoProducto(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -46,6 +60,15 @@ function NuevoProducto(): JSX.Element {
     formik,
     getFieldColor,
     plataformas,
+    fotoProductoPrincipalFile,
+    previewFoto,
+    handleChangeFotoProductoPrincipal,
+    tallaArray,
+    //colores
+    esColorValido,
+    anchorEl,
+    setAnchorEl,
+    colorHex,
   } = useNuevoProducto();
 
   return (
@@ -82,6 +105,35 @@ function NuevoProducto(): JSX.Element {
               </Typography>
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={4}>
+                  {previewFoto && (
+                    <Box mt={2} display="flex" justifyContent="center">
+                      <img
+                        src={previewFoto}
+                        alt="Vista previa"
+                        style={{
+                          width: 200,
+                          height: 200,
+                          objectFit: "cover",
+                          borderRadius: 8,
+                          border: "1px solid #ccc",
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Grid>
+                <Grid item xs={12} sm={4} sx={{ display: "flex", alignItems: "end" }}>
+                  <MuiFileInput
+                    value={fotoProductoPrincipalFile}
+                    onChange={handleChangeFotoProductoPrincipal}
+                    label="Selecciona la foto del producto"
+                    placeholder="Selecciona la foto a subir"
+                    inputProps={{
+                      accept: ".jpg,.jpeg,.png,image/jpeg,image/png",
+                      multiple: false,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4} sx={{ display: "flex", alignItems: "end" }}>
                   <TextField
                     id="id_catalogo"
                     select
@@ -297,52 +349,109 @@ function NuevoProducto(): JSX.Element {
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={2}>
+                <Grid item xs={12} sm={2} sx={{ position: "relative" }}>
                   <TextField
                     id="color"
                     fullWidth
-                    label={`${intl.formatMessage({ id: "input_color" })}`}
+                    label={intl.formatMessage({ id: "input_color" })}
                     variant="standard"
                     name="color"
-                    value={formik.values.color || ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      formik.setFieldValue("color", value);
-                    }}
-                    onBlur={formik.handleBlur}
-                    error={formik.touched.color && Boolean(formik.errors.color)}
-                    helperText={formik.touched.color && formik.errors.color}
-                    sx={{
-                      "& .MuiInputLabel-root": {
-                        color: getFieldColor("color"),
-                      },
-                      "& .MuiInput-underline:after": {
-                        borderBottomColor: getFieldColor("color"),
-                      },
-                      "& .MuiInput-underline:before": {
-                        borderBottomColor: getFieldColor("color"),
-                      },
-                      "& .MuiInputBase-input": {
-                        color: getFieldColor("color"),
-                      },
+                    value={formik.values.color}
+                    onChange={(e) => formik.setFieldValue("color", e.target.value)}
+                    onClick={(e) => setAnchorEl((prev: any) => (prev ? null : e.currentTarget))}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Box
+                            sx={{
+                              width: 20,
+                              height: 20,
+                              borderRadius: "4px",
+                              backgroundColor: esColorValido(formik.values.color)
+                                ? formik.values.color
+                                : "transparent",
+                              border: "1px solid #ccc",
+                              cursor: "pointer",
+                            }}
+                          />
+                        </InputAdornment>
+                      ),
                     }}
                   />
+
+                  {Boolean(anchorEl) && (
+                    <ClickAwayListener onClickAway={() => setAnchorEl(null)}>
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: "100%",
+                          left: 0,
+                          zIndex: 99999,
+                          mt: 1,
+                          p: 2,
+                          backgroundColor: "#ffffff !important",
+                          opacity: 1,
+                          borderRadius: 2,
+                          boxShadow: 6,
+                          display: "inline-block",
+                        }}
+                      >
+                        <HexColorPicker
+                          color={
+                            esColorValido(formik.values.color) ? formik.values.color : "#000000"
+                          }
+                          onChange={(hex) => formik.setFieldValue("color", hex)}
+                        />
+                        <Box
+                          sx={{
+                            mt: 1,
+                            textAlign: "center",
+                            fontSize: 12,
+                            color: "text.secondary",
+                          }}
+                        >
+                          {colorHex}
+                        </Box>
+                        <Button
+                          variant="contained"
+                          component="label"
+                          endIcon={<CloseIcon />}
+                          onClick={() => setAnchorEl(null)}
+                          sx={{
+                            background: "#084d6e",
+                            color: "#fff",
+                          }}
+                        >
+                          Cerrar
+                        </Button>
+                      </Box>
+                    </ClickAwayListener>
+                  )}
                 </Grid>
                 <Grid item xs={12} sm={2}>
                   <TextField
                     id="talla"
+                    select
                     fullWidth
                     label={`${intl.formatMessage({ id: "input_talla" })}`}
                     variant="standard"
                     name="talla"
                     value={formik.values.talla || ""}
+                    disabled={!categorias || categorias.length === 0}
+                    helperText={
+                      !categorias || categorias.length === 0
+                        ? intl.formatMessage({ id: "sin_categorias_registradas" })
+                        : formik.touched.talla && formik.errors.talla
+                    }
+                    error={formik.touched.talla && Boolean(formik.errors.talla)}
                     onChange={(e) => {
                       const value = e.target.value;
                       formik.setFieldValue("talla", value);
                     }}
+                    InputProps={{
+                      style: { padding: "5px" },
+                    }}
                     onBlur={formik.handleBlur}
-                    error={formik.touched.talla && Boolean(formik.errors.talla)}
-                    helperText={formik.touched.talla && formik.errors.talla}
                     sx={{
                       "& .MuiInputLabel-root": {
                         color: getFieldColor("talla"),
@@ -357,7 +466,13 @@ function NuevoProducto(): JSX.Element {
                         color: getFieldColor("talla"),
                       },
                     }}
-                  />
+                  >
+                    {tallaArray?.map((option) => (
+                      <MenuItem key={option.id} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <TextField
@@ -391,7 +506,7 @@ function NuevoProducto(): JSX.Element {
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                {/*<Grid item xs={12} sm={4}>
                   <TextField
                     id="costo_sin_iva"
                     fullWidth
@@ -422,7 +537,7 @@ function NuevoProducto(): JSX.Element {
                       },
                     }}
                   />
-                </Grid>
+                </Grid>*/}
                 <Grid item xs={12} sm={4}>
                   <TextField
                     id="costo_puntos_con_iva"
@@ -460,7 +575,7 @@ function NuevoProducto(): JSX.Element {
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                {/*<Grid item xs={12} sm={4}>
                   <TextField
                     id="costo_puntos_sin_iva"
                     fullWidth
@@ -624,7 +739,7 @@ function NuevoProducto(): JSX.Element {
                       },
                     }}
                   />
-                </Grid>
+                </Grid>*/}
                 <Grid item xs={12} sm={4}>
                   <TextField
                     id="envio_extra"
@@ -657,7 +772,7 @@ function NuevoProducto(): JSX.Element {
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                {/*<Grid item xs={12} sm={4}>
                   <TextField
                     id="total_envio"
                     fullWidth
@@ -784,7 +899,7 @@ function NuevoProducto(): JSX.Element {
                       },
                     }}
                   />
-                </Grid>
+                </Grid>*/}
                 <Grid item xs={12} sm={4}>
                   <TextField
                     id="tipo_producto"
@@ -877,6 +992,92 @@ function NuevoProducto(): JSX.Element {
                     ))}
                   </TextField>
                 </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    id="tyc"
+                    fullWidth
+                    label={`${intl.formatMessage({ id: "input_tyc" })}`}
+                    variant="standard"
+                    name="tyc"
+                    value={formik.values.tyc || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      formik.setFieldValue("tyc", value);
+                    }}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.tyc && Boolean(formik.errors.tyc)}
+                    helperText={formik.touched.tyc && formik.errors.tyc}
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: getFieldColor("tyc"),
+                      },
+                      "& .MuiInput-underline:after": {
+                        borderBottomColor: getFieldColor("tyc"),
+                      },
+                      "& .MuiInput-underline:before": {
+                        borderBottomColor: getFieldColor("tyc"),
+                      },
+                      "& .MuiInputBase-input": {
+                        color: getFieldColor("tyc"),
+                      },
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    id="vigencia"
+                    fullWidth
+                    label={`${intl.formatMessage({ id: "input_fecha_vigencia" })}`}
+                    variant="standard"
+                    name="vigencia"
+                    value={formik.values.vigencia || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      formik.setFieldValue("vigencia", value);
+                    }}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.vigencia && Boolean(formik.errors.vigencia)}
+                    helperText={formik.touched.vigencia && formik.errors.vigencia}
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        color: getFieldColor("vigencia"),
+                      },
+                      "& .MuiInput-underline:after": {
+                        borderBottomColor: getFieldColor("vigencia"),
+                      },
+                      "& .MuiInput-underline:before": {
+                        borderBottomColor: getFieldColor("vigencia"),
+                      },
+                      "& .MuiInputBase-input": {
+                        color: getFieldColor("vigencia"),
+                      },
+                    }}
+                  />
+                </Grid>
+                {/*<Grid item xs={12} sm={4}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+                    <DatePicker
+                      label={intl.formatMessage({ id: "input_fecha_vigencia" })}
+                      openTo="year"
+                      format="YYYY/MM/DD"
+                      views={["year", "month", "day"]}
+                      value={formik.values.vigencia ? dayjs(formik.values.vigencia) : null}
+                      onChange={(newValue) => {
+                        formik.setFieldValue(
+                          "vigencia",
+                          newValue ? dayjs(newValue).format("YYYY-MM-DD") : ""
+                        );
+                      }}
+                      slotProps={{
+                        textField: {
+                          error: false,
+                          variant: "standard",
+                        },
+                      }}
+                      sx={{ width: "100%" }}
+                    />
+                  </LocalizationProvider>
+                </Grid>*/}
                 <Grid
                   item
                   xs={12}
@@ -891,33 +1092,38 @@ function NuevoProducto(): JSX.Element {
                     endIcon={<AddCircleIcon />}
                     disabled={procesando || !formik.dirty || !formik.isValid}
                     onClick={(e: any) => {
-                      const datos = {
-                        nombre_producto: formik.values.nombre_producto,
-                        descripcion: formik.values.descripcion,
-                        marca: formik.values.marca,
-                        sku: formik.values.sku,
-                        color: formik.values.color,
-                        talla: formik.values.talla,
-                        id_proveedor: formik.values.id_proveedor,
-                        id_catalogo: formik.values.id_catalogo,
-                        costo_con_iva: formik.values.costo_con_iva,
-                        costo_sin_iva: formik.values.costo_sin_iva,
-                        costo_puntos_con_iva: formik.values.costo_puntos_con_iva,
-                        costo_puntos_sin_iva: formik.values.costo_puntos_sin_iva,
-                        fee_brimagy: formik.values.fee_brimagy,
-                        subtotal: formik.values.subtotal,
-                        envio_base: formik.values.envio_base,
-                        costo_caja: formik.values.costo_caja,
-                        envio_extra: formik.values.envio_extra,
-                        total_envio: formik.values.total_envio,
-                        total: formik.values.total,
-                        puntos: formik.values.puntos,
-                        factor: formik.values.factor,
-                        tipo_registro: "individual",
-                        tipo_producto: formik.values.tipo_producto,
-                        id_plataforma: formik.values.plataforma,
-                      };
-                      crearProducto(datos);
+                      const formData = new FormData();
+                      formData.append("nombre_producto", formik.values.nombre_producto);
+                      formData.append("descripcion", formik.values.descripcion);
+                      formData.append("marca", formik.values.marca);
+                      formData.append("sku", formik.values.sku);
+                      formData.append("color", formik.values.color);
+                      formData.append("talla", formik.values.talla);
+                      formData.append("id_proveedor", formik.values.id_proveedor);
+                      formData.append("id_catalogo", formik.values.id_catalogo);
+                      formData.append("costo_con_iva", formik.values.costo_con_iva);
+                      //formData.append("costo_sin_iva", formik.values.costo_sin_iva);
+                      formData.append("costo_puntos_con_iva", formik.values.costo_puntos_con_iva);
+                      /*formData.append("costo_puntos_sin_iva", formik.values.costo_puntos_sin_iva);
+                      formData.append("fee_brimagy", formik.values.fee_brimagy);
+                      formData.append("subtotal", formik.values.subtotal);
+                      formData.append("envio_base", formik.values.envio_base);
+                      formData.append("costo_caja", formik.values.costo_caja);*/
+                      formData.append("envio_extra", formik.values.envio_extra);
+                      /*formData.append("total_envio", formik.values.total_envio);
+                      formData.append("total", formik.values.total);
+                      formData.append("puntos", formik.values.puntos);
+                      formData.append("factor", formik.values.factor);*/
+                      formData.append("tipo_registro", "individual");
+                      formData.append("tipo_producto", formik.values.tipo_producto);
+                      formData.append("id_plataforma", formik.values.plataforma);
+                      formData.append("tyc", formik.values.tyc);
+                      formData.append("vigencia", formik.values.vigencia);
+
+                      if (fotoProductoPrincipalFile) {
+                        formData.append("foto_producto", fotoProductoPrincipalFile);
+                      }
+                      crearProducto(formData);
                     }}
                   >
                     {procesandoProducto ? (

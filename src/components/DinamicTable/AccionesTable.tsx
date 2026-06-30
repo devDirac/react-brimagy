@@ -99,19 +99,39 @@ const AccionesTable: React.FC<AccionesTableProps> = (props: AccionesTableProps) 
         </Tooltip>
       ) : null}
 
-      {props?.esListaCategorias || props?.esListaProductos || props?.esListaProveedores ? (
+      {!props?.esListaCategorias || props?.esListaProductos || props?.esListaProveedores ? (
         <Tooltip title={intl.formatMessage({ id: "general_eliminar" })}>
           <IconButton
             onClick={() =>
               props?.esListaProveedores
                 ? props?.enAccion("eliminar_proveedor")
-                : props?.esListaCategorias
-                ? props?.enAccion("eliminar_categoria")
                 : props?.enAccion("eliminar")
             }
             sx={{ color: darkMode ? "#fff" : "#F54927", padding: "0" }}
           >
             <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+      ) : null}
+
+      {props?.esListaCategorias && props?.row?.status !== "INACTIVE" ? (
+        <Tooltip title={intl.formatMessage({ id: "general_eliminar" })}>
+          <IconButton
+            onClick={() => props?.enAccion("eliminar_categoria")}
+            sx={{ color: darkMode ? "#fff" : "#F54927", padding: "0" }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+      ) : null}
+
+      {props?.esListaCategorias && props?.row?.status === "INACTIVE" ? (
+        <Tooltip title={intl.formatMessage({ id: "general_reactivar" })}>
+          <IconButton
+            onClick={() => props?.enAccion("reactivar_categoria")}
+            sx={{ color: darkMode ? "#fff" : "#1fff26", padding: "0" }}
+          >
+            <ReplayIcon />
           </IconButton>
         </Tooltip>
       ) : null}

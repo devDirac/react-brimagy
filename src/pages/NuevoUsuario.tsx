@@ -148,6 +148,7 @@ function NuevoUsuario(): JSX.Element {
 
   const handleSubmit = () => {
     if (isLastStep) {
+      //console.log(formDataV);
       guardaNuevoUsuario(formDataV);
     } else {
       setActiveStep(activeStep + 1);

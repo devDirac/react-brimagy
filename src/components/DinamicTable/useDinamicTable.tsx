@@ -137,6 +137,12 @@ const useDinamicTable = (props: DinamicTableProps) => {
       variant: "outlined" as const,
       color: "error" as const,
     },
+    {
+      id: "INACTIVE",
+      texto: "Inactivo",
+      variant: "outlined" as const,
+      color: "error" as const,
+    },
   ];
 
   const EstadosValidacionArray = [

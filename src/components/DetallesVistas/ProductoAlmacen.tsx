@@ -9,6 +9,7 @@ import {
   TextField,
   Card,
   CardContent,
+  TablePagination,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useIntl } from "react-intl";
@@ -24,40 +25,50 @@ import { StoreType } from "../../types/genericTypes";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
-interface Producto {
-  id: number;
+interface ProductoAlmacen {
   id_producto_almacen: number;
-  id_canje: number;
-  id_usuario: number;
-  id_producto: number;
-  id_orden_compra: number;
-  nombre_usuario: string;
+  id_proveedor: number;
   nombre_proveedor: string;
-  primer_apellido: string;
-  segundo_apellido: string;
-  nombre_producto: string;
-  marca: string;
-  sku: string;
   nombre_producto_nuevo: string;
   marca_nuevo: string;
   sku_nuevo: string;
-  no_orden: string;
-  cantidad_producto: number;
-  cantidad_almacen: number;
-  id_proveedor: number;
-  costo_sin_iva: number;
   precio_compra: number;
-  fecha: Date;
-  comentarios: string;
+  cantidad_almacen: number;
+  comentarios: string | null;
   imei: string;
   no_serie: string;
+}
+
+interface DetalleAlmacen {
+  id_producto_almacen: number;
+  id_canje: number;
+  id_usuario: number;
+  nombre_proveedor: string;
+  nombre_usuario: string;
+  primer_apellido: string;
+  segundo_apellido: string;
+  id_producto: number;
+  nombre_producto: string;
+  marca: string;
+  imei: string;
+  no_serie: string;
+  sku: string;
+  costo_sin_iva: number;
+  id_orden_compra: number;
+  no_orden: string;
+  cantidad_producto: number;
   estatus: string;
-  guia: string;
-  evidencias: JSON;
+  fecha: string;
+  fecha_pago: string | null;
+  cantidad_almacen: number;
+  evidencias: any | null;
+  comentarios: string | null;
+  guia: string | null;
+  productos: ProductoAlmacen[];
 }
 
 interface DetalleCanjeProps {
-  verProducto?: Producto | null;
+  verProducto?: DetalleAlmacen | null;
   addProductoAlmacen: (datos: any) => Promise<void>;
   enviarProductoAlmacen: (datos: any) => Promise<void>;
   confirmarRecepcionProductoAlmacen: (datos: any) => Promise<void>;
@@ -98,12 +109,12 @@ const ProductoAlmacenModal = ({
   if (!verProducto) return null;
   const intl = useIntl();
 
-  const ahorroProducto =
+  /*const ahorroProducto =
     verProducto.precio_compra === null ? 0 : verProducto.costo_sin_iva - verProducto.precio_compra;
   const porcentajeAhorro =
     verProducto.costo_sin_iva > 0 ? (ahorroProducto / verProducto.costo_sin_iva) * 100 : 0;
   const esPositivoAhorro = ahorroProducto > 0;
-  const esNegativoAhorro = ahorroProducto < 0;
+  const esNegativoAhorro = ahorroProducto < 0;*/
 
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
   const isSuperAdmin = tipoUsuario === 6;
@@ -112,6 +123,9 @@ const ProductoAlmacenModal = ({
   const isCompras = tipoUsuario === 3;
   const isAuditor = tipoUsuario === 2;
   const isInternauta = tipoUsuario === 1;
+
+  const [pageProduct, setPageProduct] = useState(0);
+  const [rowsProductsPerPage, setRowsProductsPerPage] = useState(1);
 
   const getEstadoColor = (estado: string) => {
     if (!estado) return "default";
@@ -166,6 +180,27 @@ const ProductoAlmacenModal = ({
 
     return Array.isArray(verProducto.evidencias) ? verProducto.evidencias : [];
   }, [verProducto?.evidencias]);
+
+  // Handlers para la paginación
+  const handleChangePageProduct = (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number
+  ) => {
+    setPageProduct(newPage);
+  };
+
+  const handleChangeRowsProductPerPage = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setRowsProductsPerPage(parseInt(event.target.value, 10));
+    setPageProduct(0);
+  };
+
+  const productosModalPaginados = useMemo(() => {
+    const startIndex = pageProduct * rowsProductsPerPage;
+    const endIndex = startIndex + rowsProductsPerPage;
+    return verProducto?.productos.slice(startIndex, endIndex) || [];
+  }, [verProducto?.productos, pageProduct, rowsProductsPerPage]);
 
   return (
     <Box sx={{ px: 2, pb: 2, mt: 3 }}>
@@ -307,76 +342,19 @@ const ProductoAlmacenModal = ({
             sx={{ fontWeight: "bold" }}
           />
         </Grid>
-
-        {/* Información del Cliente */}
         <Grid item xs={12}>
           <Paper elevation={2} sx={{ p: 2 }}>
             <Typography variant="h6" color="primary" gutterBottom>
-              Información del Producto
+              Producto solicitado
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <Grid container spacing={2}>
-              <Grid
-                item
-                xs={12}
-                display="flex"
-                justifyContent="center"
-                sx={{
-                  flexDirection: {
-                    xs: "column",
-                    sm: "row",
-                  },
-                  alignItems: "center",
-                }}
-                gap={1}
-              >
-                <Button
-                  sx={{
-                    color: "#fff",
-                    background: "#3ec972",
-                    fontSize: "0.75rem",
-                    padding: "6px 8px",
-                  }}
-                  variant="contained"
-                  endIcon={<AddIcon />}
-                  disabled={
-                    verProducto.estatus !== "en_almacen" &&
-                    verProducto.estatus !== "en_almacen_parcialmente"
-                  }
-                  onClick={(e: any) => {
-                    setProductoSeleccionado(verProducto);
-                    handleisAlertOpenNuevoPrecio();
-                  }}
-                >
-                  {intl.formatMessage({ id: "registrar_nuevo_precio" })}
-                </Button>
-                <Button
-                  sx={{
-                    color: "#fff",
-                    background: "#3ec972",
-                    fontSize: "0.75rem",
-                    padding: "6px 8px",
-                  }}
-                  variant="contained"
-                  endIcon={<AddIcon />}
-                  disabled={
-                    verProducto.estatus !== "en_almacen" &&
-                    verProducto.estatus !== "en_almacen_parcialmente"
-                  }
-                  onClick={(e: any) => {
-                    setProductoSeleccionado(verProducto);
-                    handleisAlertOpenProductosTecnologicos();
-                  }}
-                >
-                  {intl.formatMessage({ id: "registrar_imei_y_no_serie" })}
-                </Button>
-              </Grid>
               <Grid item xs={12} md={6}>
                 <Typography variant="body2" color="text.secondary">
                   Nombre
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
-                  {verProducto.nombre_producto_nuevo ?? verProducto.nombre_producto}
+                  {verProducto?.nombre_producto}
                 </Typography>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -384,7 +362,7 @@ const ProductoAlmacenModal = ({
                   Proveedor
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
-                  {verProducto.nombre_proveedor ?? "Sin proveedor"}
+                  {verProducto?.nombre_proveedor ?? "Sin proveedor"}
                 </Typography>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -392,7 +370,7 @@ const ProductoAlmacenModal = ({
                   Marca
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
-                  {verProducto.marca_nuevo ?? verProducto.marca}
+                  {verProducto?.marca}
                 </Typography>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -400,26 +378,26 @@ const ProductoAlmacenModal = ({
                   Sku
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
-                  {verProducto.sku_nuevo ?? verProducto.sku}
+                  {verProducto?.sku}
                 </Typography>
               </Grid>
-              {verProducto.imei && (
+              {verProducto?.imei && (
                 <Grid item xs={12} md={6}>
                   <Typography variant="body2" color="text.secondary">
                     IMEI
                   </Typography>
                   <Typography variant="body2" fontWeight="medium">
-                    {verProducto.imei}
+                    {verProducto?.imei}
                   </Typography>
                 </Grid>
               )}
-              {verProducto.no_serie && (
+              {verProducto?.no_serie && (
                 <Grid item xs={12} md={6}>
                   <Typography variant="body2" color="text.secondary">
                     No. Serie
                   </Typography>
                   <Typography variant="body2" fontWeight="medium">
-                    {verProducto.no_serie}
+                    {verProducto?.no_serie}
                   </Typography>
                 </Grid>
               )}
@@ -439,95 +417,7 @@ const ProductoAlmacenModal = ({
                   {verProducto.cantidad_almacen}
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography variant="body2" color="text.secondary">
-                  Precio de compra
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {esPositivoAhorro ? (
-                    <>
-                      <b
-                        style={{
-                          color: "#000",
-                          textDecoration: "line-through",
-                          textDecorationColor: "red",
-                          textDecorationThickness: "3px",
-                        }}
-                      >
-                        {numericFormatter(verProducto.costo_sin_iva + "", {
-                          thousandSeparator: ",",
-                          decimalScale: 2,
-                          fixedDecimalScale: true,
-                          prefix: "$",
-                        })}
-                      </b>{" "}
-                      →{" "}
-                      <b
-                        style={{
-                          color: "green",
-                        }}
-                      >
-                        {numericFormatter(verProducto.precio_compra + "", {
-                          thousandSeparator: ",",
-                          decimalScale: 2,
-                          fixedDecimalScale: true,
-                          prefix: "$",
-                        })}
-                      </b>
-                      <br />
-                      {"Se ahorró un " +
-                        numericFormatter(porcentajeAhorro + "", {
-                          thousandSeparator: ",",
-                          decimalScale: 2,
-                          fixedDecimalScale: true,
-                          suffix: "%",
-                        })}
-                    </>
-                  ) : esNegativoAhorro ? (
-                    <>
-                      <b
-                        style={{
-                          color: "#000",
-                          textDecoration: "line-through",
-                          textDecorationColor: "red",
-                          textDecorationThickness: "3px",
-                        }}
-                      >
-                        {numericFormatter(verProducto.costo_sin_iva + "", {
-                          thousandSeparator: ",",
-                          decimalScale: 2,
-                          fixedDecimalScale: true,
-                          prefix: "$",
-                        })}
-                      </b>{" "}
-                      →{" "}
-                      <b
-                        style={{
-                          color: "green",
-                        }}
-                      >
-                        {numericFormatter(verProducto.precio_compra + "", {
-                          thousandSeparator: ",",
-                          decimalScale: 2,
-                          fixedDecimalScale: true,
-                          prefix: "$",
-                        })}
-                      </b>
-                      <br />
-                      {"Tuvo un sobrecosto de " +
-                        numericFormatter(-porcentajeAhorro + "", {
-                          thousandSeparator: ",",
-                          decimalScale: 2,
-                          fixedDecimalScale: true,
-                          suffix: "%",
-                        })}
-                    </>
-                  ) : (
-                    ""
-                  )}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={12}>
                 <Typography variant="body2" color="text.secondary">
                   Comentarios
                 </Typography>
@@ -538,7 +428,214 @@ const ProductoAlmacenModal = ({
             </Grid>
           </Paper>
         </Grid>
-
+        {/* Información de nuevos precios de premio*/}
+        <Grid item xs={12}>
+          {productosModalPaginados.map((p: any, key: number) => {
+            const ahorroProducto =
+              p?.precio_compra === null ? 0 : verProducto?.costo_sin_iva - p?.precio_compra;
+            const porcentajeAhorro =
+              verProducto?.costo_sin_iva > 0
+                ? (ahorroProducto / verProducto?.costo_sin_iva) * 100
+                : 0;
+            const esPositivoAhorro = ahorroProducto > 0;
+            const esNegativoAhorro = ahorroProducto < 0;
+            const porcentajeAhorroMostrar =
+              porcentajeAhorro > 0 ? porcentajeAhorro : -porcentajeAhorro;
+            return (
+              <>
+                <Paper elevation={2} sx={{ p: 2 }}>
+                  <Typography variant="h6" color="primary" gutterBottom>
+                    Nuevos precios
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+                  <Grid container spacing={2} key={p.id || key}>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Nombre
+                      </Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        {p?.nombre_producto_nuevo ?? p?.nombre_producto}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Proveedor
+                      </Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        {p?.nombre_proveedor ?? "Sin proveedor"}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Marca
+                      </Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        {p?.marca_nuevo ?? p?.marca}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Sku
+                      </Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        {p?.sku_nuevo ?? p?.sku}
+                      </Typography>
+                    </Grid>
+                    {p?.imei && (
+                      <Grid item xs={12} md={6}>
+                        <Typography variant="body2" color="text.secondary">
+                          IMEI
+                        </Typography>
+                        <Typography variant="body2" fontWeight="medium">
+                          {p?.imei}
+                        </Typography>
+                      </Grid>
+                    )}
+                    {p?.no_serie && (
+                      <Grid item xs={12} md={6}>
+                        <Typography variant="body2" color="text.secondary">
+                          No. Serie
+                        </Typography>
+                        <Typography variant="body2" fontWeight="medium">
+                          {p?.no_serie}
+                        </Typography>
+                      </Grid>
+                    )}
+                  </Grid>
+                </Paper>
+                <Paper elevation={2} sx={{ p: 2 }}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Precio de compra
+                      </Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        {esPositivoAhorro ? (
+                          <>
+                            <b
+                              style={{
+                                color: "#000",
+                                textDecoration: "line-through",
+                                textDecorationColor: "red",
+                                textDecorationThickness: "3px",
+                              }}
+                            >
+                              {numericFormatter(verProducto?.costo_sin_iva + "", {
+                                thousandSeparator: ",",
+                                decimalScale: 2,
+                                fixedDecimalScale: true,
+                                prefix: "$",
+                              })}
+                            </b>{" "}
+                            →{" "}
+                            <b
+                              style={{
+                                color: "green",
+                              }}
+                            >
+                              {numericFormatter(p?.precio_compra + "", {
+                                thousandSeparator: ",",
+                                decimalScale: 2,
+                                fixedDecimalScale: true,
+                                prefix: "$",
+                              })}
+                            </b>
+                            <br />
+                            {"Se ahorró un " +
+                              numericFormatter(porcentajeAhorroMostrar + "", {
+                                thousandSeparator: ",",
+                                decimalScale: 2,
+                                fixedDecimalScale: true,
+                                suffix: "%",
+                              })}
+                          </>
+                        ) : esNegativoAhorro ? (
+                          <>
+                            <b
+                              style={{
+                                color: "#000",
+                                textDecoration: "line-through",
+                                textDecorationColor: "red",
+                                textDecorationThickness: "3px",
+                              }}
+                            >
+                              {numericFormatter(verProducto?.costo_sin_iva + "", {
+                                thousandSeparator: ",",
+                                decimalScale: 2,
+                                fixedDecimalScale: true,
+                                prefix: "$",
+                              })}
+                            </b>{" "}
+                            →{" "}
+                            <b
+                              style={{
+                                color: "green",
+                              }}
+                            >
+                              {numericFormatter(p?.precio_compra + "", {
+                                thousandSeparator: ",",
+                                decimalScale: 2,
+                                fixedDecimalScale: true,
+                                prefix: "$",
+                              })}
+                            </b>
+                            <br />
+                            {"Tuvo un sobrecosto de " +
+                              numericFormatter(porcentajeAhorroMostrar + "", {
+                                thousandSeparator: ",",
+                                decimalScale: 2,
+                                fixedDecimalScale: true,
+                                suffix: "%",
+                              })}
+                          </>
+                        ) : (
+                          ""
+                        )}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Comentarios
+                      </Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        {p?.comentarios}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Paper>
+              </>
+            );
+          })}
+        </Grid>
+        {/* Componente de paginación */}
+        <Grid item xs={12}>
+          <MDBox mt={0} sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <TablePagination
+              component="div"
+              count={verProducto?.productos.length}
+              page={pageProduct}
+              onPageChange={handleChangePageProduct}
+              rowsPerPage={rowsProductsPerPage}
+              onRowsPerPageChange={handleChangeRowsProductPerPage}
+              rowsPerPageOptions={[1, 2, 3]}
+              labelRowsPerPage="Premios por página:"
+              labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+              sx={{
+                direction: "ltr",
+                ".MuiTablePagination-toolbar": {
+                  justifyContent: "space-between",
+                  padding: "16px 24px",
+                },
+                ".MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows": {
+                  margin: 0,
+                },
+                ".MuiTablePagination-actions svg": {
+                  transform: "scaleX(-1)",
+                },
+              }}
+            />
+          </MDBox>
+        </Grid>
         {/* Información del premio canjeado */}
         <Grid item xs={12}>
           <Paper elevation={2} sx={{ p: 2 }}>
@@ -547,7 +644,7 @@ const ProductoAlmacenModal = ({
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <Grid container spacing={2}>
-              <Grid item xs={12} md={3}>
+              <Grid item xs={12} md={6}>
                 <Typography variant="body2" color="text.secondary">
                   No. orden
                 </Typography>
@@ -555,7 +652,7 @@ const ProductoAlmacenModal = ({
                   {verProducto.no_orden}
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={3}>
+              <Grid item xs={12} md={6}>
                 <Typography variant="body2" color="text.secondary">
                   Guía
                 </Typography>
@@ -565,22 +662,6 @@ const ProductoAlmacenModal = ({
                       Ver rastreo
                     </a>
                   )}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={3}>
-                <Typography variant="body2" color="text.secondary">
-                  IMEI
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {verProducto.imei ?? "N/A"}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={3}>
-                <Typography variant="body2" color="text.secondary">
-                  No. Serie
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {verProducto.no_serie ?? "N/A"}
                 </Typography>
               </Grid>
             </Grid>

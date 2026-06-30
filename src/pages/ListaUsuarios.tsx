@@ -106,6 +106,7 @@ function ListaUsuarios(): JSX.Element {
         reactivaUsuario(row);
         break;
       case "editar_usuario":
+        console.log(row);
         setUsuarioEditar(row);
         handleisAlertOpenEditarUsuario();
         break;
@@ -197,7 +198,7 @@ function ListaUsuarios(): JSX.Element {
                   variant="standard"
                   name="telefonoEditar"
                   type="number"
-                  value={telefonoEditar || usuarioEditar?.telefono}
+                  value={telefonoEditar || usuarioEditar?.phone}
                   onChange={(e) => {
                     const value = e.target.value;
                     setTelefonoEditar(e.target.value);
@@ -225,7 +226,7 @@ function ListaUsuarios(): JSX.Element {
                       id_usuario: usuarioEditar?.id,
                       nombre: nombreEditar,
                       correo: correoEditar,
-                      telefono: telefonoEditar,
+                      phone: telefonoEditar,
                       foto: fotoEditar,
                     };
                     editaUsuario(datos);

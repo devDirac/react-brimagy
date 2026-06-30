@@ -87,7 +87,7 @@ const UserPermiso: React.FC<AddUserFormProps> = (props: AddUserFormProps) => {
           //{ nombre: "Editor", color: "#1976d2", icon: FaceSharpIcon, id: 2 },
         ]
       : []),
-    //{ nombre: "Usuario", color: "#ed6c02", icon: PersonAddAltIcon, id: 1 },
+    { nombre: "Usuario", color: "#ed6c02", icon: PersonAddAltIcon, id: 1 },
   ];
 
   const gridSize = 12 / items.length;

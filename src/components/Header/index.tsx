@@ -69,11 +69,11 @@ const Header: React.FC<HeaderProps> = (props: HeaderProps) => {
       case 3:
         return "Compras";
       case 4:
-        return "Inventario";
+        return "Super Usuario";
       case 5:
         return "Administración";
       case 6:
-        return "Super Usuario";
+        return "Inventario";
       default:
         return "Usuario";
     }

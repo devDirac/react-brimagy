@@ -29,6 +29,20 @@ export const useNuevoProducto = () => {
   const [categorias, setCategorias] = useState<any[]>([]);
   const [plataformas, setPlataformas] = useState<any[]>([]);
 
+  const [fotoProductoPrincipalFile, setFotoProductoPrincipalFile] = useState<File | null>(null);
+  const [previewFoto, setPreviewFoto] = useState<string | null>(null);
+
+  const handleChangeFotoProductoPrincipal = (file: File | null) => {
+    setFotoProductoPrincipalFile(file);
+
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPreviewFoto(url);
+    } else {
+      setPreviewFoto(null);
+    }
+  };
+
   useEffect(() => {
     setAuth(token);
   }, [token]);
@@ -36,6 +50,16 @@ export const useNuevoProducto = () => {
   const tipoProductoArray = [
     { id: 0, label: "Físico", value: "fisico" },
     { id: 1, label: "Digital", value: "digital" },
+  ];
+
+  const tallaArray = [
+    { id: 0, label: "XXS", value: "XS" },
+    { id: 1, label: "XS", value: "XS" },
+    { id: 2, label: "S", value: "S" },
+    { id: 3, label: "M", value: "M" },
+    { id: 4, label: "L", value: "L" },
+    { id: 5, label: "XL", value: "XL" },
+    { id: 6, label: "XXL", value: "XXL" },
   ];
 
   const formik = useFormik({
@@ -49,20 +73,22 @@ export const useNuevoProducto = () => {
       id_proveedor: "",
       id_catalogo: "",
       costo_con_iva: "",
-      costo_sin_iva: "",
+      //costo_sin_iva: "",
       costo_puntos_con_iva: "",
-      costo_puntos_sin_iva: "",
+      /*costo_puntos_sin_iva: "",
       fee_brimagy: "",
       subtotal: "",
       envio_base: "",
-      costo_caja: "",
+      costo_caja: "",*/
       envio_extra: "",
-      total_envio: "",
+      /*total_envio: "",
       total: "",
       puntos: "",
-      factor: "",
+      factor: "",*/
       tipo_producto: "",
       plataforma: "",
+      tyc: "",
+      vigencia: "",
     },
     validationSchema: Yup.object({
       nombre_producto: Yup.string().required(
@@ -101,13 +127,13 @@ export const useNuevoProducto = () => {
       costo_con_iva: Yup.string().required(
         intl.formatMessage({ id: "input_validation_requerido" })
       ),
-      costo_sin_iva: Yup.string().required(
+      /*costo_sin_iva: Yup.string().required(
         intl.formatMessage({ id: "input_validation_requerido" })
-      ),
+      ),*/
       costo_puntos_con_iva: Yup.string().required(
         intl.formatMessage({ id: "input_validation_requerido" })
       ),
-      costo_puntos_sin_iva: Yup.string().required(
+      /*costo_puntos_sin_iva: Yup.string().required(
         intl.formatMessage({ id: "input_validation_requerido" })
       ),
       fee_brimagy: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
@@ -116,19 +142,21 @@ export const useNuevoProducto = () => {
         .positive(intl.formatMessage({ id: "debe_ser_mayor_cero" }))
         .min(1, intl.formatMessage({ id: "debe_ser_mayor_cero" })),
       envio_base: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
-      costo_caja: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      costo_caja: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),*/
       envio_extra: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
-      total_envio: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      /*total_envio: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
       total: Yup.number()
         .required(intl.formatMessage({ id: "input_validation_requerido" }))
         .positive(intl.formatMessage({ id: "debe_ser_mayor_cero" }))
         .min(1, intl.formatMessage({ id: "debe_ser_mayor_cero" })),
       puntos: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
-      factor: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      factor: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),*/
       tipo_producto: Yup.string().required(
         intl.formatMessage({ id: "input_validation_requerido" })
       ),
       plataforma: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      tyc: Yup.string(),
+      vigencia: Yup.string(),
     }),
     onSubmit: async (values) => {
       console.log("Formulario enviado:", values);
@@ -176,7 +204,7 @@ export const useNuevoProducto = () => {
     }
   }, []);
 
-  const crearProducto = async (datos: any) => {
+  const crearProducto = async (datos: FormData) => {
     try {
       setProcesandoProducto(true);
       const producto = await crearProductoHttp(datos);
@@ -212,6 +240,25 @@ export const useNuevoProducto = () => {
     getCategoriasProducto();
   }, []);
 
+  const colorNameToHex = (color: string): string => {
+    const ctx = document.createElement("canvas").getContext("2d");
+    if (!ctx) return color;
+    ctx.fillStyle = color;
+    const computed = ctx.fillStyle;
+    return computed.startsWith("#") ? computed : color;
+  };
+
+  const esColorValido = (color: string): boolean => {
+    const s = new Option().style;
+    s.color = color;
+    return s.color !== "";
+  };
+
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const colorHex = esColorValido(formik.values.color)
+    ? colorNameToHex(formik.values.color)
+    : "#000000";
+
   return {
     tipoProductoArray,
     crearProducto,
@@ -227,5 +274,14 @@ export const useNuevoProducto = () => {
     formik,
     getFieldColor,
     plataformas,
+    fotoProductoPrincipalFile,
+    previewFoto,
+    handleChangeFotoProductoPrincipal,
+    tallaArray,
+    //colores
+    esColorValido,
+    anchorEl,
+    setAnchorEl,
+    colorHex,
   };
 };

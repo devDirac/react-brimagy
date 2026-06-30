@@ -86,6 +86,12 @@ import VariablesGlobales from "pages/VariablesGlobales";
 import Plataformas from "pages/Plataformas";
 import ListaProductosDigitales from "pages/ListaProductosDigitales";
 import ListaProductosFisicos from "pages/ListaProductosFisicos";
+import EstadisticasHome from "pages/EstadisticasHome";
+import EstadisticasHomePage from "pages/EstadisticasHome";
+import EstadisticasProductosCanjeados from "pages/EstadisticasProductosCanjeados";
+import EstadisticaPuntosCategoria from "pages/EstadisticaPuntosCategorias";
+import EstadisticasPuntosPorPeriodo from "pages/EstadisticaPuntosPorPeriodo";
+import EstadisticasComparativaPage from "pages/EstadisticasComparativa";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
@@ -235,7 +241,6 @@ export default function App() {
             <Route path="/inicio" element={<MainPage />} />
             <Route path="/estadisticas" element={<MainPage />} />
             <Route path="/navegacion" element={<OpcionesMenuSeleccionadoPage />} />
-
             {/* USUARIOS */}
             <Route path="/lista-usuarios" element={<ListaUsuarios />} />
             <Route path="/nuevo-usuario" element={<NuevoUsuario />} />
@@ -244,18 +249,25 @@ export default function App() {
             <Route path="/plataformas" element={<Plataformas />} />
             {/* PRODUCTOS */}
             <Route path="/nuevo-producto" element={<NuevoProducto />} />
-            <Route path="/productos-digitales" element={<ListaProductosDigitales />} />
-            <Route path="/productos-fisicos" element={<ListaProductosFisicos />} />
+            <Route path="/productos-digitales" element={<ListaProductos />} />
+            <Route path="/productos-fisicos" element={<ListaProductos />} />
             <Route path="/catalogo-productos" element={<ListaProductos />} />
             <Route path="/categorias-proveedores" element={<CategoriasProveedores />} />
             {/* CANJES */}
-            <Route path="/catalogo-canjes" element={<ListaCanjeos />} />
+            <Route path="/canjes-fisicos" element={<ListaCanjeos />} />
+            <Route path="/canjes-digitales" element={<ListaCanjeos />} />
             {/* ORDENES DE COMPRA */}
             <Route path="/generar-orden-de-compra" element={<GenerarOrdenCompra />} />
             {/* ALMACEN */}
             <Route path="/gestion-almacen" element={<GestionAlmacen />} />
             {/* ENCUESTAS */}
             <Route path="/catalogo-encuestas" element={<CatalogoEncuestas />} />
+            {/* ESTADISTICAS */}
+            <Route path="/estadistica-principal" element={<EstadisticasHomePage />} />
+            <Route path="/productos-canjeados" element={<EstadisticasProductosCanjeados />} />
+            <Route path="/puntos-categoria" element={<EstadisticaPuntosCategoria />} />
+            <Route path="/puntos-por-tipo" element={<EstadisticasPuntosPorPeriodo />} />
+            <Route path="/comparativa-puntos" element={<EstadisticasComparativaPage />} />{" "}
           </Route>
           {/* inicia pagina no encontrada */}
           <Route path="*" element={<NotFoundPage />} />
