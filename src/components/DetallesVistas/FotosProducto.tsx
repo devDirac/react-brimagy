@@ -55,6 +55,7 @@ interface DetalleFotosProps {
   handleOpenVistaFotosProducto: (fotos_producto: any) => void;
   desactivarFotosProducto: (datos: any) => Promise<void>;
   activarFotosProducto: (datos: any) => Promise<void>;
+  plataforma: string;
 }
 
 const FotosProductoModal = ({
@@ -67,6 +68,7 @@ const FotosProductoModal = ({
   handleOpenVistaFotosProducto,
   desactivarFotosProducto,
   activarFotosProducto,
+  plataforma,
 }: DetalleFotosProps) => {
   if (!verFotos) return null;
   const intl = useIntl();
@@ -140,6 +142,7 @@ const FotosProductoModal = ({
                     const formData = new FormData();
                     formData.append("id_producto", datosProducto?.id);
                     formData.append("id_producto_brimagy", datosProducto?.id_producto_brimagy);
+                    formData.append("plataforma", plataforma);
                     fotosProductoFiles.forEach((file) => {
                       formData.append("fotos_producto[]", file);
                     });
@@ -253,6 +256,7 @@ const FotosProductoModal = ({
                                 const datos = {
                                   id_foto: f?.id,
                                   id_foto_brimagy: f?.id_foto_brimagy,
+                                  plataforma: plataforma,
                                 };
                                 desactivarFotosProducto(datos);
                               }}
@@ -270,6 +274,7 @@ const FotosProductoModal = ({
                                 const datos = {
                                   id_foto: f?.id,
                                   id_foto_brimagy: f?.id_foto_brimagy,
+                                  plataforma: plataforma,
                                 };
                                 console.log(datos);
                                 activarFotosProducto(datos);

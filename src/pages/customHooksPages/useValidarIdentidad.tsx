@@ -11,7 +11,7 @@ import {
 import { getErrorHttpMessage } from "utils";
 
 export const useValidarIdentidad = () => {
-  const { codigo } = useParams<{ codigo: string }>();
+  const { codigo, plataforma } = useParams<{ codigo: string; plataforma: string }>();
   const navigate = useNavigate();
   const intl = useIntl();
 
@@ -30,10 +30,10 @@ export const useValidarIdentidad = () => {
 
   const [showInput, setShowInput] = useState(false);
 
-  const cargarCanjePorId = useCallback(async (id_canje: string) => {
+  const cargarCanjePorId = useCallback(async (id_canje: string, plataforma: string) => {
     try {
       setProcesando(true);
-      const response = await getCanjeByIdHttp(id_canje);
+      const response = await getCanjeByIdHttp(id_canje, plataforma);
       setCanje(response);
       setProcesando(false);
     } catch (error) {
@@ -44,29 +44,31 @@ export const useValidarIdentidad = () => {
     }
   }, []);
 
-  const cargarCodigoVerificacionPorId = useCallback(async (id_canje: string) => {
-    try {
-      setProcesando(true);
-      const response = await getCodigoVerificacionByIdHttp(id_canje);
-      console.log("estatus: ", response);
-      if (response == "solicitud_enviada") {
-        setCodigoVerificacion(response);
-      } else if (response == "identidad_validada") {
-        setVerificado(true);
+  const cargarCodigoVerificacionPorId = useCallback(
+    async (id_canje: string, plataforma: string) => {
+      try {
+        setProcesando(true);
+        const response = await getCodigoVerificacionByIdHttp(id_canje, plataforma);
+        if (response == "solicitud_enviada") {
+          setCodigoVerificacion(response);
+        } else if (response == "identidad_validada") {
+          setVerificado(true);
+        }
+        setProcesando(false);
+      } catch (error) {
+        setProcesando(false);
+        const message = getErrorHttpMessage(error);
+        setMensajeAlert(message || intl.formatMessage({ id: "no_existe_canje" }));
+        handleisAlertOpen();
       }
-      setProcesando(false);
-    } catch (error) {
-      setProcesando(false);
-      const message = getErrorHttpMessage(error);
-      setMensajeAlert(message || intl.formatMessage({ id: "no_existe_canje" }));
-      handleisAlertOpen();
-    }
-  }, []);
+    },
+    []
+  );
 
   const solicitarCodigoValidacion = async (data: any) => {
     try {
       setProcesandoCodigo(true);
-      const response = await solicitarCodigoValidacionHttp(data);
+      const response = await solicitarCodigoValidacionHttp({ ...data, plataforma });
       setCanje((prevCanje: any) => ({
         ...prevCanje,
         estado_validacion: "solicitud_enviada",
@@ -86,7 +88,7 @@ export const useValidarIdentidad = () => {
   const validarIdentidadPorCodigo = async (codigo: number, id_canje: number) => {
     try {
       setProcesando(true);
-      const response = await validarIdentidadPorCodigoHttp(codigo, id_canje);
+      const response = await validarIdentidadPorCodigoHttp(codigo, id_canje, plataforma);
       setCanje((prevCanje: any) => ({
         ...prevCanje,
         estado_validacion: "identidad_validada",
@@ -104,11 +106,11 @@ export const useValidarIdentidad = () => {
   };
 
   useEffect(() => {
-    if (codigo) {
-      cargarCanjePorId(codigo);
-      cargarCodigoVerificacionPorId(codigo);
+    if (codigo && plataforma) {
+      cargarCanjePorId(codigo, plataforma);
+      cargarCodigoVerificacionPorId(codigo, plataforma);
     }
-  }, [codigo]);
+  }, [codigo, plataforma]);
 
   return {
     validarIdentidadPorCodigo,
@@ -125,5 +127,7 @@ export const useValidarIdentidad = () => {
     procesando,
     intl,
     navigate,
+    codigo,
+    plataforma,
   };
 };

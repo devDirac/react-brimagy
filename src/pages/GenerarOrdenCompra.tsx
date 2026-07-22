@@ -230,6 +230,7 @@ function GenerarOrdenCompra(): JSX.Element {
     accionProducto,
     registrarNuevoPrecio,
     handleAccionProducto,
+    plataforma,
   } = useGenerarOrdenCompra(tipoUsuario);
 
   const independiente = () => {
@@ -431,7 +432,7 @@ function GenerarOrdenCompra(): JSX.Element {
                                 color="default"
                                 onClick={() => {
                                   setVerProveedor(p);
-                                  getCanjesPorProveedor(p.id);
+                                  getCanjesPorProveedor(p.id, plataforma);
                                   handleisAlertOpenVerCanje();
                                 }}
                               >
@@ -447,7 +448,7 @@ function GenerarOrdenCompra(): JSX.Element {
                                 color="default"
                                 onClick={() => {
                                   setVerProveedor(p);
-                                  getOCPorIdProveedor(p.id);
+                                  getOCPorIdProveedor(p.id, plataforma);
                                   handleisAlertOpenVerOC();
                                 }}
                               >
@@ -817,7 +818,9 @@ function GenerarOrdenCompra(): JSX.Element {
                       costo_sin_iva: formikAsignar.values.costo_sin_iva,
                       id_producto: productoSeleccionado?.id_producto,
                       id_validacion: productoSeleccionado?.id_validacion_producto,
+                      plataforma: plataforma,
                     };
+                    //console.log(datos);
                     accionProducto ? asignarProveedor(datos) : registrarNuevoPrecio(datos);
                   }}
                 >

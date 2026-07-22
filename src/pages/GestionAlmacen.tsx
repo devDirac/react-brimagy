@@ -255,6 +255,7 @@ function GestionAlmacen(): JSX.Element {
     getFieldColorCantidad,
     handleAccionProducto,
     accionProducto,
+    plataforma,
   } = useGestionAlmacen(tipoUsuario);
 
   const handleChangeEvidencias = (newFiles: File[] | null) => {
@@ -448,7 +449,6 @@ function GestionAlmacen(): JSX.Element {
                                 size="small"
                                 color="default"
                                 onClick={() => {
-                                  console.log(p);
                                   const datos = {
                                     id_orden_compra: p.id_orden_compra,
                                     id_producto_almacen: p.id,
@@ -472,6 +472,7 @@ function GestionAlmacen(): JSX.Element {
                                     const datos = {
                                       no_orden: p.no_orden,
                                       id_producto_almacen: p.id,
+                                      id_orden_compra: p.id_orden_compra,
                                     };
                                     const factura = {
                                       url_factura: p.url_factura,
@@ -888,6 +889,7 @@ function GestionAlmacen(): JSX.Element {
                       comentarios: formikCantidad.values.comentarios,
                       id_producto: verProducto?.id_producto,
                       tipo_registro: accionProducto ? "normal" : "nuevo_precio",
+                      plataforma: plataforma,
                     };
                     addProductoAlmacen(datos);
                   }}
@@ -1244,7 +1246,12 @@ function GestionAlmacen(): JSX.Element {
                 variant="standard"
                 name="tipo_encuesta"
                 value={tipoEncuesta || ""}
-                disabled={procesando}
+                disabled={procesando || encuestas.length === 0}
+                helperText={
+                  !encuestas || encuestas.length === 0
+                    ? intl.formatMessage({ id: "sin_encuestas_registradas" })
+                    : ""
+                }
                 onChange={(e) => {
                   const value = e.target.value;
                   setTipoEncuesta(value);
@@ -1270,8 +1277,8 @@ function GestionAlmacen(): JSX.Element {
                   const datos = {
                     id_canje: datosEncuestaEnviar?.id_canje,
                     tipo_encuesta: tipoEncuesta,
+                    plataforma: plataforma,
                   };
-                  //console.log(datos);
                   enviarEncuesta(datos);
                 }}
               >

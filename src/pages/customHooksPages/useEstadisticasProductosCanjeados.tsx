@@ -22,6 +22,7 @@ export const useEstadisticasProductosCanjeados = (tipoUsuario: number) => {
 
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
   const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const [procesando, setProcesando] = useState<boolean>(false);
   const [estadisticaProductosCanjeados, setEstadisticaProductosCanjeados] = useState<any>(null);
@@ -33,30 +34,34 @@ export const useEstadisticasProductosCanjeados = (tipoUsuario: number) => {
     setAuth(token);
   }, [token]);
 
-  const getEstadisticasCanjeados = useCallback(async (inicio?: string, fin?: string) => {
-    try {
-      setProcesando(true);
-      const params: Record<string, string> = {};
-      if (inicio) params.fecha_inicio = inicio;
-      if (fin) params.fecha_fin = fin;
-      const estadistica = await getEstadisticasCanjeadosHttp(params);
-      setEstadisticaProductosCanjeados(estadistica);
-      setProcesando(false);
-    } catch (error) {
-      setProcesando(false);
-      const message = getErrorHttpMessage(error);
-      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
-      handleisAlertOpen();
-    }
-  }, []);
+  const getEstadisticasCanjeados = useCallback(
+    async (inicio?: string, fin?: string, plataforma?: string) => {
+      try {
+        setProcesando(true);
+        const params: Record<string, string> = {};
+        if (inicio) params.fecha_inicio = inicio;
+        if (fin) params.fecha_fin = fin;
+        if (plataforma) params.plataforma = plataforma;
+        const estadistica = await getEstadisticasCanjeadosHttp(params);
+        setEstadisticaProductosCanjeados(estadistica);
+        setProcesando(false);
+      } catch (error) {
+        setProcesando(false);
+        const message = getErrorHttpMessage(error);
+        setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+        handleisAlertOpen();
+      }
+    },
+    []
+  );
 
   useEffect(() => {
-    getEstadisticasCanjeados();
-  }, []);
+    getEstadisticasCanjeados(undefined, undefined, plataforma);
+  }, [plataforma]);
 
   useEffect(() => {
     if (fechaInicio || fechaFin) {
-      getEstadisticasCanjeados(fechaInicio, fechaFin);
+      getEstadisticasCanjeados(fechaInicio, fechaFin, plataforma);
     }
   }, [fechaInicio, fechaFin]);
 

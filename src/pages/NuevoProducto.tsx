@@ -772,134 +772,6 @@ function NuevoProducto(): JSX.Element {
                     }}
                   />
                 </Grid>
-                {/*<Grid item xs={12} sm={4}>
-                  <TextField
-                    id="total_envio"
-                    fullWidth
-                    label={`${intl.formatMessage({ id: "input_total_envio" })} *`}
-                    variant="standard"
-                    name="total_envio"
-                    type="number"
-                    value={formik.values.total_envio || ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      formik.setFieldValue("total_envio", value);
-                    }}
-                    onBlur={formik.handleBlur}
-                    error={formik.touched.total_envio && Boolean(formik.errors.total_envio)}
-                    helperText={formik.touched.total_envio && formik.errors.total_envio}
-                    sx={{
-                      "& .MuiInputLabel-root": {
-                        color: getFieldColor("total_envio"),
-                      },
-                      "& .MuiInput-underline:after": {
-                        borderBottomColor: getFieldColor("total_envio"),
-                      },
-                      "& .MuiInput-underline:before": {
-                        borderBottomColor: getFieldColor("total_envio"),
-                      },
-                      "& .MuiInputBase-input": {
-                        color: getFieldColor("total_envio"),
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <TextField
-                    id="total"
-                    fullWidth
-                    label={`${intl.formatMessage({ id: "input_total" })} *`}
-                    variant="standard"
-                    name="total"
-                    type="number"
-                    value={formik.values.total || ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      formik.setFieldValue("total", value);
-                    }}
-                    onBlur={formik.handleBlur}
-                    error={formik.touched.total && Boolean(formik.errors.total)}
-                    helperText={formik.touched.total && formik.errors.total}
-                    sx={{
-                      "& .MuiInputLabel-root": {
-                        color: getFieldColor("total"),
-                      },
-                      "& .MuiInput-underline:after": {
-                        borderBottomColor: getFieldColor("total"),
-                      },
-                      "& .MuiInput-underline:before": {
-                        borderBottomColor: getFieldColor("total"),
-                      },
-                      "& .MuiInputBase-input": {
-                        color: getFieldColor("total"),
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <TextField
-                    id="puntos"
-                    fullWidth
-                    label={`${intl.formatMessage({ id: "input_puntos" })} *`}
-                    variant="standard"
-                    name="puntos"
-                    type="number"
-                    value={formik.values.puntos || ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      formik.setFieldValue("puntos", value);
-                    }}
-                    onBlur={formik.handleBlur}
-                    error={formik.touched.puntos && Boolean(formik.errors.puntos)}
-                    helperText={formik.touched.puntos && formik.errors.puntos}
-                    sx={{
-                      "& .MuiInputLabel-root": {
-                        color: getFieldColor("puntos"),
-                      },
-                      "& .MuiInput-underline:after": {
-                        borderBottomColor: getFieldColor("puntos"),
-                      },
-                      "& .MuiInput-underline:before": {
-                        borderBottomColor: getFieldColor("puntos"),
-                      },
-                      "& .MuiInputBase-input": {
-                        color: getFieldColor("puntos"),
-                      },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <TextField
-                    id="factor"
-                    fullWidth
-                    label={`${intl.formatMessage({ id: "input_factor" })} *`}
-                    variant="standard"
-                    name="factor"
-                    type="number"
-                    value={formik.values.factor || ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      formik.setFieldValue("factor", value);
-                    }}
-                    onBlur={formik.handleBlur}
-                    error={formik.touched.factor && Boolean(formik.errors.factor)}
-                    helperText={formik.touched.factor && formik.errors.factor}
-                    sx={{
-                      "& .MuiInputLabel-root": {
-                        color: getFieldColor("factor"),
-                      },
-                      "& .MuiInput-underline:after": {
-                        borderBottomColor: getFieldColor("factor"),
-                      },
-                      "& .MuiInput-underline:before": {
-                        borderBottomColor: getFieldColor("factor"),
-                      },
-                      "& .MuiInputBase-input": {
-                        color: getFieldColor("factor"),
-                      },
-                    }}
-                  />
-                </Grid>*/}
                 <Grid item xs={12} sm={4}>
                   <TextField
                     id="tipo_producto"
@@ -1054,30 +926,6 @@ function NuevoProducto(): JSX.Element {
                     }}
                   />
                 </Grid>
-                {/*<Grid item xs={12} sm={4}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
-                    <DatePicker
-                      label={intl.formatMessage({ id: "input_fecha_vigencia" })}
-                      openTo="year"
-                      format="YYYY/MM/DD"
-                      views={["year", "month", "day"]}
-                      value={formik.values.vigencia ? dayjs(formik.values.vigencia) : null}
-                      onChange={(newValue) => {
-                        formik.setFieldValue(
-                          "vigencia",
-                          newValue ? dayjs(newValue).format("YYYY-MM-DD") : ""
-                        );
-                      }}
-                      slotProps={{
-                        textField: {
-                          error: false,
-                          variant: "standard",
-                        },
-                      }}
-                      sx={{ width: "100%" }}
-                    />
-                  </LocalizationProvider>
-                </Grid>*/}
                 <Grid
                   item
                   xs={12}
@@ -1102,18 +950,8 @@ function NuevoProducto(): JSX.Element {
                       formData.append("id_proveedor", formik.values.id_proveedor);
                       formData.append("id_catalogo", formik.values.id_catalogo);
                       formData.append("costo_con_iva", formik.values.costo_con_iva);
-                      //formData.append("costo_sin_iva", formik.values.costo_sin_iva);
                       formData.append("costo_puntos_con_iva", formik.values.costo_puntos_con_iva);
-                      /*formData.append("costo_puntos_sin_iva", formik.values.costo_puntos_sin_iva);
-                      formData.append("fee_brimagy", formik.values.fee_brimagy);
-                      formData.append("subtotal", formik.values.subtotal);
-                      formData.append("envio_base", formik.values.envio_base);
-                      formData.append("costo_caja", formik.values.costo_caja);*/
                       formData.append("envio_extra", formik.values.envio_extra);
-                      /*formData.append("total_envio", formik.values.total_envio);
-                      formData.append("total", formik.values.total);
-                      formData.append("puntos", formik.values.puntos);
-                      formData.append("factor", formik.values.factor);*/
                       formData.append("tipo_registro", "individual");
                       formData.append("tipo_producto", formik.values.tipo_producto);
                       formData.append("id_plataforma", formik.values.plataforma);

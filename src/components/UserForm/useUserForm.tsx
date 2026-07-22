@@ -2,11 +2,14 @@ import { useMaterialUIController } from "context";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { StoreType } from "../../types/genericTypes";
+import { getErrorHttpMessage } from "../../utils";
 import _ from "lodash";
 import type { AddUserFormProps } from "./types";
 import { useIntl } from "react-intl";
+import { getTiposUsuarioHttp } from "actions/users";
 
 export const useUserInfo = (props: AddUserFormProps) => {
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
   const intl = useIntl();
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
@@ -18,9 +21,36 @@ export const useUserInfo = (props: AddUserFormProps) => {
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
 
+  const [procesando, setProcesando] = useState<boolean>(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [mensajeAlert, setMensajeAlert] = useState("");
+  const [errorLogin, setErrorLogin] = useState(false);
+  const handleisAlertOpen = () => setIsAlertOpen(true);
+  const handleisAlerClose = () => setIsAlertOpen(false);
+
+  const [tipoUsuarios, setTipoUsuarios] = useState<any[]>([]);
+
   const setImagen = (data: any) => {
     setFoto(data);
   };
+
+  const getTiposUsuario = async (plataforma?: any) => {
+    try {
+      setProcesando(true);
+      const data = await getTiposUsuarioHttp(plataforma);
+      setTipoUsuarios(data);
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+      handleisAlertOpen();
+    }
+  };
+
+  useEffect(() => {
+    getTiposUsuario(plataforma);
+  }, [plataforma]);
 
   return {
     intl,
@@ -40,5 +70,6 @@ export const useUserInfo = (props: AddUserFormProps) => {
     setImagen,
     permisos,
     setPermisos,
+    tipoUsuarios,
   };
 };

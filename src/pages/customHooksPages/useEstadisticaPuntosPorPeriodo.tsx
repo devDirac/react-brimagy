@@ -27,6 +27,7 @@ export const useEstadisticaPuntosPorPeriodo = (tipoUsuario: number) => {
 
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
   const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const [procesando, setProcesando] = useState<boolean>(false);
   const [estadisticaProductosCanjeados, setEstadisticaProductosCanjeados] = useState<any>(null);
@@ -40,13 +41,14 @@ export const useEstadisticaPuntosPorPeriodo = (tipoUsuario: number) => {
   }, [token]);
 
   const getEstadisticasPuntosPorPeriodo = useCallback(
-    async (agrupacion?: string, inicio?: string, fin?: string) => {
+    async (agrupacion?: string, inicio?: string, fin?: string, plataforma?: string) => {
       try {
         setProcesando(true);
         const params: Record<string, string> = {};
         if (agrupacion) params.agrupacion = agrupacion;
         if (inicio) params.fecha_inicio = inicio;
         if (fin) params.fecha_fin = fin;
+        if (plataforma) params.plataforma = plataforma;
         const estadistica = await getEstadisticasPuntosPorTipoProductoHttp(params);
         setEstadisticaProductosCanjeados(estadistica);
         setProcesando(false);
@@ -61,12 +63,12 @@ export const useEstadisticaPuntosPorPeriodo = (tipoUsuario: number) => {
   );
 
   useEffect(() => {
-    getEstadisticasPuntosPorPeriodo();
-  }, []);
+    getEstadisticasPuntosPorPeriodo(agrupacion, undefined, undefined, plataforma);
+  }, [plataforma]);
 
   useEffect(() => {
     if (fechaInicio || fechaFin) {
-      getEstadisticasPuntosPorPeriodo(agrupacion, fechaInicio, fechaFin);
+      getEstadisticasPuntosPorPeriodo(agrupacion, fechaInicio, fechaFin, plataforma);
     }
   }, [fechaInicio, fechaFin]);
 
@@ -75,7 +77,7 @@ export const useEstadisticaPuntosPorPeriodo = (tipoUsuario: number) => {
       isMounted.current = true;
       return;
     }
-    getEstadisticasPuntosPorPeriodo(agrupacion, fechaInicio, fechaFin);
+    getEstadisticasPuntosPorPeriodo(agrupacion, fechaInicio, fechaFin, plataforma);
   }, [agrupacion]);
 
   return {

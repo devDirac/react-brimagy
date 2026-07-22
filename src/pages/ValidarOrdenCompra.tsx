@@ -249,11 +249,7 @@ function ValidarOrdenCompra(): JSX.Element {
                           Vendedor
                         </Typography>
                         <Typography variant="body1" fontWeight="bold" sx={{ color: "#A5EB2F" }}>
-                          {ordenCompra?.orden_compra?.nombre_vendedor +
-                            " " +
-                            ordenCompra?.orden_compra?.primer_apellido +
-                            " " +
-                            ordenCompra?.orden_compra?.segundo_apellido}
+                          {ordenCompra?.orden_compra?.nombre_vendedor}
                         </Typography>
                       </Grid>
                       <Grid

@@ -22,6 +22,7 @@ export const useEstadisticasComparativaPage = (tipoUsuario: number) => {
 
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
   const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const [procesando, setProcesando] = useState<boolean>(false);
   const [estadisticaComparativa, setEstadisticaComparativa] = useState<any>(null);
@@ -40,7 +41,8 @@ export const useEstadisticasComparativaPage = (tipoUsuario: number) => {
       periodo1_inicio?: string,
       periodo1_fin?: string,
       periodo2_inicio?: string,
-      periodo2_fin?: string
+      periodo2_fin?: string,
+      plataforma?: string
     ) => {
       try {
         setProcesando(true);
@@ -49,6 +51,7 @@ export const useEstadisticasComparativaPage = (tipoUsuario: number) => {
         if (periodo1_fin) params.periodo1_fin = periodo1_fin;
         if (periodo2_inicio) params.periodo2_inicio = periodo2_inicio;
         if (periodo2_fin) params.periodo2_fin = periodo2_fin;
+        if (plataforma) params.plataforma = plataforma;
         const estadistica = await getEstadisticasComparativaHttp(params);
         setEstadisticaComparativa(estadistica);
         setProcesando(false);
@@ -63,12 +66,18 @@ export const useEstadisticasComparativaPage = (tipoUsuario: number) => {
   );
 
   useEffect(() => {
-    getEstadisticasComparativa();
-  }, []);
+    getEstadisticasComparativa(undefined, undefined, undefined, undefined, plataforma);
+  }, [plataforma]);
 
   useEffect(() => {
     if (periodoUnoInicio || periodoUnoFin || periodoDosInicio || periodoDosFin) {
-      getEstadisticasComparativa(periodoUnoInicio, periodoUnoFin, periodoDosInicio, periodoDosFin);
+      getEstadisticasComparativa(
+        periodoUnoInicio,
+        periodoUnoFin,
+        periodoDosInicio,
+        periodoDosFin,
+        plataforma
+      );
     }
   }, [periodoUnoInicio, periodoUnoFin, periodoDosInicio, periodoDosFin]);
 
@@ -86,5 +95,6 @@ export const useEstadisticasComparativaPage = (tipoUsuario: number) => {
     setPeriodoDosInicio,
     periodoDosFin,
     setPeriodoDosFin,
+    plataforma,
   };
 };

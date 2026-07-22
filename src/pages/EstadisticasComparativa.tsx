@@ -51,6 +51,7 @@ function EstadisticasComparativaPage(): JSX.Element {
     setPeriodoDosInicio,
     periodoDosFin,
     setPeriodoDosFin,
+    plataforma,
   } = useEstadisticasComparativaPage(tipoUsuario);
 
   return (
@@ -69,6 +70,7 @@ function EstadisticasComparativaPage(): JSX.Element {
           setPeriodoDosInicio={setPeriodoDosInicio}
           periodoDosFin={periodoDosFin}
           setPeriodoDosFin={setPeriodoDosFin}
+          plataforma={plataforma}
         />
       </Grid>
       <Footer />

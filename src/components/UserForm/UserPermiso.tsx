@@ -38,6 +38,13 @@ import LogoDevIcon from "@mui/icons-material/LogoDev";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import FaceSharpIcon from "@mui/icons-material/FaceSharp";
 
+import KitchenIcon from "@mui/icons-material/Kitchen";
+import BusinessIcon from "@mui/icons-material/Business";
+import HandymanIcon from "@mui/icons-material/Handyman";
+
+import AcUnitIcon from "@mui/icons-material/AcUnit";
+import WavesIcon from "@mui/icons-material/Waves";
+
 const UserPermiso: React.FC<AddUserFormProps> = (props: AddUserFormProps) => {
   if (!props.formik) {
     return null;
@@ -59,6 +66,7 @@ const UserPermiso: React.FC<AddUserFormProps> = (props: AddUserFormProps) => {
     setImagen,
     permisos,
     setPermisos,
+    tipoUsuarios,
   } = useUserInfo(props);
   const notificarCambios = () => {
     if (props.onDatosChange) {
@@ -71,26 +79,38 @@ const UserPermiso: React.FC<AddUserFormProps> = (props: AddUserFormProps) => {
     notificarCambios();
   }, [permisos]);
 
-  const isSuperAdmin = props?.permisoUser === 6;
-  const isEditor = props?.permisoUser === 2;
+  const isSuperAdmin = props?.permisoUser === 7;
 
-  const items = [
+  const ICON_CONFIG: Record<string, { color: string; icon: typeof LogoDevIcon }> = {
+    "Empleado Mabe": { color: "#6d45a6", icon: KitchenIcon },
+    Institucional: { color: "#1a73e8", icon: BusinessIcon },
+    Operario: { color: "#ed6c02", icon: HandymanIcon },
+    "Oso Polar": { color: "#00838f", icon: AcUnitIcon },
+    "Leon Marino": { color: "#c62828", icon: WavesIcon },
+    Pingüino: { color: "#455a64", icon: AcUnitIcon },
+  };
+
+  const DEFAULT_ICON_CONFIG = { color: "#757575", icon: FaceSharpIcon };
+
+  /*const items = [
     ...(isSuperAdmin
-      ? [
-          { nombre: "Super Admin", color: "#6d45a6", icon: LogoDevIcon, id: 6 },
-          //{ nombre: "Editor", color: "#1976d2", icon: FaceSharpIcon, id: 2 },
-        ]
+      ? [{ nombre: "Super Admin", color: "#6d45a6", icon: LogoDevIcon, id: 6 }]
       : []),
-    ...(isEditor
-      ? [
-          { nombre: "Super Admin", color: "#6d45a6", icon: LogoDevIcon, id: 6 },
-          //{ nombre: "Editor", color: "#1976d2", icon: FaceSharpIcon, id: 2 },
-        ]
-      : []),
+    ...(isEditor ? [{ nombre: "Super Admin", color: "#6d45a6", icon: LogoDevIcon, id: 6 }] : []),
     { nombre: "Usuario", color: "#ed6c02", icon: PersonAddAltIcon, id: 1 },
-  ];
+  ];*/
 
-  const gridSize = 12 / items.length;
+  const items = tipoUsuarios.map((tipo) => {
+    const config = ICON_CONFIG[tipo.nombre] || DEFAULT_ICON_CONFIG;
+    return {
+      nombre: tipo.nombre,
+      color: config.color,
+      icon: config.icon,
+      id: tipo.id,
+    };
+  });
+
+  const gridSize = 12 / (items.length || 1);
 
   return (
     <MDBox>
@@ -102,7 +122,7 @@ const UserPermiso: React.FC<AddUserFormProps> = (props: AddUserFormProps) => {
       </MDBox>
       <MDBox mt={1.625}>
         <FormikProvider value={props?.formik}>
-          <Form.Group className="mb-3 ">
+          <Form.Group className="mb-3">
             <Grid container spacing={3}>
               {items.map((item) => {
                 const Icon = item.icon;

@@ -76,6 +76,7 @@ interface EstadisticasHomeData {
 interface EstadisticasHomeModuloProps {
   verEstadisticas?: EstadisticasHomeData | null;
   procesando?: boolean;
+  plataforma?: string;
 }
 
 // Mapeo de colores por estatus
@@ -87,7 +88,11 @@ const estatusColorMap: Record<string, "success" | "error" | "warning" | "info" |
 
 const PIE_COLORS = ["info", "primary", "dark", "secondary", "warning", "error", "success"] as const;
 
-const EstadisticasHome = ({ verEstadisticas, procesando }: EstadisticasHomeModuloProps) => {
+const EstadisticasHome = ({
+  verEstadisticas,
+  procesando,
+  plataforma,
+}: EstadisticasHomeModuloProps) => {
   const intl = useIntl();
 
   if (!verEstadisticas && !procesando) return null;
@@ -107,11 +112,20 @@ const EstadisticasHome = ({ verEstadisticas, procesando }: EstadisticasHomeModul
       ),
     })) ?? [];
 
-  const ESPECIE_LABEL: Record<string, string> = {
+  const ESPECIE_LABEL_PUNTOTES: Record<string, string> = {
     empleado_mabe: "Empleado Mabe",
     institucional: "Institucional",
     operario: "Operario",
   };
+
+  const ESPECIE_LABEL_CLUB_BOHN: Record<string, string> = {
+    oso_polar: "Oso Polar",
+    leon_marino: "Leon Marino",
+    pinguino: "Pingüino",
+  };
+
+  const ESPECIE_LABEL =
+    plataforma === "club_bohn" ? ESPECIE_LABEL_CLUB_BOHN : ESPECIE_LABEL_PUNTOTES;
 
   const PIE_COLORS = ["info", "warning", "primary"] as const;
 
@@ -214,7 +228,7 @@ const EstadisticasHome = ({ verEstadisticas, procesando }: EstadisticasHomeModul
                   "telefono",
                   "ciudad",
                   //"creacion_canje",
-                  "estado_validacion",
+                  "puntos_canjeados",
                 ]}
               />
             </Grid>
@@ -260,11 +274,19 @@ const EstadisticasHome = ({ verEstadisticas, procesando }: EstadisticasHomeModul
               const getTipoUsuario = (tipo: number) =>
                 d.puntos_por_usuario?.find((c) => c.tipo === tipo);
 
-              const configs = [
+              const configsPuntotes = [
                 { tipo: 1, title: "Empleado Mabe", color: "warning" as const },
                 { tipo: 2, title: "Institucional", color: "primary" as const },
                 { tipo: 3, title: "Operario", color: "primary" as const },
               ];
+
+              const configsClubBohn = [
+                { tipo: 4, title: "Oso Polar", color: "primary" as const },
+                { tipo: 5, title: "Leon Marino", color: "primary" as const },
+                { tipo: 6, title: "Pingüino", color: "primary" as const },
+              ];
+
+              const configs = plataforma === "club_bohn" ? configsClubBohn : configsPuntotes;
 
               return configs.map(({ tipo, title, color }) => {
                 const puntos = getTipoUsuario(tipo);

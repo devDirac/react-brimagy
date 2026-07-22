@@ -92,6 +92,7 @@ import EstadisticasProductosCanjeados from "pages/EstadisticasProductosCanjeados
 import EstadisticaPuntosCategoria from "pages/EstadisticaPuntosCategorias";
 import EstadisticasPuntosPorPeriodo from "pages/EstadisticaPuntosPorPeriodo";
 import EstadisticasComparativaPage from "pages/EstadisticasComparativa";
+import UsuariosPlataforma from "pages/UsuariosPlataforma";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
@@ -196,7 +197,6 @@ export default function App() {
               brand={
                 (transparentSidenav && !darkMode) || whiteSidenav ? brandBrimagy : brandBrimagy
               }
-              //brandName=""
               routes={routes
                 .filter((r: any) => (r?.allow || []).includes(tipoUsuario))
                 .map((a: any, key: any) => {
@@ -216,9 +216,12 @@ export default function App() {
         )}
         <Routes>
           {/* inicia rutas publicas */}
-          <Route path="/validar-canje/:codigo" element={<ValidarIdentidad />} />
+          <Route path="/validar-canje/:codigo/:plataforma" element={<ValidarIdentidad />} />
           <Route path="/validar-ordencompra/:id_ordencompra" element={<ValidarOrdenCompra />} />
-          <Route path="/encuesta/:tipo_encuesta/:id_canje" element={<EncuestaUsuario />} />
+          <Route
+            path="/encuesta/:tipo_encuesta/:id_canje/:plataforma"
+            element={<EncuestaUsuario />}
+          />
 
           <Route path="/login" element={<PublicRouter />}>
             <Route path="/login" element={<LoginPageIlustrator />} />
@@ -247,6 +250,7 @@ export default function App() {
             {/* CONFIGURACIÓN */}
             <Route path="/variables-globales" element={<VariablesGlobales />} />
             <Route path="/plataformas" element={<Plataformas />} />
+            <Route path="/usuarios-plataforma" element={<UsuariosPlataforma />} />
             {/* PRODUCTOS */}
             <Route path="/nuevo-producto" element={<NuevoProducto />} />
             <Route path="/productos-digitales" element={<ListaProductos />} />

@@ -78,6 +78,7 @@ function EncuestaUsuario(): JSX.Element {
     setRespuestasUsuario,
     handleRespuestaChange,
     todasRespuestasCompletas,
+    plataforma,
   } = useEncuestaUsuario();
 
   const tipoEncuestaMap: { [key: string]: string } = {
@@ -119,8 +120,6 @@ function EncuestaUsuario(): JSX.Element {
               value={valorActual}
               onChange={(e) => handleRespuestaChange(pregunta.id, e.target.value)}
               disabled={yaRespondida}
-              // value={respuestas[pregunta.id] || ""}
-              // onChange={(e) => handleRespuestaChange(pregunta.id, e.target.value)}
             />
           </Grid>
         );
@@ -418,6 +417,7 @@ function EncuestaUsuario(): JSX.Element {
                             id_canje: id_canje,
                             respuestas: respuestasUsuario,
                             tipo_encuesta: preguntas?.[0].tipo_encuesta,
+                            plataforma: plataforma,
                           };
                           addRespuestasEncuestaUsuario(datos);
                           //console.log(datos);

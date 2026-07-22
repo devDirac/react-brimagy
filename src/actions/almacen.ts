@@ -2,7 +2,7 @@ import { GeneralHttpResponse } from "../types/genericTypes";
 import axios from "axios";
 import env from "react-dotenv";
 
-export const getProductosAlmacenHttp = async (search?: string) => {
+/*export const getProductosAlmacenHttp = async (search?: string) => {
   try {
     let url = `${env.API_URL}/getProductosAlmacen`;
 
@@ -16,7 +16,22 @@ export const getProductosAlmacenHttp = async (search?: string) => {
     const promise = new Promise((_, reject) => reject(error));
     return promise;
   }
+};*/
+export const getProductosAlmacenHttp = async (search?: string, plataforma?: string) => {
+  try {
+    const url = new URL(`${env.API_URL}/getProductosAlmacen`);
+
+    if (search) url.searchParams.append("search", search);
+    if (plataforma) url.searchParams.append("plataforma", plataforma);
+
+    const response = await axios.get(url.toString());
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
 };
+
 export const getProductoAlmacenPorIdHttp = async (data: any) => {
   try {
     const response = await axios.get(`${env.API_URL}/getProductoAlmacenPorId`, {

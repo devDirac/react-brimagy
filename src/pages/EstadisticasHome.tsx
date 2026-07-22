@@ -45,7 +45,7 @@ function EstadisticasHomePage(): JSX.Element {
   const userName = useSelector((state: StoreType) => state?.app?.user?.data?.name || false);
   const fotoUser: any = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
 
-  const { procesando, isAlertOpen, handleisAlerClose, mensajeAlert, estadistica } =
+  const { procesando, isAlertOpen, handleisAlerClose, mensajeAlert, estadistica, plataforma } =
     useEstadisticasHome(tipoUsuario);
 
   return (
@@ -53,7 +53,11 @@ function EstadisticasHomePage(): JSX.Element {
       <DashboardNavbar />
       <Header tipoUsuario={tipoUsuario} nombreUsuario={userName} fotoPerfil={fotoUser} />
       <Grid container spacing={2} mb={2}>
-        <EstadisticasHome verEstadisticas={estadistica} procesando={procesando} />
+        <EstadisticasHome
+          verEstadisticas={estadistica}
+          procesando={procesando}
+          plataforma={plataforma}
+        />
       </Grid>
       <Footer />
       <Backdrop

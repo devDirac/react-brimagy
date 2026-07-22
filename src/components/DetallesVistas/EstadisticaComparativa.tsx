@@ -69,6 +69,7 @@ interface EstadisticasHomeModuloProps {
   setPeriodoDosInicio: (v: string) => void;
   periodoDosFin: string;
   setPeriodoDosFin: (v: string) => void;
+  plataforma?: string;
 }
 
 const EstadisticaComparativaModulo = ({
@@ -82,6 +83,7 @@ const EstadisticaComparativaModulo = ({
   setPeriodoDosInicio,
   periodoDosFin,
   setPeriodoDosFin,
+  plataforma,
 }: EstadisticasHomeModuloProps) => {
   const intl = useIntl();
 
@@ -352,9 +354,9 @@ const EstadisticaComparativaModulo = ({
                 const total =
                   periodo?.por_usuario?.reduce((acc, u) => acc + (u.total_puntos ?? 0), 0) ?? 0;
 
-                const u1 = getU(1);
-                const u2 = getU(2);
-                const u3 = getU(3);
+                const u1 = plataforma === "club_bohn" ? getU(4) : getU(1);
+                const u2 = plataforma === "club_bohn" ? getU(5) : getU(2);
+                const u3 = plataforma === "club_bohn" ? getU(6) : getU(3);
 
                 return { u1, u2, u3, total };
               };
@@ -371,17 +373,17 @@ const EstadisticaComparativaModulo = ({
                       title="Periodo 1"
                       count={p1.total}
                       empleado_mabe={{
-                        label: "Empleado Mabe",
+                        label: plataforma === "club_bohn" ? "Oso Polar" : "Empleado Mabe",
                         total_puntos: p1.u1?.total_puntos ?? 0,
                         porcentaje: calcPorcentaje(p1.u1?.total_puntos ?? 0, p1.total),
                       }}
                       institucional={{
-                        label: "Institucional",
+                        label: plataforma === "club_bohn" ? "Leon Marino" : "Institucional",
                         total_puntos: p1.u2?.total_puntos ?? 0,
                         porcentaje: calcPorcentaje(p1.u2?.total_puntos ?? 0, p1.total),
                       }}
                       operario={{
-                        label: "Operario",
+                        label: plataforma === "club_bohn" ? "Pingüino" : "Operario",
                         total_puntos: p1.u3?.total_puntos ?? 0,
                         porcentaje: calcPorcentaje(p1.u3?.total_puntos ?? 0, p1.total),
                       }}
@@ -394,17 +396,17 @@ const EstadisticaComparativaModulo = ({
                       title="Periodo 2"
                       count={p2.total}
                       empleado_mabe={{
-                        label: "Empleado Mabe",
+                        label: plataforma === "club_bohn" ? "Oso Polar" : "Empleado Mabe",
                         total_puntos: p2.u1?.total_puntos ?? 0,
                         porcentaje: calcPorcentaje(p2.u1?.total_puntos ?? 0, p2.total),
                       }}
                       institucional={{
-                        label: "Institucional",
+                        label: plataforma === "club_bohn" ? "Leon Marino" : "Institucional",
                         total_puntos: p2.u2?.total_puntos ?? 0,
                         porcentaje: calcPorcentaje(p2.u2?.total_puntos ?? 0, p2.total),
                       }}
                       operario={{
-                        label: "Operario",
+                        label: plataforma === "club_bohn" ? "Pingüino" : "Operario",
                         total_puntos: p2.u3?.total_puntos ?? 0,
                         porcentaje: calcPorcentaje(p2.u3?.total_puntos ?? 0, p2.total),
                       }}

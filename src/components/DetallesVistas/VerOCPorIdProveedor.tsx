@@ -262,46 +262,67 @@ const OCPorIdProveedorModal = ({
         <Grid item xs={12}>
           <Paper elevation={2} sx={{ p: 2 }}>
             <Grid container spacing={2}>
-              {ordenesCompraPaginadas.map((oc) => {
-                return (
-                  <Grid container spacing={2} key={oc.id} sx={{ mt: 1 }}>
-                    <Grid item xs={6} md={4}>
-                      <Typography variant="body2" color="text.secondary">
-                        No. orden
-                      </Typography>
-                      <Typography variant="body2" fontWeight="medium">
-                        {oc.no_orden}
-                      </Typography>
+              {ordenesCompraPaginadas.length > 0 ? (
+                ordenesCompraPaginadas.map((oc) => {
+                  return (
+                    <Grid container spacing={2} key={oc.id} sx={{ mt: 1 }}>
+                      <Grid item xs={6} md={4}>
+                        <Typography variant="body2" color="text.secondary">
+                          No. orden
+                        </Typography>
+                        <Typography variant="body2" fontWeight="medium">
+                          {oc.no_orden}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6} md={4}>
+                        <Typography variant="body2" color="text.secondary">
+                          No. canjes
+                        </Typography>
+                        <Typography variant="body2" fontWeight="medium">
+                          {oc.total_productos}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6} md={4}>
+                        <Typography variant="body2" color="text.secondary">
+                          Acciones
+                        </Typography>
+                        <Typography variant="body2" fontWeight="medium">
+                          <Tooltip title={intl.formatMessage({ id: "ver_orden_compra" })}>
+                            <IconButton
+                              onClick={() => {
+                                getOCPorId(oc.id);
+                                handleisAlertOpenVerCanje();
+                              }}
+                              sx={{ color: darkMode ? "#fff" : "#13e9bf", padding: "0" }}
+                            >
+                              <ManageSearchIcon fontSize="large" />
+                            </IconButton>
+                          </Tooltip>
+                        </Typography>
+                      </Grid>
                     </Grid>
-                    <Grid item xs={6} md={4}>
-                      <Typography variant="body2" color="text.secondary">
-                        No. canjes
-                      </Typography>
-                      <Typography variant="body2" fontWeight="medium">
-                        {oc.total_productos}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={6} md={4}>
-                      <Typography variant="body2" color="text.secondary">
-                        Acciones
-                      </Typography>
-                      <Typography variant="body2" fontWeight="medium">
-                        <Tooltip title={intl.formatMessage({ id: "ver_orden_compra" })}>
-                          <IconButton
-                            onClick={() => {
-                              getOCPorId(oc.id);
-                              handleisAlertOpenVerCanje();
-                            }}
-                            sx={{ color: darkMode ? "#fff" : "#13e9bf", padding: "0" }}
-                          >
-                            <ManageSearchIcon fontSize="large" />
-                          </IconButton>
-                        </Tooltip>
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                );
-              })}
+                  );
+                })
+              ) : (
+                <Grid item xs={12}>
+                  <Box
+                    sx={{
+                      textAlign: "center",
+                      py: 2,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "100%",
+                      gap: 1,
+                    }}
+                  >
+                    <Typography variant="h6" color="text.secondary">
+                      {intl.formatMessage({ id: "no_hay_ordenes_compra" })}
+                    </Typography>
+                  </Box>
+                </Grid>
+              )}
             </Grid>
             <Divider sx={{ mb: 0 }} />
             {/* Componente de paginación */}

@@ -26,7 +26,8 @@ export const getCatalogoProductosHttp = async (
   tipo_producto?: string,
   search?: string,
   fecha1?: Date,
-  fecha2?: Date
+  fecha2?: Date,
+  plataforma?: string
 ) => {
   try {
     const url = new URL(`${env.API_URL}/getCatalogoProductos`);
@@ -35,6 +36,7 @@ export const getCatalogoProductosHttp = async (
     if (search) url.searchParams.append("search", search);
     if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
     if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
+    if (plataforma) url.searchParams.append("plataforma", plataforma);
 
     const response = await axios.get(url.toString());
     return response?.data || [];
@@ -87,6 +89,8 @@ export const getBusquedaInteligenteHttp = async (datos?: any) => {
       params: {
         puntos: datos.puntos,
         categoria: datos.categoria,
+        plataforma: datos.plataforma,
+        tipo_producto: datos.tipo_producto,
       },
     });
     return response?.data || [];
@@ -120,10 +124,8 @@ export const verificarSkusHttp = async (skus: string[]) => {
 
 export const verificarIdProductoBrimagyHttp = async (ids?: string[]) => {
   try {
-    const response = await axios.get(`${env.API_URL}/verificarIdProductoBrimagy`, {
-      params: {
-        ids: ids,
-      },
+    const response = await axios.post(`${env.API_URL}/verificarIdProductoBrimagy`, {
+      ids: ids,
     });
     return response?.data || [];
   } catch (error) {
@@ -170,6 +172,25 @@ export const getCatalogoProductosDigitalesBrimagyHttp = async (
 ) => {
   try {
     const url = new URL(`${env.API_URL}/getCatalogoProductosDigitalesBrimagy`);
+
+    if (search) url.searchParams.append("search", search);
+    if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
+    if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
+
+    const response = await axios.get(url.toString());
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+export const getCatalogoClubBohnBrimagyHttp = async (
+  search?: string,
+  fecha1?: Date,
+  fecha2?: Date
+) => {
+  try {
+    const url = new URL(`${env.API_URL}/getCatalogoClubBohnBrimagy`);
 
     if (search) url.searchParams.append("search", search);
     if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
@@ -453,6 +474,30 @@ export const activarFotoMontoHttp = async (data: any) => {
   try {
     const response: GeneralHttpResponse = await axios.put(
       `${env.API_URL}${"/activarFotoMonto"}`,
+      data
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+export const marcarNoDisponibleHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.put(
+      `${env.API_URL}${"/marcarNoDisponible"}`,
+      data
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+export const marcarDisponibleHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.put(
+      `${env.API_URL}${"/marcarDisponible"}`,
       data
     );
     return response?.data || [];

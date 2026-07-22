@@ -14,18 +14,26 @@ export const crearCategoriaHttp = async (data: any) => {
     return promise;
   }
 };
-export const getCategoriasHttp = async () => {
+export const getCategoriasHttp = async (plataforma?: string) => {
   try {
-    const response = await axios.get(`${env.API_URL}${"/getCategorias"}`);
+    const url = new URL(`${env.API_URL}/getCategorias`);
+
+    if (plataforma) url.searchParams.append("plataforma", plataforma);
+
+    const response = await axios.get(url.toString());
     return response?.data || [];
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));
     return promise;
   }
 };
-export const getCategoriasPrincipalHttp = async () => {
+export const getCategoriasPrincipalHttp = async (plataforma?: string) => {
   try {
-    const response = await axios.get(`${env.API_URL}${"/getCategoriasPrincipal"}`);
+    const url = new URL(`${env.API_URL}/getCategoriasPrincipal`);
+
+    if (plataforma) url.searchParams.append("plataforma", plataforma);
+
+    const response = await axios.get(url.toString());
     return response?.data || [];
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));

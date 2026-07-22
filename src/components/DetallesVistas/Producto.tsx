@@ -336,7 +336,7 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
               </Grid>
               <Grid item xs={4} md={4}>
                 <Typography variant="body2" color="text.secondary">
-                  Puntos
+                  Redondeo
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
                   {numericFormatter(verProducto.puntos + "", {
@@ -349,7 +349,7 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
               </Grid>
               <Grid item xs={4} md={4}>
                 <Typography variant="body2" color="text.secondary">
-                  Factor
+                  Puntos
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
                   {numericFormatter(verProducto.factor + "", {

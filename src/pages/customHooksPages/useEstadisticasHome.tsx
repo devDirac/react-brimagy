@@ -38,6 +38,7 @@ export const useEstadisticasHome = (tipoUsuario: number) => {
 
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
   const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const [procesando, setProcesando] = useState<boolean>(false);
   const [estadistica, setEstadistica] = useState<any>(null);
@@ -46,10 +47,10 @@ export const useEstadisticasHome = (tipoUsuario: number) => {
     setAuth(token);
   }, [token]);
 
-  const getEstadisticasHome = useCallback(async () => {
+  const getEstadisticasHome = useCallback(async (data?: any) => {
     try {
       setProcesando(true);
-      const proveedores = await getEstadisticasHomeHttp();
+      const proveedores = await getEstadisticasHomeHttp(data);
       setEstadistica(proveedores);
       setProcesando(false);
     } catch (error) {
@@ -61,8 +62,8 @@ export const useEstadisticasHome = (tipoUsuario: number) => {
   }, []);
 
   useEffect(() => {
-    getEstadisticasHome();
-  }, []);
+    getEstadisticasHome({ plataforma: plataforma });
+  }, [plataforma]);
 
   return {
     procesando,
@@ -70,5 +71,6 @@ export const useEstadisticasHome = (tipoUsuario: number) => {
     handleisAlerClose,
     mensajeAlert,
     estadistica,
+    plataforma,
   };
 };

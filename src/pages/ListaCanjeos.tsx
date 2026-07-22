@@ -130,6 +130,7 @@ function ListaCanjeos(): JSX.Element {
     fecha2,
     setFecha2,
     getCanjes,
+    plataforma,
   } = useListaCanjeos(tipoUsuario);
 
   const independiente = () => {
@@ -495,24 +496,6 @@ function ListaCanjeos(): JSX.Element {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-      <ModalConfirm
-        onAcept={() => {
-          //setOpenModalConfirmEliminaProducto(false);
-          //eliminarProducto(Number(productoId));
-        }}
-        onCancel={() => {
-          //setOpenModalConfirmEliminaProducto(false);
-        }}
-        open={/*openModalConfirmEliminaProducto*/ false}
-        text={intl.formatMessage({
-          id: "eliminar_producto_confirmar",
-        })}
-        title={""}
-        cancelText="No"
-        acceptText={intl.formatMessage({
-          id: "si",
-        })}
-      />
       {/* VISUALIZAR DATOS DEL PRODUCTO */}
       <ModalComponent
         handleClose={handleisAlertCloseVerCanje}

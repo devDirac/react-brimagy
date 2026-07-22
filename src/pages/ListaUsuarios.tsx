@@ -85,6 +85,7 @@ function ListaUsuarios(): JSX.Element {
     desactivaUsuario,
     reactivaUsuario,
     editaUsuario,
+    plataforma,
   } = useListaUsuarios(tipoUsuario);
 
   const independiente = () => {
@@ -98,15 +99,19 @@ function ListaUsuarios(): JSX.Element {
   };
 
   const handleAccion = (accion: string, row: any) => {
+    const datos = {
+      id: row?.id,
+      plataforma: plataforma,
+    };
+    setUsuarioEditar(null);
     switch (accion) {
       case "desactivar":
-        desactivaUsuario(row);
+        desactivaUsuario(datos);
         break;
       case "reactivar":
-        reactivaUsuario(row);
+        reactivaUsuario(datos);
         break;
       case "editar_usuario":
-        console.log(row);
         setUsuarioEditar(row);
         handleisAlertOpenEditarUsuario();
         break;
@@ -224,10 +229,11 @@ function ListaUsuarios(): JSX.Element {
                   onClick={(e: any) => {
                     const datos = {
                       id_usuario: usuarioEditar?.id,
-                      nombre: nombreEditar,
-                      correo: correoEditar,
+                      name: nombreEditar,
+                      email: correoEditar,
                       phone: telefonoEditar,
                       foto: fotoEditar,
+                      plataforma: plataforma,
                     };
                     editaUsuario(datos);
                   }}

@@ -2,9 +2,22 @@ import { GeneralHttpResponse } from "../types/genericTypes";
 import axios from "axios";
 import env from "react-dotenv";
 
-export const getEncuestasDisponiblesHttp = async () => {
+/*export const getEncuestasDisponiblesHttp = async () => {
   try {
     const response = await axios.get(`${env.API_URL}${"/getEncuestasDisponibles"}`);
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};*/
+export const getEncuestasDisponiblesHttp = async (plataforma?: string) => {
+  try {
+    const url = new URL(`${env.API_URL}/getEncuestasDisponibles`);
+
+    if (plataforma) url.searchParams.append("plataforma", plataforma);
+
+    const response = await axios.get(url.toString());
     return response?.data || [];
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));
@@ -113,6 +126,7 @@ export const getEncuestaPorTipoHttp = async (data: any) => {
     return promise;
   }
 };
+
 export const addRespuestasEncuestaUsuarioHttp = async (data: any) => {
   try {
     const response: GeneralHttpResponse = await axios.post(

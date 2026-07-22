@@ -217,12 +217,7 @@ const CanjeValidadoProveedorModal = ({
 
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
-  const isSuperAdmin = tipoUsuario === 6;
-  const isAdministracion = tipoUsuario === 5;
-  const isInventario = tipoUsuario === 4;
-  const isCompras = tipoUsuario === 3;
-  const isAuditor = tipoUsuario === 2;
-  const isInternauta = tipoUsuario === 1;
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const [isAlertOpenCompraDigital, setIsAlertOpenCompraDigital] = useState(false);
   const handleisAlertOpenCompraDigital = () => setIsAlertOpenCompraDigital(true);
@@ -1023,6 +1018,7 @@ const CanjeValidadoProveedorModal = ({
                             estatus_proveedor: 1,
                           };
                         }),
+                      plataforma: plataforma,
                       tipo_envio: "directo",
                     };
                     enviarCotizacionProveedor(datos);
@@ -1074,6 +1070,7 @@ const CanjeValidadoProveedorModal = ({
                               estatus_proveedor: 1,
                             };
                           }),
+                        plataforma: plataforma,
                         tipo_envio: "directo",
                       };
                       enviarCotizacionProveedor(datos);
@@ -1130,6 +1127,7 @@ const CanjeValidadoProveedorModal = ({
                             estatus_proveedor: 0,
                           };
                         }),
+                      plataforma: plataforma,
                       tipo_envio: "proveedor",
                     };
                     enviarCotizacionProveedor(datos);

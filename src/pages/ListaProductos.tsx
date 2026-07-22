@@ -108,6 +108,8 @@ import MDButton from "components/MDButton";
 import FotosPromoProductoModal from "components/DetallesVistas/FotosPromoProducto";
 import MontosDigitalModal from "components/DetallesVistas/MontosDigital";
 import FotoMontoModal from "components/DetallesVistas/FotoMonto";
+import DisabledByDefaultIcon from "@mui/icons-material/DisabledByDefault";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
 
 function TabPanel({
   children,
@@ -374,6 +376,12 @@ function ListaProductos(): JSX.Element {
     fotoMonto,
     desactivarFotoMonto,
     activarFotoMonto,
+    marcarNoDisponible,
+    marcarDisponible,
+    plataforma,
+    variablesGlobalesData,
+    calcularPuntosEsperados,
+    tallaArray,
   } = useListaProductos(tipoUsuario);
 
   const independiente = () => {
@@ -412,6 +420,22 @@ function ListaProductos(): JSX.Element {
     return productos?.slice(startIndex, endIndex) || [];
   }, [productos, page, rowsPerPage]);
 
+  const puntosEsperados = useMemo(() => {
+    return calcularPuntosEsperados(
+      Number(costoConIvaEditar),
+      Number(costoPuntosConIvaEditar),
+      Number(envioExtraEditar),
+      variablesGlobalesData,
+      productoEditar?.nombre_plataforma || "puntotes"
+    );
+  }, [
+    costoConIvaEditar,
+    costoPuntosConIvaEditar,
+    envioExtraEditar,
+    variablesGlobalesData,
+    productoEditar,
+  ]);
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -443,7 +467,11 @@ function ListaProductos(): JSX.Element {
             <Button
               variant="outlined"
               startIcon={<SimCardDownloadIcon />}
-              onClick={productos?.length > 0 ? descargarProductosExcel : descargarPlantillaExcel}
+              onClick={() => {
+                productos?.length > 0
+                  ? descargarProductosExcel("") /*STF Viva In-Ear*/
+                  : descargarPlantillaExcel;
+              }}
               sx={{
                 borderColor: "#084d6e",
                 color: "#084d6e",
@@ -555,6 +583,7 @@ function ListaProductos(): JSX.Element {
                         height: "100%",
                         overflow: "hidden",
                         transition: "all 0.3s",
+                        ...(p.stock === 0 ? { border: "2px solid red" } : {}),
                         "&:hover": {
                           boxShadow: 6,
                           transform: "translateY(-4px)",
@@ -562,8 +591,20 @@ function ListaProductos(): JSX.Element {
                       }}
                     >
                       <Chip
-                        icon={p.tipo_producto === "fisico" ? <HardwareIcon /> : <ComputerIcon />}
-                        label={p.tipo_producto?.toUpperCase()}
+                        icon={
+                          p.tipo_producto === "fisico" ? (
+                            p.stock === 0 ? (
+                              <DisabledByDefaultIcon />
+                            ) : (
+                              <HardwareIcon />
+                            )
+                          ) : p.stock === 0 ? (
+                            <DisabledByDefaultIcon />
+                          ) : (
+                            <ComputerIcon />
+                          )
+                        }
+                        label={p.stock === 0 ? "NO DISPONIBLE" : p.tipo_producto?.toUpperCase()}
                         sx={{
                           position: "absolute",
                           top: 0,
@@ -741,6 +782,35 @@ function ListaProductos(): JSX.Element {
                               </IconButton>
                             </Tooltip>
                           ) : null}
+
+                          {isSuperAdmin ? (
+                            <Tooltip
+                              title={p.stock === 0 ? "Marcar disponible" : "Marcar no disponible"}
+                            >
+                              <IconButton
+                                aria-label="no_disponible"
+                                size="small"
+                                color={p.stock === 0 ? "success" : "error"}
+                                onClick={() => {
+                                  setProductoId(p?.id);
+                                  const datos = {
+                                    id_producto: p?.id,
+                                    plataforma: plataforma,
+                                  };
+                                  //console.log(datos);
+                                  p.stock === 0
+                                    ? marcarDisponible(datos)
+                                    : marcarNoDisponible(datos);
+                                }}
+                              >
+                                {p.stock === 0 ? (
+                                  <CheckBoxIcon fontSize="small" />
+                                ) : (
+                                  <DisabledByDefaultIcon fontSize="small" />
+                                )}
+                              </IconButton>
+                            </Tooltip>
+                          ) : null}
                         </Box>
 
                         {/* Columna derecha - Información */}
@@ -841,7 +911,7 @@ function ListaProductos(): JSX.Element {
                         >
                           <EmojiEventsIcon />{" "}
                           <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
-                            {numericFormatter(p.puntos + "", {
+                            {numericFormatter(p.factor + "", {
                               thousandSeparator: ",",
                               decimalScale: 2,
                               fixedDecimalScale: false,
@@ -1116,21 +1186,6 @@ function ListaProductos(): JSX.Element {
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="costoSinIvaEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_costo_sin_iva" })}
-                          variant="standard"
-                          name="costoSinIvaEditar"
-                          type="number"
-                          value={costoSinIvaEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setCostoSinIvaEditar(e.target.value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
                           id="costoPuntosConIvaEditar"
                           fullWidth
                           label={intl.formatMessage({ id: "input_costo_puntos_con_iva" })}
@@ -1141,81 +1196,6 @@ function ListaProductos(): JSX.Element {
                           onChange={(e) => {
                             const value = e.target.value;
                             setCostoPuntosConIvaEditar(e.target.value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="costoPuntosSinIvaEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_costo_puntos_sin_iva" })}
-                          variant="standard"
-                          name="costoPuntosSinIvaEditar"
-                          type="number"
-                          value={costoPuntosSinIvaEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setCostoPuntosSinIvaEditar(e.target.value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="feeBrimagyEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_fee_brimagy" })}
-                          variant="standard"
-                          name="feeBrimagyEditar"
-                          type="number"
-                          value={feeBrimagyEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setFeeBrimagyEditar(e.target.value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="subtotalEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_subtotal" })}
-                          variant="standard"
-                          name="subtotalEditar"
-                          type="number"
-                          value={subtotalEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setSubtotalEditar(e.target.value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="envioBaseEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_envio_base" })}
-                          variant="standard"
-                          name="envioBase"
-                          type="number"
-                          value={envioBaseEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setEnvioBaseEditar(e.target.value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="costoCajaEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_costo_caja" })}
-                          variant="standard"
-                          name="costoCaja"
-                          type="number"
-                          value={costoCajaEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setCostoCajaEditar(e.target.value);
                           }}
                         />
                       </Grid>
@@ -1234,65 +1214,33 @@ function ListaProductos(): JSX.Element {
                           }}
                         />
                       </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="totalEnvioEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_total_envio" })}
-                          variant="standard"
-                          name="totalEnvio"
-                          type="number"
-                          value={totalEnvioEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setTotalEnvioEditar(e.target.value);
+                      <Grid item xs={12} sm={4}>
+                        <MDBox
+                          sx={{
+                            p: 1.5,
+                            bgcolor: "#f0f7f0",
+                            borderRadius: 1,
+                            border: "1px solid #a5eb2f",
+                            textAlign: "center",
+                            height: "100%",
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
                           }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="totalEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_total" })}
-                          variant="standard"
-                          name="total"
-                          type="number"
-                          value={totalEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setTotalEditar(e.target.value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="puntosEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_puntos" })}
-                          variant="standard"
-                          name="puntos"
-                          type="number"
-                          value={puntosEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setPuntosEditar(e.target.value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="factorEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_factor" })}
-                          variant="standard"
-                          name="factor"
-                          type="number"
-                          value={factorEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setFactorEditar(e.target.value);
-                          }}
-                        />
+                        >
+                          <MDTypography variant="caption" color="text" sx={{ fontWeight: 600 }}>
+                            PUNTOS
+                          </MDTypography>
+                          <MDTypography variant="h6" sx={{ color: "#2f7a2f", fontWeight: 700 }}>
+                            {puntosEsperados
+                              ? numericFormatter(puntosEsperados.factor + "", {
+                                  thousandSeparator: ",",
+                                  decimalScale: 0,
+                                  fixedDecimalScale: true,
+                                })
+                              : "—"}
+                          </MDTypography>
+                        </MDBox>
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         {(previewFoto || fotoEditar) && (
@@ -1341,18 +1289,10 @@ function ListaProductos(): JSX.Element {
                             formData.append("id_proveedor", idProveedorEditar);
                             formData.append("id_catalogo", idCatalogoEditar);
                             formData.append("costo_con_iva", costoConIvaEditar);
-                            formData.append("costo_sin_iva", costoSinIvaEditar);
                             formData.append("costo_puntos_con_iva", costoPuntosConIvaEditar);
-                            formData.append("costo_puntos_sin_iva", costoPuntosSinIvaEditar);
-                            formData.append("fee_brimagy", feeBrimagyEditar);
-                            formData.append("subtotal", subtotalEditar);
                             formData.append("envio_base", envioBaseEditar);
                             formData.append("costo_caja", costoCajaEditar);
                             formData.append("envio_extra", envioExtraEditar);
-                            formData.append("total_envio", totalEnvioEditar);
-                            formData.append("total", totalEditar);
-                            formData.append("puntos", puntosEditar);
-                            formData.append("factor", factorEditar);
                             formData.append("tipo_registro", "edicion");
                             formData.append("nombre_plataforma", productoEditar?.nombre_plataforma);
                             formData.append(
@@ -1363,7 +1303,7 @@ function ListaProductos(): JSX.Element {
                             if (fotoProductoPrincipalFile) {
                               formData.append("foto_producto", fotoProductoPrincipalFile);
                             }
-
+                            //console.log(Object.fromEntries(formData.entries()));
                             editaProducto(formData);
                           }}
                         >
@@ -1398,6 +1338,7 @@ function ListaProductos(): JSX.Element {
                           handleisAlertOpenEditarColor={handleisAlertOpenEditarColor}
                           desactivarColorProducto={desactivarColorProducto}
                           activarColorProducto={activarColorProducto}
+                          plataforma={plataforma}
                         />
                       </Grid>
                     </Grid>
@@ -1414,6 +1355,7 @@ function ListaProductos(): JSX.Element {
                           handleisAlertOpenEditarTalla={handleisAlertOpenEditarTalla}
                           desactivarTallaProducto={desactivarTallaProducto}
                           activarTallaProducto={activarTallaProducto}
+                          plataforma={plataforma}
                         />
                       </Grid>
                     </Grid>
@@ -1431,6 +1373,7 @@ function ListaProductos(): JSX.Element {
                           handleOpenVistaFotosProducto={handleOpenVistaFotosProducto}
                           desactivarFotosProducto={desactivarFotosProducto}
                           activarFotosProducto={activarFotosProducto}
+                          plataforma={plataforma}
                         />
                       </Grid>
                     </Grid>
@@ -1448,6 +1391,7 @@ function ListaProductos(): JSX.Element {
                           handleOpenVistaFotosPromoProducto={handleOpenVistaFotosPromoProducto}
                           desactivarFotosPromoProducto={desactivarFotosPromoProducto}
                           activarFotosPromoProducto={activarFotosPromoProducto}
+                          plataforma={plataforma}
                         />
                       </Grid>
                     </Grid>
@@ -1466,6 +1410,7 @@ function ListaProductos(): JSX.Element {
                               handleisAlertOpenEditarMonto={handleisAlertOpenEditarMonto}
                               desactivarMontoProducto={desactivarMontoProducto}
                               activarMontoProducto={activarMontoProducto}
+                              plataforma={plataforma}
                             />
                           </Grid>
                         </Grid>
@@ -1483,6 +1428,7 @@ function ListaProductos(): JSX.Element {
                               handleOpenVistaFotoMonto={handleOpenVistaFotoMonto}
                               desactivarFotoMonto={desactivarFotoMonto}
                               activarFotoMonto={activarFotoMonto}
+                              plataforma={plataforma}
                             />
                           </Grid>
                         </Grid>
@@ -1591,6 +1537,7 @@ function ListaProductos(): JSX.Element {
                       id_color_brimagy: verEditarColor?.id_color_brimagy,
                       id_color: verEditarColor?.id,
                       color: editaColor,
+                      plataforma: plataforma,
                     };
                     crearEditarColorProducto(datos);
                   }}
@@ -1745,8 +1692,9 @@ function ListaProductos(): JSX.Element {
               <Grid item xs={6} sm={4} sx={{ position: "relative" }}>
                 <TextField
                   id="editaTalla"
+                  select
                   fullWidth
-                  label={intl.formatMessage({ id: "input_talla" })}
+                  label={`${intl.formatMessage({ id: "input_talla" })} *`}
                   variant="standard"
                   name="editaTalla"
                   value={editaTalla}
@@ -1754,7 +1702,16 @@ function ListaProductos(): JSX.Element {
                     const value = e.target.value;
                     setEditaTalla(e.target.value);
                   }}
-                />
+                  InputProps={{
+                    style: { padding: "5px" },
+                  }}
+                >
+                  {tallaArray?.map((option) => (
+                    <MenuItem key={option.id} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
               <Grid item xs={12} md={6}>
                 <Button
@@ -1768,6 +1725,7 @@ function ListaProductos(): JSX.Element {
                       id_talla_brimagy: verEditarTalla?.id_talla_brimagy,
                       id_talla: verEditarTalla?.id,
                       talla: editaTalla,
+                      plataforma: plataforma,
                     };
                     crearEditarTallaProducto(datos);
                   }}
@@ -2215,7 +2173,9 @@ function ListaProductos(): JSX.Element {
                 const datos = {
                   puntos: buscarPorPuntos,
                   categoria: categoriaBuscar,
+                  plataforma: plataforma,
                 };
+                //console.log(datos);
                 busquedaInteligenteBrimagy(datos);
               }}
               sx={{

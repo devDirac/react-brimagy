@@ -13,7 +13,7 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // formik components
 import { Formik, Form } from "formik";
@@ -71,6 +71,7 @@ function NuevoUsuario(): JSX.Element {
     guardaNuevoUsuario,
     formik,
     setProcesando,
+    plataforma,
   } = useNuevoUsuario(activeStep, isLastStep);
 
   const UserPermission = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario);
@@ -78,6 +79,7 @@ function NuevoUsuario(): JSX.Element {
   const userName = useSelector((state: StoreType) => state?.app?.user?.data?.name || false);
   const fotoUser: any = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
+
   const [formDataV, setFormDataV] = useState({
     nombre: "",
     correo: "",
@@ -148,8 +150,8 @@ function NuevoUsuario(): JSX.Element {
 
   const handleSubmit = () => {
     if (isLastStep) {
-      //console.log(formDataV);
-      guardaNuevoUsuario(formDataV);
+      const datosFinales = { ...formDataV, plataforma };
+      guardaNuevoUsuario(datosFinales);
     } else {
       setActiveStep(activeStep + 1);
     }

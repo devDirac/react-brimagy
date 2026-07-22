@@ -37,6 +37,7 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
 
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
   const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const [buscador, setBuscador] = useState("");
   const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -226,15 +227,15 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       clearTimeout(debounceTimeout);
     }
     const timeout = setTimeout(() => {
-      getProductosAlmacen(value);
+      getProductosAlmacen(value, plataforma);
     }, 500);
     setDebounceTimeout(timeout);
   };
 
-  const getEncuestasDisponibles = useCallback(async () => {
+  const getEncuestasDisponibles = useCallback(async (plataforma?: string) => {
     try {
       setProcesando(true);
-      const response = await getEncuestasDisponiblesHttp();
+      const response = await getEncuestasDisponiblesHttp(plataforma);
       setEncuestas(response);
       setProcesando(false);
     } catch (error) {
@@ -245,10 +246,10 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     }
   }, []);
 
-  const getProductosAlmacen = useCallback(async (search?: string) => {
+  const getProductosAlmacen = useCallback(async (search?: string, plataforma?: string) => {
     try {
       setProcesando(true);
-      const productos = await getProductosAlmacenHttp(search);
+      const productos = await getProductosAlmacenHttp(search, plataforma);
       setProductos(productos);
       setProcesando(false);
     } catch (error) {
@@ -277,11 +278,6 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     try {
       setProcesandoRecibirProducto(true);
       const recibirProducto: any = await recibirProductoAlmacenHttp(datos);
-      /*setVerProducto((prevProducto: any) => ({
-        ...prevProducto,
-        estatus: recibirProducto?.estatus,
-        cantidad_almacen: recibirProducto?.cantidad_recibida,
-      }));*/
 
       const datosRefresh = {
         id_orden_compra: verProducto?.id_orden_compra,
@@ -584,13 +580,13 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
   };
 
   useEffect(() => {
-    getEncuestasDisponibles();
+    getEncuestasDisponibles(plataforma);
     getProveedores();
   }, []);
 
   useEffect(() => {
-    getProductosAlmacen();
-  }, [getProductosAlmacen]);
+    getProductosAlmacen(undefined, plataforma);
+  }, [getProductosAlmacen, plataforma]);
 
   return {
     enviarEncuesta,
@@ -700,5 +696,6 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     getFieldColorCantidad,
     handleAccionProducto,
     accionProducto,
+    plataforma,
   };
 };

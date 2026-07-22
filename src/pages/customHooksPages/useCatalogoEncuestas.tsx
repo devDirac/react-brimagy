@@ -25,6 +25,7 @@ export const useCatalogoEncuestas = () => {
   const intl = useIntl();
 
   const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const [encuestas, setEncuestas] = useState<any[]>([]);
   const [verEncuesta, setVerEncuesta] = useState<any>(null);
@@ -125,10 +126,10 @@ export const useCatalogoEncuestas = () => {
     setAuth(token);
   }, [token]);
 
-  const getEncuestasDisponibles = useCallback(async () => {
+  const getEncuestasDisponibles = useCallback(async (plataforma?: string) => {
     try {
       setProcesando(true);
-      const response = await getEncuestasDisponiblesHttp();
+      const response = await getEncuestasDisponiblesHttp(plataforma);
       setEncuestas(response);
       setProcesando(false);
     } catch (error) {
@@ -303,8 +304,8 @@ export const useCatalogoEncuestas = () => {
   }, [verEditarPregunta]);
 
   useEffect(() => {
-    getEncuestasDisponibles();
-  }, []);
+    getEncuestasDisponibles(plataforma);
+  }, [plataforma]);
 
   return {
     handleAccionCallback,
@@ -355,5 +356,6 @@ export const useCatalogoEncuestas = () => {
     isAlertOpenVerRespuestasCanje,
     handleisAlertOpenVerRespuestasCanje,
     handleisAlertCloseVerRespuestasCanje,
+    plataforma,
   };
 };

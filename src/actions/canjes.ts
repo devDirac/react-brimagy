@@ -6,7 +6,8 @@ export const getCanjesHttp = async (
   tipo_producto?: string,
   search?: string,
   fecha1?: Date,
-  fecha2?: Date
+  fecha2?: Date,
+  plataforma?: string
 ) => {
   try {
     const url = new URL(`${env.API_URL}/getCanjes`);
@@ -15,6 +16,7 @@ export const getCanjesHttp = async (
     if (search) url.searchParams.append("search", search);
     if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
     if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
+    if (plataforma) url.searchParams.append("plataforma", plataforma);
 
     const response = await axios.get(url.toString());
     return response?.data || [];
@@ -63,10 +65,12 @@ export const validarCodigoCanjeHttp = async (codigo: number, id_canje: number) =
   }
 };
 
-export const getCanjeByIdHttp = async (id_canje: string) => {
+export const getCanjeByIdHttp = async (id_canje: string, plataforma: string) => {
   try {
     const response = await axios.get(
-      `${process.env.REACT_APP_API_URL}${"/getCanjeById"}?id_canje=${id_canje}`
+      `${
+        process.env.REACT_APP_API_URL
+      }${"/getCanjeById"}?id_canje=${id_canje}&plataforma=${plataforma}`
     );
     return response?.data || [];
   } catch (error) {
@@ -88,10 +92,12 @@ export const solicitarCodigoValidacionHttp = async (data: any) => {
   }
 };
 
-export const getCodigoVerificacionByIdHttp = async (id_canje: string) => {
+export const getCodigoVerificacionByIdHttp = async (id_canje: string, plataforma: string) => {
   try {
     const response = await axios.get(
-      `${process.env.REACT_APP_API_URL}${"/getCodigoVerificacionById"}?id_canje=${id_canje}`
+      `${
+        process.env.REACT_APP_API_URL
+      }${"/getCodigoVerificacionById"}?id_canje=${id_canje}&plataforma=${plataforma}`
     );
     return response?.data || [];
   } catch (error) {
@@ -100,12 +106,16 @@ export const getCodigoVerificacionByIdHttp = async (id_canje: string) => {
   }
 };
 
-export const validarIdentidadPorCodigoHttp = async (codigo: number, id_canje: number) => {
+export const validarIdentidadPorCodigoHttp = async (
+  codigo: number,
+  id_canje: number,
+  plataforma?: string
+) => {
   try {
     const response = await axios.post(
       `${
         process.env.REACT_APP_API_URL
-      }${"/validarIdentidadPorCodigo"}?id_canje=${id_canje}&codigo=${codigo}`
+      }${"/validarIdentidadPorCodigo"}?id_canje=${id_canje}&codigo=${codigo}&plataforma=${plataforma}`
     );
     return response?.data || [];
   } catch (error) {
@@ -114,11 +124,25 @@ export const validarIdentidadPorCodigoHttp = async (codigo: number, id_canje: nu
   }
 };
 
-export const getCanjesPorProveedorHttp = async (id_proveedor: number) => {
+/*export const getCanjesPorProveedorHttp = async (id_proveedor: number) => {
   try {
     const response = await axios.get(
       `${env.API_URL}${"/getCanjesPorProveedor"}?id_proveedor=${id_proveedor}`
     );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};*/
+export const getCanjesPorProveedorHttp = async (id_proveedor?: number, plataforma?: string) => {
+  try {
+    const url = new URL(`${env.API_URL}/getCanjesPorProveedor`);
+
+    if (id_proveedor) url.searchParams.append("id_proveedor", id_proveedor.toString());
+    if (plataforma) url.searchParams.append("plataforma", plataforma);
+
+    const response = await axios.get(url.toString());
     return response?.data || [];
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));

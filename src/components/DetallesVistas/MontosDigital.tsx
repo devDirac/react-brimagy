@@ -55,6 +55,7 @@ interface DetalleMontoProps {
   handleisAlertOpenEditarMonto: () => void;
   desactivarMontoProducto: (datos: any) => Promise<void>;
   activarMontoProducto: (datos: any) => Promise<void>;
+  plataforma?: string;
 }
 
 const MontosDigitalModal = ({
@@ -66,6 +67,7 @@ const MontosDigitalModal = ({
   desactivarMontoProducto,
   activarMontoProducto,
   setEditarMonto,
+  plataforma,
 }: DetalleMontoProps) => {
   if (!verMonto) return null;
   const intl = useIntl();
@@ -166,6 +168,7 @@ const MontosDigitalModal = ({
                       monto: monto,
                       puntos: puntos,
                       descripcion: descripcion,
+                      plataforma: plataforma,
                     };
                     crearEditarMontoProducto(datos);
                   }}
@@ -301,6 +304,7 @@ const MontosDigitalModal = ({
                               const datos = {
                                 id_monto: m?.id,
                                 id_monto_brimagy: m?.id_monto_brimagy,
+                                plataforma: plataforma,
                               };
                               desactivarMontoProducto(datos);
                             }}
@@ -318,6 +322,7 @@ const MontosDigitalModal = ({
                               const datos = {
                                 id_monto: m?.id,
                                 id_monto_brimagy: m?.id_monto_brimagy,
+                                plataforma: plataforma,
                               };
                               activarMontoProducto(datos);
                             }}

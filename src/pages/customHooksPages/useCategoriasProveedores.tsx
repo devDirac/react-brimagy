@@ -53,6 +53,7 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
 
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
   const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const [isAlertOpenEditarUsuario, setIsAlertOpenEditarUsuario] = useState(false);
   const handleisAlertOpenEditarUsuario = () => setIsAlertOpenEditarUsuario(true);
@@ -83,6 +84,14 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
   useEffect(() => {
     setAuth(token);
   }, [token]);
+
+  const normalizarNombre = (texto: string): string => {
+    return texto
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .replace(/\s+/g, "_");
+  };
 
   useEffect(() => {
     if (generalEditar && tipoEditando === "proveedor") {
@@ -180,11 +189,12 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
     }
   }, []);
 
-  const getCategorias = useCallback(async () => {
+  const getCategorias = useCallback(async (plataforma?: string) => {
     try {
       setProcesando(true);
-      const categoriasData = await getCategoriasHttp();
+      const categoriasData = await getCategoriasHttp(plataforma);
       setSubCategorias(categoriasData);
+      setTableKeyCategoria((prev) => prev + 1);
       setProcesando(false);
     } catch (error) {
       setProcesando(false);
@@ -194,10 +204,10 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
     }
   }, []);
 
-  const getCategoriasPrincipal = useCallback(async () => {
+  const getCategoriasPrincipal = useCallback(async (plataforma?: string) => {
     try {
       setProcesando(true);
-      const categoriasData = await getCategoriasPrincipalHttp();
+      const categoriasData = await getCategoriasPrincipalHttp(plataforma);
       setCategorias(categoriasData);
       setProcesando(false);
     } catch (error) {
@@ -213,7 +223,7 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
       setProcesandoEditar(true);
       tipoEditando === "proveedor"
         ? (await editarProveedorHttp(datos), await getProveedores())
-        : (await editarCategoriaHttp(datos), await getCategorias());
+        : (await editarCategoriaHttp(datos), await getCategorias(plataforma));
       setProcesandoEditar(false);
       setMensajeAlert(intl.formatMessage({ id: "general_editado_correctamente" }));
       handleisAlerCloseEditarUsuario();
@@ -231,7 +241,7 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
       setProcesandoEditar(true);
       tipoEditando === "proveedor"
         ? (await eliminarProveedorHttp(datos), await getProveedores())
-        : (await eliminarCategoriaHttp(datos), await getCategorias());
+        : (await eliminarCategoriaHttp(datos), await getCategorias(plataforma));
       setProcesandoEditar(false);
       setMensajeAlert(intl.formatMessage({ id: "general_eliminado_correctamente" }));
       handleisAlerCloseConfirm();
@@ -248,7 +258,7 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
     try {
       setProcesandoEditar(true);
       const categoriaData: any = await reactivarCategoriaHttp(datos);
-      await getCategorias();
+      await getCategorias(plataforma);
       setProcesandoEditar(false);
       setMensajeAlert(intl.formatMessage({ id: "general_reactivado_correctamente" }));
       handleisAlertOpen();
@@ -329,9 +339,9 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
 
   useEffect(() => {
     getProveedores();
-    getCategorias();
-    getCategoriasPrincipal();
-  }, [getProveedores, getCategorias, getCategoriasPrincipal]);
+    getCategorias(plataforma);
+    getCategoriasPrincipal(plataforma);
+  }, [getProveedores, getCategorias, getCategoriasPrincipal, plataforma]);
 
   return {
     nombreContactoEditar,
@@ -387,5 +397,7 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
     editaGeneral,
     subcategorias,
     getFieldColor,
+    plataforma,
+    normalizarNombre,
   };
 };

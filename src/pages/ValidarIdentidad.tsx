@@ -56,6 +56,8 @@ function ValidarIdentidad(): JSX.Element {
     canje,
     procesando,
     intl,
+    codigo,
+    plataforma,
   } = useValidarIdentidad();
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -258,7 +260,8 @@ function ValidarIdentidad(): JSX.Element {
                               }}
                               variant="contained"
                               onClick={(e: any) => {
-                                solicitarCodigoValidacion(canje);
+                                console.log({ plataforma, ...canje });
+                                solicitarCodigoValidacion({ plataforma, ...canje });
                               }}
                             >
                               {procesandoCodigo ? (
@@ -359,7 +362,8 @@ function ValidarIdentidad(): JSX.Element {
                                   endIcon={<Forward10Icon />}
                                   onClick={(e: any) => {
                                     setOtp(["", "", "", "", "", ""]);
-                                    solicitarCodigoValidacion(canje);
+                                    console.log({ plataforma, ...canje });
+                                    solicitarCodigoValidacion({ plataforma, ...canje });
                                   }}
                                 >
                                   {procesandoCodigo ? (

@@ -3,6 +3,7 @@ import { RESET_STATE, SET_USER } from "../actions/auth";
 import { SET_IDIOMA } from "../actions/idiomas";
 import { SET_MENU_ROUTES } from "../actions/menu";
 import { SET_NOTIFICACIONES } from "../actions/notificaciones";
+import { SET_PLATAFORMA } from "../actions/configuracion";
 
 // Estado inicial del reducer app
 const initialAppState = {
@@ -24,6 +25,8 @@ const appReducer = (state = initialAppState, action: any) => {
       return { ...state, ruta: action?.value || null };
     case SET_NOTIFICACIONES:
       return { ...state, ...{ notificaciones: action?.value || null } };
+    case SET_PLATAFORMA:
+      return { ...state, plataforma: action?.value || "puntotes" };
     case RESET_STATE:
       return initialAppState;
     default:

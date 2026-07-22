@@ -31,6 +31,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
 
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
   const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const [canjeId, setCanjeId] = useState("");
 
@@ -110,6 +111,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
       search?: string;
       fecha1?: string;
       fecha2?: string;
+      plataforma?: string;
     }) => {
       try {
         setProcesando(true);
@@ -117,7 +119,8 @@ export const useListaCanjeos = (tipoUsuario: number) => {
           esDigital ? "digital" : "fisico",
           params?.search,
           params?.fecha1 ? new Date(params.fecha1) : undefined,
-          params?.fecha2 ? new Date(params.fecha2) : undefined
+          params?.fecha2 ? new Date(params.fecha2) : undefined,
+          params?.plataforma ?? plataforma
         );
 
         const datosFormateados = productosData.map((e: any) => {
@@ -195,8 +198,8 @@ export const useListaCanjeos = (tipoUsuario: number) => {
   };
 
   useEffect(() => {
-    getCanjes();
-  }, [getCanjes]);
+    getCanjes({ plataforma });
+  }, [getCanjes, plataforma]);
 
   return {
     validarIdentidad,
@@ -239,5 +242,6 @@ export const useListaCanjeos = (tipoUsuario: number) => {
     fecha2,
     setFecha2,
     getCanjes,
+    plataforma,
   };
 };

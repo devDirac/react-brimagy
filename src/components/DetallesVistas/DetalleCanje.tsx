@@ -65,12 +65,7 @@ const DetallesCanjeModal = ({
   const intl = useIntl();
 
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
-  const isSuperAdmin = tipoUsuario === 6;
-  const isAdministracion = tipoUsuario === 5;
-  const isInventario = tipoUsuario === 4;
-  const isCompras = tipoUsuario === 3;
-  const isAuditor = tipoUsuario === 2;
-  const isInternauta = tipoUsuario === 1;
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const getEstadoColorCanje = (estado_canje: string) => {
     if (!estado_canje) return "default";
@@ -148,17 +143,13 @@ const DetallesCanjeModal = ({
             variant="contained"
             endIcon={<AddIcon />}
             disabled={
-              isInventario ||
-              isCompras ||
-              isAuditor ||
-              isInternauta ||
               verCanje.estado_canje === "INACTIVE" ||
               verCanje.estado_validacion === "identidad_validada"
             }
             onClick={(e: any) => {
               verCanje?.id_proveedor == null
-                ? validarIdentidadSinProveedor(verCanje)
-                : validarIdentidad(verCanje);
+                ? validarIdentidadSinProveedor({ plataforma: plataforma, ...verCanje })
+                : validarIdentidad({ plataforma: plataforma, ...verCanje });
             }}
           >
             {procesandoIdentidad ? (

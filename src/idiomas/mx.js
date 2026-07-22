@@ -307,6 +307,27 @@ const textosMx = {
   select_agrupacion: "Periodicidad",
   añadir_plataforma: "Añadir plataforma",
   registra_plataforma_info: "Da de alta las plataformas disponibles",
+  añadir_usuario_plataforma: "Añadir usuario de plataforma",
+  registra_usuario_plataforma_info:
+    "Aquí se añaden los usuarios que estarán habilitados para loguearse y usar la plataforma",
+  set_crear_usuario: "Crear usuario",
+  set_actualizar_usuario: "Actualizar usuario",
+  general_sin_datos_registrados: "Sin datos registrados",
+  sin_tipo_usuarios_registrados: "No hay tipos de usuarios registrados",
+  select_tipo_usuario: "Tipo de usuario",
+  usuario_plataforma_actualizado_correctamente: "Usuario actualizado correctamente",
+  usuario_plataforma_añadido_correctamente: "Usuario añadido correctamente",
+  usuario_plataforma_actualizado_error: "Error al actualizar el usuario",
+  usuario_plataforma_añadido_error: "Error al añadir el usuario",
+  no_hay_ordenes_compra: "No hay ordenes de compra registradas",
+  producto_no_disponible_correctamente: "Producto marcado como no disponible correctamente",
+  producto_no_disponible_error: "Error al marcar el producto como no disponible",
+  producto_disponible_correctamente: "Producto marcado como disponible correctamente",
+  producto_disponible_error: "Error al marcar el producto como disponible",
+  historial_de_cambios: "Historial de cambios",
+  marcar_disponible: "Marcar como disponible",
+  marcar_no_disponible: "Marcar no disponible",
+  sin_encuestas_registradas: "Sin encuestas registradas",
 };
 
 export default textosMx;

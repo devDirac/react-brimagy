@@ -13,6 +13,10 @@ import FaceRetouchingOffIcon from "@mui/icons-material/FaceRetouchingOff";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
+import { StoreType } from "types/genericTypes";
+import HistoryIcon from "@mui/icons-material/History";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import DisabledByDefaultIcon from "@mui/icons-material/DisabledByDefault";
 
 const AccionesTable: React.FC<AccionesTableProps> = (props: AccionesTableProps) => {
   const intl = useIntl();
@@ -20,6 +24,26 @@ const AccionesTable: React.FC<AccionesTableProps> = (props: AccionesTableProps) 
   const { darkMode } = controller;
   const esModoDios = useSelector((state: any) => (state?.app?.user?.data?.tipo_usuario || 0) === 4);
   const { anchorEl, handleClick, handleClose } = useAccionesTable(props);
+
+  const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
+  const esSuperAdmin = tipoUsuario === 7;
+
+  const listasConEliminar =
+    [props?.esListaCategorias, props?.esListaProductos, props?.esListaProveedores].some(Boolean) &&
+    !props?.esListaUsuariosPlataforma &&
+    !props?.esListaUsuarios &&
+    !props?.esListaCategorias &&
+    esSuperAdmin;
+
+  const listasConEditar =
+    [
+      props?.esListaCategorias,
+      props?.esListaProductos,
+      props?.esListaProveedores,
+      props?.esListaUsuariosPlataforma,
+      props?.esListaUsuarios,
+    ].some(Boolean) && esSuperAdmin;
+
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
       {props?.esListaUsuarios && props?.row?.status === "ACTIVE" ? (
@@ -33,7 +57,8 @@ const AccionesTable: React.FC<AccionesTableProps> = (props: AccionesTableProps) 
         </Tooltip>
       ) : null}
 
-      {props?.esListaUsuarios && props?.row?.status === "DEACTIVATE" ? (
+      {(props?.esListaUsuarios && props?.row?.status === "INACTIVE") ||
+      props?.row?.status === "DEACTIVATE" ? (
         <Tooltip title={intl.formatMessage({ id: "general_reactivar_usuario" })}>
           <IconButton
             onClick={() => props?.enAccion("reactivar")}
@@ -51,6 +76,39 @@ const AccionesTable: React.FC<AccionesTableProps> = (props: AccionesTableProps) 
             sx={{ color: darkMode ? "#fff" : "#1fff26", padding: "0" }}
           >
             <VisibilityIcon />
+          </IconButton>
+        </Tooltip>
+      ) : null}
+
+      {props?.esListaProductos ? (
+        <Tooltip title={intl.formatMessage({ id: "historial_de_cambios" })}>
+          <IconButton
+            onClick={() => props?.enAccion("historial_cambios")}
+            sx={{ color: darkMode ? "#fff" : "#189db5", padding: "0" }}
+          >
+            <HistoryIcon />
+          </IconButton>
+        </Tooltip>
+      ) : null}
+
+      {props?.esListaProductos && props?.row?.stock === 0 ? (
+        <Tooltip title={intl.formatMessage({ id: "marcar_disponible" })}>
+          <IconButton
+            onClick={() => props?.enAccion("marcar_disponible")}
+            sx={{ color: darkMode ? "#fff" : "#127327", padding: "0" }}
+          >
+            <CheckBoxIcon />
+          </IconButton>
+        </Tooltip>
+      ) : null}
+
+      {props?.esListaProductos && props?.row?.stock !== 0 ? (
+        <Tooltip title={intl.formatMessage({ id: "marcar_no_disponible" })}>
+          <IconButton
+            onClick={() => props?.enAccion("marcar_no_disponible")}
+            sx={{ color: darkMode ? "#fff" : "#ad1c2a", padding: "0" }}
+          >
+            <DisabledByDefaultIcon />
           </IconButton>
         </Tooltip>
       ) : null}
@@ -77,10 +135,7 @@ const AccionesTable: React.FC<AccionesTableProps> = (props: AccionesTableProps) 
         </Tooltip>
       ) : null}
 
-      {props?.esListaCategorias ||
-      props?.esListaProductos ||
-      props?.esListaProveedores ||
-      props?.esListaUsuarios ? (
+      {listasConEditar ? (
         <Tooltip title={intl.formatMessage({ id: "general_editar" })}>
           <IconButton
             onClick={() =>
@@ -99,7 +154,7 @@ const AccionesTable: React.FC<AccionesTableProps> = (props: AccionesTableProps) 
         </Tooltip>
       ) : null}
 
-      {!props?.esListaCategorias || props?.esListaProductos || props?.esListaProveedores ? (
+      {listasConEliminar ? (
         <Tooltip title={intl.formatMessage({ id: "general_eliminar" })}>
           <IconButton
             onClick={() =>

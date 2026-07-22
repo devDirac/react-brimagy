@@ -28,6 +28,8 @@ import {
   eliminarProductoHttp,
   getBitacoraProductoPorIdHttp,
   getBusquedaInteligenteHttp,
+  getCatalogoClubBohnBrimagyHttp,
+  getCatalogoProductosDigitalesBrimagyHttp,
   getCatalogoProductosHttp,
   getFotoMontoPorIdHttp,
   getProductoColorPorIdHttp,
@@ -35,6 +37,8 @@ import {
   getProductoFotoPromoPorIdHttp,
   getProductoMontoPorIdHttp,
   getProductoTallaPorIdHttp,
+  marcarDisponibleHttp,
+  marcarNoDisponibleHttp,
   subirFotoMontoHttp,
   subirFotosProductoHttp,
   subirFotosPromoProductoHttp,
@@ -46,11 +50,23 @@ import moment from "moment";
 import { crearProveedorHttp, getProveedoresHttp } from "actions/proveedores";
 import { crearCategoriaHttp, getCategoriasHttp } from "actions/categorias";
 import ExcelJS from "exceljs";
-import { crearPlataformaHttp, getPlataformasHttp } from "actions/configuracion";
+import {
+  crearPlataformaHttp,
+  getPlataformasHttp,
+  getVariablesGlobalesPorPlataformaHttp,
+} from "actions/configuracion";
 import { C } from "@fullcalendar/core/internal-common";
 import env from "react-dotenv";
 
+type VariablesGlobales = {
+  fee_brimagy: number;
+  envio_base: number;
+  costo_caja: number;
+  envio_extra: number;
+} | null;
+
 export const useListaProductos = (tipoUsuario: number) => {
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
   const dispatch = useDispatch();
   const intl = useIntl();
   const navigate = useNavigate();
@@ -63,7 +79,7 @@ export const useListaProductos = (tipoUsuario: number) => {
   const handleisAlerClose = () => setIsAlertOpen(false);
   const [productos, setProductos] = useState<any[]>([]);
   const [tableKey, setTableKey] = useState(0);
-  const isSuperAdmin = tipoUsuario === 6;
+  const isSuperAdmin = tipoUsuario === 7;
 
   const handleisAlertOpenAsignar = () => setIsAlertOpenAsignar(true);
   const handleisAlerCloseAsignar = () => setIsAlertOpenAsignar(false);
@@ -226,6 +242,18 @@ export const useListaProductos = (tipoUsuario: number) => {
   const [editaPuntos, setEditaPuntos] = useState("");
   const [editaDescripcion, setEditaDescripcion] = useState("");
 
+  const [variablesGlobalesData, setVariablesGlobalesData] = useState<VariablesGlobales>(null);
+
+  const tallaArray = [
+    { id: 0, label: "XXS", value: "XXS" },
+    { id: 1, label: "XS", value: "XS" },
+    { id: 2, label: "S", value: "S" },
+    { id: 3, label: "M", value: "M" },
+    { id: 4, label: "L", value: "L" },
+    { id: 5, label: "XL", value: "XL" },
+    { id: 6, label: "XXL", value: "XXL" },
+  ];
+
   //foto monto
   const handleOpenVistaFotoMonto = (fotos_producto: any) => {
     setFotoMontoSeleccionada(fotos_producto);
@@ -263,6 +291,14 @@ export const useListaProductos = (tipoUsuario: number) => {
   const [fotoMontoFile, setFotoMontoFile] = useState<File | null>(null);
   const [previewFotoMonto, setPreviewFotoMonto] = useState<string | null>(null);
 
+  const normalizarNombre = (texto: string): string => {
+    return texto
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .replace(/\s+/g, "_");
+  };
+
   const handleChangeFotoMonto = (file: File | null) => {
     setFotoMontoFile(file);
 
@@ -295,9 +331,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     validationSchema: Yup.object({
       color: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
     }),
-    onSubmit: async (values) => {
-      //console.log("Formulario enviado:", values);
-    },
+    onSubmit: async (values) => {},
   });
 
   const formikTalla = useFormik({
@@ -307,9 +341,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     validationSchema: Yup.object({
       talla: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
     }),
-    onSubmit: async (values) => {
-      //console.log("Formulario enviado:", values);
-    },
+    onSubmit: async (values) => {},
   });
 
   const formikMonto = useFormik({
@@ -323,18 +355,14 @@ export const useListaProductos = (tipoUsuario: number) => {
       puntos: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
       descripcion: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
     }),
-    onSubmit: async (values) => {
-      //console.log("Formulario enviado:", values);
-    },
+    onSubmit: async (values) => {},
   });
 
-  // Convierte nombres de color (red, blue) a hex
   const colorNameToHex = (color: string): string => {
     const ctx = document.createElement("canvas").getContext("2d");
     if (!ctx) return color;
     ctx.fillStyle = color;
     const computed = ctx.fillStyle;
-    // Si no pudo convertir, devuelve el valor original
     return computed.startsWith("#") ? computed : color;
   };
 
@@ -357,6 +385,10 @@ export const useListaProductos = (tipoUsuario: number) => {
   };
 
   const handleAccion = (accion: string, row: any) => {
+    const datos = {
+      id_producto: row?.id,
+      plataforma: plataforma,
+    };
     switch (accion) {
       case "vista_previa":
         setVerProducto(row);
@@ -370,12 +402,163 @@ export const useListaProductos = (tipoUsuario: number) => {
         setProductoId(row?.id);
         handleisAlertOpenEliminaProducto();
         break;
+      case "historial_cambios":
+        setVerProducto(row);
+        getBitacoraProductoPorId(datos);
+        handleisAlertOpenVerBitacoraProducto();
+        break;
+      case "marcar_disponible":
+        marcarDisponible(datos);
+        break;
+      case "marcar_no_disponible":
+        marcarNoDisponible(datos);
+        break;
       default:
         break;
     }
   };
 
-  //Categorías que no están registradas
+  function reconstruirCostosDesdeRequiredScore(
+    required_score: number,
+    plataforma: string,
+    variablesGlobales: VariablesGlobales,
+    debug: boolean = false
+  ) {
+    const redondeo = required_score / 15;
+    if (debug) console.log("required_score=", required_score);
+    if (debug) console.log("1) redondeo (required_score / 15):", redondeo);
+
+    const total = redondeo - 1;
+    if (debug) console.log("2) total estimado (redondeo - 1):", total);
+
+    let fee_brimagy: number, envio_base: number, costo_caja: number, envio_extra: number;
+
+    const tieneVariablesValidas =
+      variablesGlobales &&
+      variablesGlobales.fee_brimagy != null &&
+      variablesGlobales.envio_base != null &&
+      variablesGlobales.costo_caja != null;
+
+    if (tieneVariablesValidas) {
+      fee_brimagy = variablesGlobales.fee_brimagy;
+      envio_base = variablesGlobales.envio_base;
+      costo_caja = variablesGlobales.costo_caja;
+      envio_extra = variablesGlobales.envio_extra;
+      if (debug) console.log("3) variables globales (desde API):", variablesGlobales);
+    } else {
+      envio_base = 180;
+      costo_caja = 19;
+      envio_extra = 0;
+      fee_brimagy = plataforma === "club bohn" ? 15 : 12;
+      if (debug)
+        console.log("3) variables globales (defaults, no había datos):", {
+          fee_brimagy,
+          envio_base,
+          costo_caja,
+          envio_extra,
+        });
+    }
+
+    const total_envio = envio_base + costo_caja + envio_extra;
+    if (debug) console.log("4) total_envio:", total_envio);
+
+    const subtotal = total - total_envio;
+    if (debug) console.log("5) subtotal (total - total_envio):", subtotal);
+
+    const porcentaje = fee_brimagy / 100;
+    const costo_puntos_sin_iva = Math.round(subtotal / (1 + porcentaje));
+    if (debug)
+      console.log("6) costo_puntos_sin_iva (subtotal / (1+porcentaje)):", {
+        porcentaje,
+        costo_puntos_sin_iva,
+      });
+
+    const costo_puntos_con_iva = Math.round(costo_puntos_sin_iva * 1.16);
+    if (debug) console.log("7) costo_puntos_con_iva (sin_iva * 1.16):", costo_puntos_con_iva);
+
+    const resultado = {
+      redondeo,
+      total,
+      total_envio,
+      subtotal,
+      costo_puntos_sin_iva,
+      costo_puntos_con_iva,
+    };
+
+    if (debug) console.log("Resultado final:", resultado);
+
+    return resultado;
+  }
+
+  function calcularPuntosEsperados(
+    costoConIva: number,
+    costoPuntosConIva: number,
+    envioExtra: number,
+    variablesGlobales: VariablesGlobales,
+    plataforma: string
+  ) {
+    if (!costoPuntosConIva || isNaN(costoPuntosConIva)) {
+      return null;
+    }
+
+    const costo_puntos_sin_iva = Math.round(costoPuntosConIva / 1.16);
+
+    let fee_brimagy: number, envio_base: number, costo_caja: number, envio_extra: number;
+
+    const tieneVariablesValidas =
+      variablesGlobales &&
+      variablesGlobales.fee_brimagy != null &&
+      variablesGlobales.envio_base != null &&
+      variablesGlobales.costo_caja != null;
+
+    if (tieneVariablesValidas) {
+      fee_brimagy = variablesGlobales.fee_brimagy;
+      envio_base = variablesGlobales.envio_base;
+      costo_caja = variablesGlobales.costo_caja;
+    } else {
+      envio_base = 180;
+      costo_caja = 19;
+      fee_brimagy = plataforma === "club bohn" ? 15 : 12;
+    }
+
+    const envio_extra_num = Number(envioExtra) || 0;
+
+    const porcentaje = fee_brimagy / 100;
+    const valor_con_fee = Math.round(costo_puntos_sin_iva * porcentaje);
+    const subtotal = Math.round(costo_puntos_sin_iva + valor_con_fee);
+    const total_envio = Math.round(envio_base + costo_caja + envio_extra_num);
+    const total = Math.round(subtotal + total_envio);
+    const redondeo = total % 2 !== 0 ? total + 2 : total + 1; // puntos en BD
+    const factor = Math.round(redondeo * 15); // factor en BD
+
+    return {
+      costo_puntos_sin_iva,
+      total_envio,
+      subtotal,
+      total,
+      puntos: redondeo,
+      factor,
+    };
+  }
+
+  const getVariablesGlobales = useCallback(async (data?: any) => {
+    try {
+      setProcesando(true);
+      const response: any = await getVariablesGlobalesPorPlataformaHttp(data);
+      setVariablesGlobalesData(response);
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+      handleisAlertOpen();
+    }
+  }, []);
+
+  useEffect(() => {
+    getVariablesGlobales({ plataforma: plataforma });
+  }, [plataforma]);
+
   const obtenerCategoriasFaltantes = useCallback(() => {
     const categoriasFaltantes = Array.from(
       new Set(excelData.filter((p) => !p.categoria_valida).map((p) => p.catalogo))
@@ -383,7 +566,6 @@ export const useListaProductos = (tipoUsuario: number) => {
     return categoriasFaltantes.filter(Boolean);
   }, [excelData]);
 
-  //Obtiene los proveedores únicos que no están registrados
   const obtenerProveedoresFaltantes = useCallback(() => {
     const proveedoresFaltantes = Array.from(
       new Set(
@@ -425,6 +607,9 @@ export const useListaProductos = (tipoUsuario: number) => {
         try {
           await crearCategoriaHttp({
             nombre: nombreCategoria,
+            envio: "excel",
+            file_path: normalizarNombre(nombreCategoria),
+            plataforma: plataforma,
           });
           categoriasCreadas++;
         } catch (error) {
@@ -468,7 +653,7 @@ export const useListaProductos = (tipoUsuario: number) => {
       // Recargar proveedores y categorías desde el servidor
       const [nuevosProveedores, nuevasCategorias, nuevasPlataformas] = await Promise.all([
         getProveedoresHttp(),
-        getCategoriasHttp(),
+        getCategoriasHttp(plataforma),
         getPlataformasHttp(),
       ]);
 
@@ -493,7 +678,7 @@ export const useListaProductos = (tipoUsuario: number) => {
           ...producto,
           id_proveedor: proveedorObj?.id || producto.id_proveedor,
           id_catalogo: categoriaObj?.id || producto.id_catalogo,
-          proveedor_valido: !!proveedorObj,
+          proveedor_valido: producto.proveedor_vacio ? true : !!proveedorObj,
           categoria_valida: !!categoriaObj,
           plataforma_valida: !!plataformaObj,
         };
@@ -581,7 +766,7 @@ export const useListaProductos = (tipoUsuario: number) => {
       setPlataformaEditar(productoEditar.id_plataforma || "");
       setFotoEditar(
         productoEditar.foto_producto
-          ? `${env.API_URL_ASSETS}fotos_producto/${productoEditar?.id}/${productoEditar.foto_producto}`
+          ? `${env.API_URL_ASSETS}fotos_producto/${productoEditar.foto_producto}` //${productoEditar?.id}
           : ""
       );
     }
@@ -601,14 +786,18 @@ export const useListaProductos = (tipoUsuario: number) => {
   };
 
   const getProductosCatalogo = useCallback(
-    async (params?: { search?: string; fecha1?: string; fecha2?: string }) => {
+    async (params?: { search?: string; fecha1?: string; fecha2?: string; plataforma?: string }) => {
       try {
+        //getCatalogoProductosDigitalesBrimagyHttp //puntotes
+        //getCatalogoProductosHttp //MAIN
+        //getCatalogoClubBohnBrimagyHttp //club bohn
         setProcesando(true);
         const productosData = await getCatalogoProductosHttp(
           esDigital ? "digital" : esFisico ? "fisico" : "todos",
           params?.search,
           params?.fecha1 ? new Date(params.fecha1) : undefined,
-          params?.fecha2 ? new Date(params.fecha2) : undefined
+          params?.fecha2 ? new Date(params.fecha2) : undefined,
+          params?.plataforma ?? plataforma
         );
         setProductos(productosData);
         setTableKey((prev) => prev + 1);
@@ -620,7 +809,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         handleisAlertOpen();
       }
     },
-    [esDigital, esFisico]
+    [esDigital, esFisico, plataforma]
   );
 
   const getBitacoraProductoPorId = async (datos: any) => {
@@ -670,6 +859,38 @@ export const useListaProductos = (tipoUsuario: number) => {
     }
   };
 
+  const marcarNoDisponible = async (datos?: any) => {
+    try {
+      setProcesando(true);
+      const productosData = await marcarNoDisponibleHttp(datos);
+      await getProductosCatalogo();
+      setProcesando(false);
+      setMensajeAlert(intl.formatMessage({ id: "producto_no_disponible_correctamente" }));
+      handleisAlertOpen();
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "producto_no_disponible_error" }));
+      handleisAlertOpen();
+    }
+  };
+
+  const marcarDisponible = async (datos?: any) => {
+    try {
+      setProcesando(true);
+      const productosData = await marcarDisponibleHttp(datos);
+      await getProductosCatalogo();
+      setProcesando(false);
+      setMensajeAlert(intl.formatMessage({ id: "producto_disponible_correctamente" }));
+      handleisAlertOpen();
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "producto_disponible_error" }));
+      handleisAlertOpen();
+    }
+  };
+
   const getProveedores = useCallback(async () => {
     try {
       setProcesando(true);
@@ -684,10 +905,10 @@ export const useListaProductos = (tipoUsuario: number) => {
     }
   }, []);
 
-  const getCategoriasProducto = useCallback(async () => {
+  const getCategoriasProducto = useCallback(async (plataforma?: string) => {
     try {
       setProcesando(true);
-      const categorias = await getCategoriasHttp();
+      const categorias = await getCategoriasHttp(plataforma);
       setCategorias(categorias);
       setProcesando(false);
     } catch (error) {
@@ -713,11 +934,11 @@ export const useListaProductos = (tipoUsuario: number) => {
   }, []);
 
   useEffect(() => {
-    getCategoriasProducto();
+    getCategoriasProducto(plataforma);
     getProveedores();
     getProductosCatalogo();
     getPlataformas();
-  }, [getProductosCatalogo, getCategoriasProducto, getProveedores]);
+  }, [getProductosCatalogo, getCategoriasProducto, getProveedores, plataforma]);
 
   // Función para procesar el Excel con ExcelJS
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1013,7 +1234,11 @@ export const useListaProductos = (tipoUsuario: number) => {
       }
 
       const skus = datosFormateados.map((p) => p.sku).filter(Boolean);
-      const ids = datosFormateados.map((p) => p.id_producto_brimagy).filter(Boolean);
+      /*const ids = datosFormateados.map((p) => p.id_producto_brimagy).filter(Boolean);*/
+      const ids = datosFormateados
+        .map((p) => p.id_producto_brimagy)
+        .filter(Boolean)
+        .map((id) => String(id));
 
       if (ids.length > 0) {
         try {
@@ -1071,18 +1296,8 @@ export const useListaProductos = (tipoUsuario: number) => {
         { header: "Color", key: "color", width: 15 },
         { header: "Talla", key: "talla", width: 15 },
         { header: "Costo con IVA", key: "costo_con_iva", width: 15 },
-        //{ header: "Costo sin IVA", key: "costo_sin_iva", width: 15 },
         { header: "Costo Puntos con IVA", key: "costo_puntos_con_iva", width: 20 },
-        /*{ header: "Costo Puntos sin IVA", key: "costo_puntos_sin_iva", width: 20 },
-        { header: "Fee Brimagy", key: "fee_brimagy", width: 15 },
-        { header: "Subtotal", key: "subtotal", width: 15 },
-        { header: "Envío Base", key: "envio_base", width: 15 },
-        { header: "Costo Caja", key: "costo_caja", width: 15 },*/
         { header: "Envío Extra", key: "envio_extra", width: 15 },
-        /*{ header: "Total Envío", key: "total_envio", width: 15 },
-        { header: "Total", key: "total", width: 15 },
-        { header: "Puntos", key: "puntos", width: 15 },
-        { header: "Factor", key: "factor", width: 15 },*/
         { header: "Tipo Producto", key: "tipo_producto", width: 15 },
         { header: "Plataforma", key: "plataforma", width: 15 },
       ];
@@ -1107,18 +1322,8 @@ export const useListaProductos = (tipoUsuario: number) => {
         color: "Rojo",
         talla: "",
         costo_con_iva: 100,
-        //costo_sin_iva: 86,
         costo_puntos_con_iva: 100,
-        /*costo_puntos_sin_iva: 86,
-        fee_brimagy: 10,
-        subtotal: 90,
-        envio_base: 50,
-        costo_caja: 20,*/
         envio_extra: 10,
-        /*total_envio: 60,
-        total: 150,
-        puntos: 150,
-        factor: 15,*/
         tipo_producto: "fisico",
         plataforma: "ejemplo1",
       });
@@ -1140,7 +1345,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     }
   };
 
-  const descargarProductosExcel = async () => {
+  const descargarProductosExcel = async (nombreFiltro?: string) => {
     try {
       setProcesando(true);
 
@@ -1158,18 +1363,8 @@ export const useListaProductos = (tipoUsuario: number) => {
         { header: "Color", key: "color", width: 15 },
         { header: "Talla", key: "talla", width: 15 },
         { header: "Costo con IVA", key: "costo_con_iva", width: 15 },
-        //{ header: "Costo sin IVA", key: "costo_sin_iva", width: 15 },
         { header: "Costo Puntos con IVA", key: "costo_puntos_con_iva", width: 20 },
-        /*{ header: "Costo Puntos sin IVA", key: "costo_puntos_sin_iva", width: 20 },
-        { header: "Fee Brimagy", key: "fee_brimagy", width: 15 },
-        { header: "Subtotal", key: "subtotal", width: 15 },
-        { header: "Envío Base", key: "envio_base", width: 15 },
-        { header: "Costo Caja", key: "costo_caja", width: 15 },*/
         { header: "Envío Extra", key: "envio_extra", width: 15 },
-        /*{ header: "Total Envío", key: "total_envio", width: 15 },
-        { header: "Total", key: "total", width: 15 },
-        { header: "Puntos", key: "puntos", width: 15 },
-        { header: "Factor", key: "factor", width: 15 },*/
         { header: "Tipo Producto", key: "tipo_producto", width: 15 },
         { header: "Plataforma", key: "plataforma", width: 15 },
       ];
@@ -1183,9 +1378,28 @@ export const useListaProductos = (tipoUsuario: number) => {
       };
       worksheet.getRow(1).alignment = { vertical: "middle", horizontal: "center" };
 
-      productos.forEach((p) => {
+      // Si se pasa un nombreFiltro, solo procesamos ese producto; si no, todos.
+      const productosAProcesar = nombreFiltro
+        ? productos.filter(
+            (p) => p.nombre_producto?.trim().toLowerCase() === nombreFiltro.trim().toLowerCase()
+          )
+        : productos;
+
+      if (nombreFiltro && productosAProcesar.length === 0) {
+        console.warn(`No se encontró ningún producto con nombre "${nombreFiltro}"`);
+        setProcesando(false);
+        return;
+      }
+
+      productosAProcesar.forEach((p) => {
+        const { costo_puntos_con_iva } = reconstruirCostosDesdeRequiredScore(
+          p.required_score,
+          p.plataforma || "puntotes",
+          variablesGlobalesData,
+          true
+        );
         const row = worksheet.addRow({
-          id_producto: p.id_producto_brimagy || "",
+          id_producto: p.id ?? p.id_producto_brimagy ?? 0, //p.id_producto_brimagy
           categoria: p.catalogo || "",
           nombre_producto: p.nombre_producto || "",
           descripcion: p.descripcion || "",
@@ -1195,20 +1409,15 @@ export const useListaProductos = (tipoUsuario: number) => {
           color: p.color || "",
           talla: p.talla || "",
           costo_con_iva: p.costo_con_iva ?? 0,
-          //costo_sin_iva: p.costo_sin_iva ?? 0,
-          costo_puntos_con_iva: p.costo_puntos_con_iva ?? 0,
-          /*costo_puntos_sin_iva: p.costo_puntos_sin_iva ?? 0,
-          fee_brimagy: p.fee_brimagy ?? 0,
-          subtotal: p.subtotal ?? 0,
-          envio_base: p.envio_base ?? 0,
-          costo_caja: p.costo_caja ?? 0,*/
+          costo_puntos_con_iva: p.costo_puntos_con_iva ?? costo_puntos_con_iva ?? 0,
           envio_extra: p.envio_extra ?? 0,
-          /*total_envio: p.total_envio ?? 0,
-          total: p.total ?? 0,
-          puntos: p.puntos ?? 0,
-          factor: p.factor ?? 0,*/
-          tipo_producto: p.tipo_producto || "",
-          plataforma: p.nombre_plataforma || "",
+          //p.catalogo.toLowerCase() === "gifs" ? "digital" : "fisico"
+          //p.tipo_producto
+          tipo_producto:
+            p.catalogo.toLowerCase() === "gifs" || p.catalogo.toLowerCase() === "bohn cardssss"
+              ? "digital"
+              : "fisico",
+          plataforma: p.plataforma || "puntotes", //p.plataforma || ""
         });
 
         const columnasNumericas = [10, 11, 12];
@@ -1225,7 +1434,9 @@ export const useListaProductos = (tipoUsuario: number) => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `productos_${moment().format("DDMMYYYY_HHmm")}.xlsx`;
+      link.download = nombreFiltro
+        ? `producto_${nombreFiltro.replace(/\s+/g, "_")}_${moment().format("DDMMYYYY_HHmm")}.xlsx`
+        : `productos_${moment().format("DDMMYYYY_HHmm")}.xlsx`;
       link.click();
       window.URL.revokeObjectURL(url);
 
@@ -1323,109 +1534,116 @@ export const useListaProductos = (tipoUsuario: number) => {
   };
 
   //Búsqueda inteligente
-  const busquedaInteligenteBrimagy = useCallback(async (datos?: any) => {
-    try {
-      setProcesandoBusquedaMagica(true);
-      const busqueda = await getBusquedaInteligenteHttp(datos);
-      // Formatear los datos igual que en getProductosCatalogo
-      const datosFormateados = busqueda.map((e: any) => {
-        return {
-          ...e,
-          ...{
-            costo_con_iva_format: numericFormatter(e?.costo_con_iva + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            costo_sin_iva_format: numericFormatter(e?.costo_sin_iva + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            costo_puntos_con_iva_format: numericFormatter(e?.costo_puntos_con_iva + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            costo_puntos_sin_iva_format: numericFormatter(e?.costo_puntos_sin_iva + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            subtotal_format: numericFormatter(e?.subtotal + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            envio_base_format: numericFormatter(e?.envio_base + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            costo_caja_format: numericFormatter(e?.costo_caja + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            envio_extra_format: numericFormatter(e?.envio_extra + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            total_envio_format: numericFormatter(e?.total_envio + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            total_format: numericFormatter(e?.total + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            fee_brimagy_format: numericFormatter(e?.fee_brimagy + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            puntos_format: numericFormatter(e?.puntos + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "",
-            }),
-            factor_format: numericFormatter(e?.factor + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "",
-            }),
-            fecha_creacion: moment(e?.fecha_ejecucion).format("DD-MM-YYYY"),
-          },
+  const busquedaInteligenteBrimagy = useCallback(
+    async (datos?: any) => {
+      try {
+        setProcesandoBusquedaMagica(true);
+        const datosConTipo = {
+          ...datos,
+          tipo_producto: esDigital ? "digital" : esFisico ? "fisico" : "todos",
         };
-      });
-      setProductos(datosFormateados);
-      setProcesandoBusquedaMagica(false);
-      handleisAlertCloseBI();
-      setMensajeAlert(`Se encontraron ${datosFormateados.length} productos relacionados`);
-      handleisAlertOpen();
-    } catch (error) {
-      setProcesandoBusquedaMagica(false);
-      const message = getErrorHttpMessage(error);
-      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
-      handleisAlertOpen();
-    }
-  }, []);
+        const busqueda = await getBusquedaInteligenteHttp(datosConTipo);
+        // Formatear los datos igual que en getProductosCatalogo
+        const datosFormateados = busqueda.map((e: any) => {
+          return {
+            ...e,
+            ...{
+              costo_con_iva_format: numericFormatter(e?.costo_con_iva + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              costo_sin_iva_format: numericFormatter(e?.costo_sin_iva + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              costo_puntos_con_iva_format: numericFormatter(e?.costo_puntos_con_iva + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              costo_puntos_sin_iva_format: numericFormatter(e?.costo_puntos_sin_iva + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              subtotal_format: numericFormatter(e?.subtotal + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              envio_base_format: numericFormatter(e?.envio_base + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              costo_caja_format: numericFormatter(e?.costo_caja + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              envio_extra_format: numericFormatter(e?.envio_extra + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              total_envio_format: numericFormatter(e?.total_envio + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              total_format: numericFormatter(e?.total + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              fee_brimagy_format: numericFormatter(e?.fee_brimagy + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              puntos_format: numericFormatter(e?.puntos + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "",
+              }),
+              factor_format: numericFormatter(e?.factor + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "",
+              }),
+              fecha_creacion: moment(e?.fecha_ejecucion).format("DD-MM-YYYY"),
+            },
+          };
+        });
+        setProductos(datosFormateados);
+        setProcesandoBusquedaMagica(false);
+        handleisAlertCloseBI();
+        setMensajeAlert(`Se encontraron ${datosFormateados.length} productos relacionados`);
+        handleisAlertOpen();
+      } catch (error) {
+        setProcesandoBusquedaMagica(false);
+        const message = getErrorHttpMessage(error);
+        setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+        handleisAlertOpen();
+      }
+    },
+    [esDigital, esFisico]
+  );
 
   //colores
   const getProductoColorPorId = useCallback(async (datos: any) => {
@@ -2282,5 +2500,11 @@ export const useListaProductos = (tipoUsuario: number) => {
     fotoMonto,
     desactivarFotoMonto,
     activarFotoMonto,
+    marcarNoDisponible,
+    marcarDisponible,
+    plataforma,
+    variablesGlobalesData,
+    calcularPuntosEsperados,
+    tallaArray,
   };
 };

@@ -95,6 +95,7 @@ function CatalogoEncuestas(): JSX.Element {
     isAlertOpenVerRespuestasCanje,
     handleisAlertOpenVerRespuestasCanje,
     handleisAlertCloseVerRespuestasCanje,
+    plataforma,
   } = useCatalogoEncuestas();
 
   const getEstadoPreguntaColor = (estado_pregunta: string) => {
@@ -321,6 +322,7 @@ function CatalogoEncuestas(): JSX.Element {
                           pregunta: formik.values.pregunta,
                           tipo_encuesta: formik.values.tipo_encuesta,
                           tipo_pregunta: formik.values.tipo_pregunta,
+                          plataforma: plataforma,
                         };
                         createPreguntaEncuesta(datos);
                       }}
@@ -452,6 +454,7 @@ function CatalogoEncuestas(): JSX.Element {
                                         onClick={() => {
                                           const datos = {
                                             tipo_encuesta: p.tipo_encuesta,
+                                            plataforma: plataforma,
                                           };
                                           getPreguntasPorTipo(datos);
                                           handleisAlertOpenEncuesta();
@@ -479,9 +482,9 @@ function CatalogoEncuestas(): JSX.Element {
                                           onClick={() => {
                                             const datos = {
                                               tipo_encuesta: p.tipo_encuesta,
+                                              plataforma: plataforma,
                                             };
                                             getRespuestasPorEncuesta(datos);
-                                            console.log(verRespuestasEncuesta);
                                             handleisAlertOpenVerRespuestasEncuesta();
                                           }}
                                         >
