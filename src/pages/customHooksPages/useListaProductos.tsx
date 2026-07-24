@@ -863,7 +863,10 @@ export const useListaProductos = (tipoUsuario: number) => {
     try {
       setProcesando(true);
       const productosData = await marcarNoDisponibleHttp(datos);
-      await getProductosCatalogo();
+      //await getProductosCatalogo();
+      setProductos((prevProductos) =>
+        prevProductos.map((p) => (p.id === datos?.id_producto ? { ...p, stock: 0 } : p))
+      );
       setProcesando(false);
       setMensajeAlert(intl.formatMessage({ id: "producto_no_disponible_correctamente" }));
       handleisAlertOpen();
@@ -879,7 +882,10 @@ export const useListaProductos = (tipoUsuario: number) => {
     try {
       setProcesando(true);
       const productosData = await marcarDisponibleHttp(datos);
-      await getProductosCatalogo();
+      //await getProductosCatalogo();
+      setProductos((prevProductos) =>
+        prevProductos.map((p) => (p.id === datos?.id_producto ? { ...p, stock: 1000000 } : p))
+      );
       setProcesando(false);
       setMensajeAlert(intl.formatMessage({ id: "producto_disponible_correctamente" }));
       handleisAlertOpen();

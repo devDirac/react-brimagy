@@ -276,7 +276,6 @@ const FotosProductoModal = ({
                                   id_foto_brimagy: f?.id_foto_brimagy,
                                   plataforma: plataforma,
                                 };
-                                console.log(datos);
                                 activarFotosProducto(datos);
                               }}
                             >

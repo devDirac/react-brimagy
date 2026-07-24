@@ -13,7 +13,7 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 
 // formik components
 import { Formik, Form } from "formik";
@@ -436,6 +436,17 @@ function ListaProductos(): JSX.Element {
     productoEditar,
   ]);
 
+  const truncarTexto = (texto: string, limite: number): string => {
+    if (!texto) return "";
+    return texto.length > limite ? `${texto.slice(0, limite)}...` : texto;
+  };
+
+  useEffect(() => {
+    if (productoEditar) {
+      setValueTab("one");
+    }
+  }, [productoEditar]);
+
   return (
     <DashboardLayout>
       <DashboardNavbar />
@@ -760,6 +771,9 @@ function ListaProductos(): JSX.Element {
                                   getProductoFotoPorId(datos);
                                   getProductoFotoPromoPorId(datos);
                                   handleisAlertOpenEditarProducto();
+
+                                  setPreviewFoto(null);
+                                  setFotoProductoPrincipalFile(null);
                                 }}
                               >
                                 <EditIcon fontSize="small" />
@@ -826,9 +840,11 @@ function ListaProductos(): JSX.Element {
                           <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
                             {p.nombre_producto}
                           </Typography>
+
                           <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                            {p.descripcion}
+                            {truncarTexto(p.descripcion, 60)}
                           </Typography>
+                          {/*<Tooltip title={p.descripcion || ""}></Tooltip>*/}
 
                           <MDTypography
                             variant="caption"
