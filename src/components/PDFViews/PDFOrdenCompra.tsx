@@ -224,6 +224,18 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
   },
+  tableHeaderTextLeft: {
+    color: "#ffffff",
+    fontSize: 8,
+    fontWeight: "bold",
+    textAlign: "left",
+  },
+  tableHeaderTextRight: {
+    color: "#ffffff",
+    fontSize: 8,
+    fontWeight: "bold",
+    textAlign: "right",
+  },
   tableRow: {
     flexDirection: "row",
     borderBottom: "1 solid #e0e0e0",
@@ -253,27 +265,23 @@ const styles = StyleSheet.create({
   },
   // Anchos de columna
   colProducto: {
-    width: "30%",
+    width: "40%",
     paddingRight: 4,
   },
   colCantidad: {
-    width: "10%",
+    width: "8%",
     paddingRight: 4,
   },
   colPrecio: {
-    width: "15%",
-    paddingRight: 4,
-  },
-  colDescuento: {
-    width: "12%",
+    width: "17%",
     paddingRight: 4,
   },
   colIVA: {
-    width: "10%",
+    width: "15%",
     paddingRight: 4,
   },
   colTotal: {
-    width: "18%",
+    width: "20%",
     paddingRight: 4,
   },
   // Totales
@@ -392,22 +400,19 @@ const PDFOrdenCompra: React.FC<PDFOrdenCompraProps> = ({ ordenCompra }) => {
             {/* Encabezados de tabla */}
             <View style={styles.tableHeader}>
               <View style={styles.colProducto}>
-                <Text style={styles.tableHeaderText}>Producto</Text>
+                <Text style={styles.tableHeaderTextLeft}>Producto</Text>
               </View>
               <View style={styles.colCantidad}>
                 <Text style={styles.tableHeaderText}>Cant.</Text>
               </View>
               <View style={styles.colPrecio}>
-                <Text style={styles.tableHeaderText}>P. Unitario</Text>
-              </View>
-              <View style={styles.colDescuento}>
-                <Text style={styles.tableHeaderText}>Desc. %</Text>
+                <Text style={styles.tableHeaderTextRight}>P. Unitario</Text>
               </View>
               <View style={styles.colIVA}>
-                <Text style={styles.tableHeaderText}>IVA 16%</Text>
+                <Text style={styles.tableHeaderTextRight}>IVA 16%</Text>
               </View>
               <View style={styles.colTotal}>
-                <Text style={styles.tableHeaderText}>Importe Total</Text>
+                <Text style={styles.tableHeaderTextRight}>Importe Total</Text>
               </View>
             </View>
 
@@ -436,9 +441,6 @@ const PDFOrdenCompra: React.FC<PDFOrdenCompraProps> = ({ ordenCompra }) => {
                       <Text style={styles.tableCellRight}>
                         {formatCurrency(canje?.precio_unitario)}
                       </Text>
-                    </View>
-                    <View style={styles.colDescuento}>
-                      <Text style={styles.tableCell}>{canje?.porcentaje_descuento}%</Text>
                     </View>
                     <View style={styles.colIVA}>
                       <Text style={styles.tableCellRight}>{formatCurrency(iva)}</Text>

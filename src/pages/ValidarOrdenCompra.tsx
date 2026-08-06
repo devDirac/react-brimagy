@@ -180,7 +180,7 @@ function ValidarOrdenCompra(): JSX.Element {
 
   const cotizacion =
     ordenCompra?.orden_compra?.estatus === "cotizacion_enviada_a_proveedor" ||
-    ordenCompra?.orden_compra?.estatus === "cotizacion_rechazada"
+      ordenCompra?.orden_compra?.estatus === "cotizacion_rechazada"
       ? "COTIZACIÓN"
       : "ORDEN DE COMPRA";
 
@@ -192,7 +192,7 @@ function ValidarOrdenCompra(): JSX.Element {
             <Card>
               <CardContent sx={{ p: 4 }}>
                 {ordenCompra &&
-                ordenCompra?.orden_compra?.estatus !== "orden_compra_enviada_a_proveedor" ? (
+                  ordenCompra?.orden_compra?.estatus !== "orden_compra_enviada_a_proveedor" ? (
                   <Box sx={{ textAlign: "center", mb: 3 }}>
                     <VerifiedIcon sx={{ fontSize: 60, color: green[500], mb: 2 }} />
                     <Typography variant="h4" gutterBottom>
@@ -519,9 +519,9 @@ function ValidarOrdenCompra(): JSX.Element {
                                 xs={6}
                                 md={
                                   ordenCompra?.orden_compra?.estatus ===
-                                  "cotizacion_enviada_a_proveedor"
-                                    ? 2
-                                    : 3
+                                    "cotizacion_enviada_a_proveedor"
+                                    ? 3
+                                    : 4
                                 }
                               >
                                 <Typography variant="body2" color="text.secondary">
@@ -555,7 +555,7 @@ function ValidarOrdenCompra(): JSX.Element {
                                 </Typography>
                               </Grid>
 
-                              <Grid item xs={6} md={1}>
+                              {/*<Grid item xs={6} md={1}>
                                 <Typography variant="body2" color="text.secondary">
                                   % de desc.
                                 </Typography>
@@ -567,7 +567,7 @@ function ValidarOrdenCompra(): JSX.Element {
                                     suffix: "%",
                                   })}
                                 </Typography>
-                              </Grid>
+                              </Grid>*/}
 
                               <Grid item xs={6} md={1}>
                                 <Typography variant="body2" color="text.secondary">
@@ -592,7 +592,7 @@ function ValidarOrdenCompra(): JSX.Element {
                                 </Typography>
                               </Grid>
                               {ordenCompra?.orden_compra?.estatus ===
-                              "cotizacion_enviada_a_proveedor" ? (
+                                "cotizacion_enviada_a_proveedor" ? (
                                 <Grid item xs={6} md={1}>
                                   <Typography variant="body2" color="text.secondary">
                                     Acciones
@@ -664,7 +664,7 @@ function ValidarOrdenCompra(): JSX.Element {
                       />
                     </MDBox>
                     {ordenCompra?.orden_compra?.estatus === "orden_compra_enviada_a_proveedor" ||
-                    ordenCompra?.orden_compra?.estatus ===
+                      ordenCompra?.orden_compra?.estatus ===
                       "xml_validado_correctamente_proveedor" ? (
                       <>
                         <Divider sx={{ mb: 2 }} />
@@ -685,146 +685,146 @@ function ValidarOrdenCompra(): JSX.Element {
                         <Grid item xs={12} md={12} display="flex" justifyContent="center" mb={2}>
                           {ordenCompra?.orden_compra?.estatus !==
                             "xml_validado_correctamente_proveedor" && (
-                            <Grid
-                              item
-                              xs={12}
-                              md={4}
-                              display="flex"
-                              justifyContent="center"
-                              alignItems="center"
-                              flexDirection="column"
-                            >
-                              <Typography variant="caption" color="text.secondary">
-                                Validar XML
-                              </Typography>
-                              <MuiFileInput
-                                value={factura}
-                                onChange={handleChangeFactura}
-                                inputProps={{ accept: ".xml" }}
-                                hideSizeText
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <CloudUploadIcon fontSize="medium" />
-                                    </InputAdornment>
-                                  ),
-                                  endAdornment: factura && (
-                                    <InputAdornment position="end">
-                                      <Button
-                                        sx={{
-                                          color: "#fff",
-                                          background: "#eb2fa5",
-                                          fontSize: "0.75rem",
-                                          padding: "6px 8px",
-                                          margin: "0",
-                                        }}
-                                        size="small"
-                                        variant="contained"
-                                        disabled={procesandoValidandoFactura}
-                                        onClick={(e: any) => {
-                                          const datos = {
-                                            id_orden_compra: ordenCompra?.orden_compra?.id,
-                                            id_proveedor: ordenCompra?.proveedor?.id,
-                                            id_usuario: ordenCompra?.orden_compra?.id_usuario,
-                                            xml_factura: factura,
-                                          };
-                                          validarFacturaOrdenCompra(datos);
-                                        }}
-                                      >
-                                        {procesandoValidandoFactura ? (
-                                          <>
-                                            <Spinner
-                                              as="span"
-                                              animation="border"
-                                              size="sm"
-                                              role="status"
-                                              aria-hidden="true"
-                                            />
-                                            Validando...{" "}
-                                          </>
-                                        ) : (
-                                          intl.formatMessage({ id: "validar_xml" })
-                                        )}
-                                      </Button>
-                                    </InputAdornment>
-                                  ),
-                                }}
-                                placeholder={`${intl.formatMessage({ id: "validar_xml_factura" })}`}
-                              />
-                            </Grid>
-                          )}
+                              <Grid
+                                item
+                                xs={12}
+                                md={4}
+                                display="flex"
+                                justifyContent="center"
+                                alignItems="center"
+                                flexDirection="column"
+                              >
+                                <Typography variant="caption" color="text.secondary">
+                                  Validar XML
+                                </Typography>
+                                <MuiFileInput
+                                  value={factura}
+                                  onChange={handleChangeFactura}
+                                  inputProps={{ accept: ".xml" }}
+                                  hideSizeText
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <CloudUploadIcon fontSize="medium" />
+                                      </InputAdornment>
+                                    ),
+                                    endAdornment: factura && (
+                                      <InputAdornment position="end">
+                                        <Button
+                                          sx={{
+                                            color: "#fff",
+                                            background: "#eb2fa5",
+                                            fontSize: "0.75rem",
+                                            padding: "6px 8px",
+                                            margin: "0",
+                                          }}
+                                          size="small"
+                                          variant="contained"
+                                          disabled={procesandoValidandoFactura}
+                                          onClick={(e: any) => {
+                                            const datos = {
+                                              id_orden_compra: ordenCompra?.orden_compra?.id,
+                                              id_proveedor: ordenCompra?.proveedor?.id,
+                                              id_usuario: ordenCompra?.orden_compra?.id_usuario,
+                                              xml_factura: factura,
+                                            };
+                                            validarFacturaOrdenCompra(datos);
+                                          }}
+                                        >
+                                          {procesandoValidandoFactura ? (
+                                            <>
+                                              <Spinner
+                                                as="span"
+                                                animation="border"
+                                                size="sm"
+                                                role="status"
+                                                aria-hidden="true"
+                                              />
+                                              Validando...{" "}
+                                            </>
+                                          ) : (
+                                            intl.formatMessage({ id: "validar_xml" })
+                                          )}
+                                        </Button>
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                  placeholder={`${intl.formatMessage({ id: "validar_xml_factura" })}`}
+                                />
+                              </Grid>
+                            )}
                           {ordenCompra?.orden_compra?.estatus ===
                             "xml_validado_correctamente_proveedor" && (
-                            <Grid
-                              item
-                              xs={12}
-                              md={4}
-                              display="flex"
-                              justifyContent="center"
-                              alignItems="center"
-                              flexDirection="column"
-                            >
-                              <Typography variant="caption" color="text.secondary">
-                                Sube tu PDF de la factura
-                              </Typography>
-                              <MuiFileInput
-                                value={factura}
-                                onChange={handleChangeFactura}
-                                inputProps={{ accept: ".pdf" }}
-                                hideSizeText
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      <PictureAsPdfIcon fontSize="medium" />
-                                    </InputAdornment>
-                                  ),
-                                  endAdornment: factura && (
-                                    <InputAdornment position="end">
-                                      <Button
-                                        sx={{
-                                          color: "#fff",
-                                          background: "#eb2fa5",
-                                          fontSize: "0.75rem",
-                                          padding: "6px 8px",
-                                          margin: "0",
-                                        }}
-                                        size="small"
-                                        variant="contained"
-                                        disabled={procesandoValidandoFactura}
-                                        onClick={(e: any) => {
-                                          const datos = {
-                                            id_orden_compra: ordenCompra?.orden_compra?.id,
-                                            id_proveedor: ordenCompra?.proveedor?.id,
-                                            id_usuario: ordenCompra?.orden_compra?.id_usuario,
-                                            pdf_factura: factura,
-                                          };
-                                          subirPDFFactura(datos);
-                                        }}
-                                      >
-                                        {procesandoValidandoFactura ? (
-                                          <>
-                                            <Spinner
-                                              as="span"
-                                              animation="border"
-                                              size="sm"
-                                              role="status"
-                                              aria-hidden="true"
-                                            />
-                                            Validando...{" "}
-                                          </>
-                                        ) : (
-                                          intl.formatMessage({ id: "subir_pdf_factura" })
-                                        )}
-                                      </Button>
-                                    </InputAdornment>
-                                  ),
-                                }}
-                                placeholder={`${intl.formatMessage({
-                                  id: "subir_pdf_factura_placeholder",
-                                })}`}
-                              />
-                            </Grid>
-                          )}
+                              <Grid
+                                item
+                                xs={12}
+                                md={4}
+                                display="flex"
+                                justifyContent="center"
+                                alignItems="center"
+                                flexDirection="column"
+                              >
+                                <Typography variant="caption" color="text.secondary">
+                                  Sube tu PDF de la factura
+                                </Typography>
+                                <MuiFileInput
+                                  value={factura}
+                                  onChange={handleChangeFactura}
+                                  inputProps={{ accept: ".pdf" }}
+                                  hideSizeText
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <PictureAsPdfIcon fontSize="medium" />
+                                      </InputAdornment>
+                                    ),
+                                    endAdornment: factura && (
+                                      <InputAdornment position="end">
+                                        <Button
+                                          sx={{
+                                            color: "#fff",
+                                            background: "#eb2fa5",
+                                            fontSize: "0.75rem",
+                                            padding: "6px 8px",
+                                            margin: "0",
+                                          }}
+                                          size="small"
+                                          variant="contained"
+                                          disabled={procesandoValidandoFactura}
+                                          onClick={(e: any) => {
+                                            const datos = {
+                                              id_orden_compra: ordenCompra?.orden_compra?.id,
+                                              id_proveedor: ordenCompra?.proveedor?.id,
+                                              id_usuario: ordenCompra?.orden_compra?.id_usuario,
+                                              pdf_factura: factura,
+                                            };
+                                            subirPDFFactura(datos);
+                                          }}
+                                        >
+                                          {procesandoValidandoFactura ? (
+                                            <>
+                                              <Spinner
+                                                as="span"
+                                                animation="border"
+                                                size="sm"
+                                                role="status"
+                                                aria-hidden="true"
+                                              />
+                                              Validando...{" "}
+                                            </>
+                                          ) : (
+                                            intl.formatMessage({ id: "subir_pdf_factura" })
+                                          )}
+                                        </Button>
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                  placeholder={`${intl.formatMessage({
+                                    id: "subir_pdf_factura_placeholder",
+                                  })}`}
+                                />
+                              </Grid>
+                            )}
                         </Grid>
                         <Divider sx={{ mb: 2 }} />
                       </>
@@ -853,7 +853,7 @@ function ValidarOrdenCompra(): JSX.Element {
                       </Grid>
                     ) : null}
                     {ordenCompra?.orden_compra?.estatus ===
-                    "factura_subida_correctamente_proveedor" ? (
+                      "factura_subida_correctamente_proveedor" ? (
                       <Alert severity="warning" sx={{ m: 2 }}>
                         La factura fue subida con éxito, para continuar el proceso debes dar click
                         en <b>Validar orden de compra</b>
@@ -877,7 +877,7 @@ function ValidarOrdenCompra(): JSX.Element {
                           procesando ||
                           !todosProductosValidados ||
                           ordenCompra?.orden_compra?.estatus !==
-                            "factura_subida_correctamente_proveedor"
+                          "factura_subida_correctamente_proveedor"
                         }
                         onClick={(e: any) => {
                           const datos = {

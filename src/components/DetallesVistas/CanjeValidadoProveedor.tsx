@@ -431,7 +431,7 @@ const CanjeValidadoProveedorModal = ({
                 return (
                   <>
                     <Grid container spacing={2} key={canje.id}>
-                      <Grid item xs={6} md={!verCanje?.orden_compra ? 2 : 3}>
+                      <Grid item xs={6} md={!verCanje?.orden_compra ? 3 : 4}>
                         <Typography variant="body2" color="text.secondary">
                           Nombre del producto
                         </Typography>
@@ -441,12 +441,12 @@ const CanjeValidadoProveedorModal = ({
                           sx={
                             canje.estatus_proveedor === 2
                               ? {
-                                  textDecoration: "line-through",
-                                  textDecorationColor: "red",
-                                }
+                                textDecoration: "line-through",
+                                textDecorationColor: "red",
+                              }
                               : canje.tipo_producto === "digital"
-                              ? { color: "#ff9809" }
-                              : {}
+                                ? { color: "#ff9809" }
+                                : {}
                           }
                         >
                           {canje.nombre_premio}
@@ -463,12 +463,12 @@ const CanjeValidadoProveedorModal = ({
                           sx={
                             canje.estatus_proveedor === 2
                               ? {
-                                  textDecoration: "line-through",
-                                  textDecorationColor: "red",
-                                }
+                                textDecoration: "line-through",
+                                textDecorationColor: "red",
+                              }
                               : canje.tipo_producto === "digital"
-                              ? { color: "#ff9809" }
-                              : {}
+                                ? { color: "#ff9809" }
+                                : {}
                           }
                         >
                           {cantidad}
@@ -485,12 +485,12 @@ const CanjeValidadoProveedorModal = ({
                           sx={
                             canje.estatus_proveedor === 2
                               ? {
-                                  textDecoration: "line-through",
-                                  textDecorationColor: "red",
-                                }
+                                textDecoration: "line-through",
+                                textDecorationColor: "red",
+                              }
                               : canje.tipo_producto === "digital"
-                              ? { color: "#ff9809" }
-                              : {}
+                                ? { color: "#ff9809" }
+                                : {}
                           }
                         >
                           {numericFormatter(precioUnitario.toString(), {
@@ -502,7 +502,7 @@ const CanjeValidadoProveedorModal = ({
                         </Typography>
                       </Grid>
 
-                      <Grid item xs={6} md={1}>
+                      {/*<Grid item xs={6} md={1}>
                         <Typography variant="body2" color="text.secondary">
                           % de desc.
                         </Typography>
@@ -527,7 +527,7 @@ const CanjeValidadoProveedorModal = ({
                             suffix: "%",
                           })}
                         </Typography>
-                      </Grid>
+                      </Grid>*/}
 
                       <Grid item xs={6} md={1}>
                         <Typography variant="body2" color="text.secondary">
@@ -539,12 +539,12 @@ const CanjeValidadoProveedorModal = ({
                           sx={
                             canje.estatus_proveedor === 2
                               ? {
-                                  textDecoration: "line-through",
-                                  textDecorationColor: "red",
-                                }
+                                textDecoration: "line-through",
+                                textDecorationColor: "red",
+                              }
                               : canje.tipo_producto === "digital"
-                              ? { color: "#ff9809" }
-                              : {}
+                                ? { color: "#ff9809" }
+                                : {}
                           }
                         >
                           IVA (16%)
@@ -561,12 +561,12 @@ const CanjeValidadoProveedorModal = ({
                           sx={
                             canje.estatus_proveedor === 2
                               ? {
-                                  textDecoration: "line-through",
-                                  textDecorationColor: "red",
-                                }
+                                textDecoration: "line-through",
+                                textDecorationColor: "red",
+                              }
                               : canje.tipo_producto === "digital"
-                              ? { color: "#ff9809" }
-                              : {}
+                                ? { color: "#ff9809" }
+                                : {}
                           }
                         >
                           {numericFormatter(importeTotal.toString(), {
@@ -703,7 +703,7 @@ const CanjeValidadoProveedorModal = ({
             )}
 
             {verCanje?.orden_compra?.estatus === "orden_compra_enviada_a_proveedor" ||
-            verCanje?.orden_compra?.estatus === "xml_validado_correctamente_proveedor" ? (
+              verCanje?.orden_compra?.estatus === "xml_validado_correctamente_proveedor" ? (
               <>
                 <Divider sx={{ mb: 2 }} />
                 <Grid item xs={12}>
