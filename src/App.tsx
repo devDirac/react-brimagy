@@ -93,6 +93,7 @@ import EstadisticaPuntosCategoria from "pages/EstadisticaPuntosCategorias";
 import EstadisticasPuntosPorPeriodo from "pages/EstadisticaPuntosPorPeriodo";
 import EstadisticasComparativaPage from "pages/EstadisticasComparativa";
 import UsuariosPlataforma from "pages/UsuariosPlataforma";
+import ReporteGeneralPage from "pages/ReporteGeneralPage";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
@@ -267,6 +268,7 @@ export default function App() {
             {/* ENCUESTAS */}
             <Route path="/catalogo-encuestas" element={<CatalogoEncuestas />} />
             {/* ESTADISTICAS */}
+            <Route path="/reporte-general-canjes" element={<ReporteGeneralPage />} />
             <Route path="/estadistica-principal" element={<EstadisticasHomePage />} />
             <Route path="/productos-canjeados" element={<EstadisticasProductosCanjeados />} />
             <Route path="/puntos-categoria" element={<EstadisticaPuntosCategoria />} />

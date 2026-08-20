@@ -132,6 +132,10 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
   const handleisAlerCloseProductosTecnologicos = () => setIsAlertOpenProductosTecnologicos(false);
   const [accionProducto, setAccionProducto] = useState(true);
 
+  //FECHA DE COMPRA
+  const [fechaCompra, setFechaCompra] = useState("");
+  const [costoEnvioReal, setCostoEnvioReal] = useState("");
+
   useEffect(() => {
     setAuth(token);
   }, [token]);
@@ -281,6 +285,7 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
 
       const datosRefresh = {
         id_orden_compra: verProducto?.id_orden_compra,
+        id_canje: verProducto?.id_canje,
         id_producto_almacen: verProducto?.id_producto_almacen,
       };
       await getProductoAlmacenPorId(datosRefresh);
@@ -312,11 +317,14 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       setVerProducto((prevProducto: any) => ({
         ...prevProducto,
         guia: guiaProducto,
+        costo_envio_real: costoEnvioReal,
         estatus: "guia_asignada",
       }));
 
       setMensajeAlert(intl.formatMessage({ id: "guia_añadida_correctamente" }));
       setCantidadProducto("");
+      setCostoEnvioReal("");
+      handleisAlertCloseGuia();
       handleisAlertOpen();
       setProcesandoGuiaProducto(false);
     } catch (error) {
@@ -546,6 +554,7 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
         imei: Yup.string().notRequired(),
         no_serie: Yup.string().notRequired(),
         comentarios: Yup.string().notRequired(),
+        fecha_compra: Yup.string().required(),
       }),
     [accionProducto, cantidadMaximaPermitida, verProducto?.id_proveedor]
   );
@@ -558,6 +567,7 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       imei: "",
       no_serie: "",
       comentarios: "",
+      fecha_compra: "",
     },
     validationSchema: validationSchemaCantidad,
     onSubmit: async (values) => {
@@ -575,6 +585,7 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
         imei: "",
         no_serie: "",
         comentarios: "",
+        fecha_compra: "",
       },
     });
   };
@@ -697,5 +708,9 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     handleAccionProducto,
     accionProducto,
     plataforma,
+    setFechaCompra,
+    fechaCompra,
+    costoEnvioReal,
+    setCostoEnvioReal,
   };
 };

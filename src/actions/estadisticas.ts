@@ -89,3 +89,18 @@ export const getEstadisticasComparativaHttp = async (params?: {
     return promise;
   }
 };
+export const getReporteGeneralCanjesHttp = async (params?: {
+  fecha_inicio?: string;
+  fecha_fin?: string;
+  plataforma?: string;
+}) => {
+  try {
+    const response = await axios.get(`${env.API_URL}${"/getReporteGeneralCanjes"}`, {
+      params,
+    });
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};

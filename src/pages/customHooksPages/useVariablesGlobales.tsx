@@ -23,6 +23,7 @@ export const useVariablesGlobales = () => {
   const [procesandoVariables, setProcesandoVariables] = useState<boolean>(false);
   const [sincronizandoVariables, setSincronizandoVariables] = useState<boolean>(false);
   const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [mensajeAlert, setMensajeAlert] = useState("");
   const [errorLogin, setErrorLogin] = useState(false);
@@ -62,26 +63,38 @@ export const useVariablesGlobales = () => {
     }
   };
 
+  const numeroDecimalRegex = /^\d{1,4}(\.\d{1,4})?$/;
+
   const formik = useFormik({
     initialValues: {
       fee_brimagy: "",
       envio_base: "",
       costo_caja: "",
       envio_extra: "",
+      factor: "",
       id_plataforma: "",
     },
     validationSchema: Yup.object({
-      fee_brimagy: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
-      envio_base: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
-      costo_caja: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
-      envio_extra: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+      fee_brimagy: Yup.string()
+        .required(intl.formatMessage({ id: "input_validation_requerido" }))
+        .matches(numeroDecimalRegex, intl.formatMessage({ id: "input_validation_numero_decimal" })),
+      envio_base: Yup.string()
+        .required(intl.formatMessage({ id: "input_validation_requerido" }))
+        .matches(numeroDecimalRegex, intl.formatMessage({ id: "input_validation_numero_decimal" })),
+      costo_caja: Yup.string()
+        .required(intl.formatMessage({ id: "input_validation_requerido" }))
+        .matches(numeroDecimalRegex, intl.formatMessage({ id: "input_validation_numero_decimal" })),
+      envio_extra: Yup.string()
+        .required(intl.formatMessage({ id: "input_validation_requerido" }))
+        .matches(numeroDecimalRegex, intl.formatMessage({ id: "input_validation_numero_decimal" })),
+      factor: Yup.string()
+        .required(intl.formatMessage({ id: "input_validation_requerido" }))
+        .matches(numeroDecimalRegex, intl.formatMessage({ id: "input_validation_numero_decimal" })),
       id_plataforma: Yup.string().required(
         intl.formatMessage({ id: "input_validation_requerido" })
       ),
     }),
-    onSubmit: async (values) => {
-      //console.log("Formulario enviado:", values);
-    },
+    onSubmit: async (values) => {},
   });
 
   const isFieldValid = (fieldName: keyof typeof formik.values) => {
@@ -125,10 +138,10 @@ export const useVariablesGlobales = () => {
     }
   }, []);
 
-  const getProductosSincronizados = useCallback(async () => {
+  const getProductosSincronizados = useCallback(async (datos?: any) => {
     try {
       setProcesando(true);
-      const data = await getProductosSincronizadosHttp();
+      const data = await getProductosSincronizadosHttp(datos);
       setProductosSincronizados(data);
       setProcesando(false);
     } catch (error) {
@@ -143,7 +156,9 @@ export const useVariablesGlobales = () => {
     try {
       setProcesandoVariables(true);
       const data: any = await crearVariablesGlobalesHttp(datos);
-      await getProductosSincronizados();
+      if (plataforma) {
+        await getProductosSincronizados({ plataforma: plataforma });
+      }
 
       setVariablesGlobalesData((prev: any[]) => {
         const existe = prev.some((v) => v.id === data.id);
@@ -193,11 +208,13 @@ export const useVariablesGlobales = () => {
     }
   };
 
-  const sincronizarVariablesEnProductos = async () => {
+  const sincronizarVariablesEnProductos = async (data?: any) => {
     try {
       setSincronizandoVariables(true);
-      await sincronizarVariablesEnProductosHttp();
-      await getProductosSincronizados();
+      await sincronizarVariablesEnProductosHttp(data);
+      if (plataforma) {
+        await getProductosSincronizados({ plataforma: plataforma });
+      }
       setMensajeAlert(intl.formatMessage({ id: "variables_sincronizadas_correctamente" }));
       handleisAlertOpen();
       setSincronizandoVariables(false);
@@ -220,6 +237,7 @@ export const useVariablesGlobales = () => {
         envio_base: variableGlobalEditar?.envio_base || "",
         costo_caja: variableGlobalEditar?.costo_caja || "",
         envio_extra: variableGlobalEditar?.envio_extra || "",
+        factor: variableGlobalEditar?.factor || "",
         id_plataforma: plataformaEncontrada?.id || "",
       });
     }
@@ -228,8 +246,10 @@ export const useVariablesGlobales = () => {
   useEffect(() => {
     getPlataformas();
     getVariablesGlobales();
-    getProductosSincronizados();
-  }, []);
+    if (plataforma) {
+      getProductosSincronizados({ plataforma: plataforma });
+    }
+  }, [plataforma]);
 
   return {
     sincronizarVariablesEnProductos,
@@ -253,5 +273,6 @@ export const useVariablesGlobales = () => {
     getFieldColor,
     alertEditar,
     handleisAlertCloseEditar,
+    plataforma,
   };
 };

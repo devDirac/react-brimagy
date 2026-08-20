@@ -260,7 +260,7 @@ function ValidarIdentidad(): JSX.Element {
                               }}
                               variant="contained"
                               onClick={(e: any) => {
-                                console.log({ plataforma, ...canje });
+                                //console.log({ plataforma, ...canje });
                                 solicitarCodigoValidacion({ plataforma, ...canje });
                               }}
                             >
@@ -362,7 +362,7 @@ function ValidarIdentidad(): JSX.Element {
                                   endIcon={<Forward10Icon />}
                                   onClick={(e: any) => {
                                     setOtp(["", "", "", "", "", ""]);
-                                    console.log({ plataforma, ...canje });
+                                    //console.log({ plataforma, ...canje });
                                     solicitarCodigoValidacion({ plataforma, ...canje });
                                   }}
                                 >
@@ -527,7 +527,7 @@ function ValidarIdentidad(): JSX.Element {
                       </Grid>
                       <Grid item xs={12} md={12} lg={12}>
                         <Typography variant="body2" sx={{ textAlign: "center", fontSize: "14px" }}>
-                          © TODOS LOS DERECHOS RESERVADOS Controladora Mabe SA de CV Pase de las
+                          © TODOS LOS DERECHOS RESERVADOS Controladora Mabe SA de CV Paseo de las
                           palmas 100, Col. Lomas de Chapultepec, Ciudad de México Código Postal
                           11000
                         </Typography>

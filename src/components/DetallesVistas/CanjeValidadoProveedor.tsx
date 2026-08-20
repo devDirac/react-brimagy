@@ -330,6 +330,13 @@ const CanjeValidadoProveedorModal = ({
     );
   }, [verCanje]);
 
+  const hayProductoSinPrecioUnitario = useMemo(() => {
+    if (!verCanje?.productos || verCanje.productos.length === 0) {
+      return false;
+    }
+    return verCanje.productos.some((p) => Number(p.costo_sin_iva || 0) === 0);
+  }, [verCanje]);
+
   return (
     <Box sx={{ px: 2, pb: 2, mt: 3 }}>
       <Grid container spacing={2}>
@@ -419,14 +426,10 @@ const CanjeValidadoProveedorModal = ({
                 const porcentajeDescuento = canje.fee_brimagy || 0;
                 // Subtotal sin descuento
                 const subtotalSinDescuento = precioUnitario * cantidad;
-                // Descuento en pesos
-                const descuentoEnPesos = subtotalSinDescuento * (porcentajeDescuento / 100);
-                // Subtotal con descuento
-                const subtotalConDescuento = subtotalSinDescuento - descuentoEnPesos;
                 // IVA
-                const iva = subtotalConDescuento * 0.16;
+                const iva = subtotalSinDescuento * 0.16;
                 // Total
-                const importeTotal = subtotalConDescuento + iva;
+                const importeTotal = subtotalSinDescuento + iva;
 
                 return (
                   <>
@@ -441,12 +444,12 @@ const CanjeValidadoProveedorModal = ({
                           sx={
                             canje.estatus_proveedor === 2
                               ? {
-                                textDecoration: "line-through",
-                                textDecorationColor: "red",
-                              }
+                                  textDecoration: "line-through",
+                                  textDecorationColor: "red",
+                                }
                               : canje.tipo_producto === "digital"
-                                ? { color: "#ff9809" }
-                                : {}
+                              ? { color: "#ff9809" }
+                              : {}
                           }
                         >
                           {canje.nombre_premio}
@@ -463,12 +466,12 @@ const CanjeValidadoProveedorModal = ({
                           sx={
                             canje.estatus_proveedor === 2
                               ? {
-                                textDecoration: "line-through",
-                                textDecorationColor: "red",
-                              }
+                                  textDecoration: "line-through",
+                                  textDecorationColor: "red",
+                                }
                               : canje.tipo_producto === "digital"
-                                ? { color: "#ff9809" }
-                                : {}
+                              ? { color: "#ff9809" }
+                              : {}
                           }
                         >
                           {cantidad}
@@ -485,12 +488,12 @@ const CanjeValidadoProveedorModal = ({
                           sx={
                             canje.estatus_proveedor === 2
                               ? {
-                                textDecoration: "line-through",
-                                textDecorationColor: "red",
-                              }
+                                  textDecoration: "line-through",
+                                  textDecorationColor: "red",
+                                }
                               : canje.tipo_producto === "digital"
-                                ? { color: "#ff9809" }
-                                : {}
+                              ? { color: "#ff9809" }
+                              : {}
                           }
                         >
                           {numericFormatter(precioUnitario.toString(), {
@@ -502,9 +505,9 @@ const CanjeValidadoProveedorModal = ({
                         </Typography>
                       </Grid>
 
-                      {/*<Grid item xs={6} md={1}>
+                      <Grid item xs={6} md={1}>
                         <Typography variant="body2" color="text.secondary">
-                          % de desc.
+                          Impuestos
                         </Typography>
                         <Typography
                           variant="body2"
@@ -518,33 +521,6 @@ const CanjeValidadoProveedorModal = ({
                               : canje.tipo_producto === "digital"
                               ? { color: "#ff9809" }
                               : {}
-                          }
-                        >
-                          {numericFormatter(porcentajeDescuento.toString(), {
-                            thousandSeparator: ",",
-                            decimalScale: 2,
-                            fixedDecimalScale: false,
-                            suffix: "%",
-                          })}
-                        </Typography>
-                      </Grid>*/}
-
-                      <Grid item xs={6} md={1}>
-                        <Typography variant="body2" color="text.secondary">
-                          Impuestos
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          fontWeight="medium"
-                          sx={
-                            canje.estatus_proveedor === 2
-                              ? {
-                                textDecoration: "line-through",
-                                textDecorationColor: "red",
-                              }
-                              : canje.tipo_producto === "digital"
-                                ? { color: "#ff9809" }
-                                : {}
                           }
                         >
                           IVA (16%)
@@ -561,12 +537,12 @@ const CanjeValidadoProveedorModal = ({
                           sx={
                             canje.estatus_proveedor === 2
                               ? {
-                                textDecoration: "line-through",
-                                textDecorationColor: "red",
-                              }
+                                  textDecoration: "line-through",
+                                  textDecorationColor: "red",
+                                }
                               : canje.tipo_producto === "digital"
-                                ? { color: "#ff9809" }
-                                : {}
+                              ? { color: "#ff9809" }
+                              : {}
                           }
                         >
                           {numericFormatter(importeTotal.toString(), {
@@ -615,18 +591,6 @@ const CanjeValidadoProveedorModal = ({
                                 </IconButton>
                               </Tooltip>
                             ) : null}
-                            {/* {canje.tipo_producto === "fisico" ? null : (
-                              <Tooltip
-                                title={intl.formatMessage({ id: "marcar_como_compra_digital" })}
-                              >
-                                <IconButton
-                                  onClick={() => handleisAlertOpenCompraDigital()}
-                                  sx={{ color: darkMode ? "#fff" : "#f64e52", padding: "0" }}
-                                >
-                                  <MobileFriendlyIcon />
-                                </IconButton>
-                              </Tooltip>
-                            )}*/}
                           </Typography>
                         </Grid>
                       ) : null}
@@ -703,7 +667,7 @@ const CanjeValidadoProveedorModal = ({
             )}
 
             {verCanje?.orden_compra?.estatus === "orden_compra_enviada_a_proveedor" ||
-              verCanje?.orden_compra?.estatus === "xml_validado_correctamente_proveedor" ? (
+            verCanje?.orden_compra?.estatus === "xml_validado_correctamente_proveedor" ? (
               <>
                 <Divider sx={{ mb: 2 }} />
                 <Grid item xs={12}>
@@ -872,6 +836,13 @@ const CanjeValidadoProveedorModal = ({
               </Alert>
             ) : null}
 
+            {hayProductoSinPrecioUnitario && (
+              <Alert severity="error" sx={{ m: 2 }}>
+                Hay productos con precio unitario en $0. Corrige el precio antes de generar la orden
+                de compra.
+              </Alert>
+            )}
+
             <Button
               sx={{
                 color: "#fff",
@@ -883,6 +854,7 @@ const CanjeValidadoProveedorModal = ({
               variant="contained"
               endIcon={<SendIcon />}
               disabled={
+                hayProductoSinPrecioUnitario ||
                 procesandoEnviarOrdenAProveedor ||
                 verCanje?.orden_compra?.estatus !== "cotizacion_validada_por_proveedor"
               }
@@ -999,6 +971,7 @@ const CanjeValidadoProveedorModal = ({
                   variant="contained"
                   endIcon={<SendIcon />}
                   disabled={
+                    hayProductoSinPrecioUnitario ||
                     procesandoValidacionFinal ||
                     verCanje?.orden_compra?.estatus === "cotizacion_validada_por_proveedor"
                   }
@@ -1106,6 +1079,7 @@ const CanjeValidadoProveedorModal = ({
                   variant="contained"
                   endIcon={<SendIcon />}
                   disabled={
+                    hayProductoSinPrecioUnitario ||
                     procesandoEnviarProveedor ||
                     canjesPaginados.length === 0 ||
                     todosProductosValidados ||
@@ -1214,7 +1188,11 @@ const CanjeValidadoProveedorModal = ({
               variant="contained"
               endIcon={<PictureAsPdfIcon />}
               disabled={
-                procesandoOrdenCompra || canjesPaginados.length === 0 || !todosProductosValidados
+                procesandoOrdenCompra ||
+                canjesPaginados.length === 0 ||
+                !todosProductosValidados ||
+                verCanje?.orden_compra?.estatus === "cotizacion_enviada_a_proveedor" ||
+                verCanje?.orden_compra?.estatus === "cotizacion_validada_por_proveedor"
               }
               onClick={(e: any) => {
                 handleOpenPDFViewer();

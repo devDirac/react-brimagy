@@ -129,7 +129,7 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
         id_proveedor: accionProducto
           ? Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" }))
           : Yup.string().notRequired(),
-        costo_sin_iva: !accionProducto
+        costo_con_iva: !accionProducto
           ? Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" }))
           : Yup.string().notRequired(),
       }),
@@ -141,7 +141,7 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     formikAsignar.resetForm({
       values: {
         id_proveedor: "",
-        costo_sin_iva: "",
+        costo_con_iva: "",
       },
     });
   };
@@ -149,11 +149,11 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
   const formikAsignar = useFormik({
     initialValues: {
       id_proveedor: "",
-      costo_sin_iva: "",
+      costo_con_iva: "",
     },
     validationSchema: validationSchemaAsignar,
     enableReinitialize: true,
-    onSubmit: async (values) => {},
+    onSubmit: async (values) => { },
   });
 
   const formik = useFormik({

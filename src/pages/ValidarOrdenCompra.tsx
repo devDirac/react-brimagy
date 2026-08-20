@@ -555,20 +555,6 @@ function ValidarOrdenCompra(): JSX.Element {
                                 </Typography>
                               </Grid>
 
-                              {/*<Grid item xs={6} md={1}>
-                                <Typography variant="body2" color="text.secondary">
-                                  % de desc.
-                                </Typography>
-                                <Typography variant="body2" fontWeight="medium">
-                                  {numericFormatter(producto?.porcentaje_descuento.toString(), {
-                                    thousandSeparator: ",",
-                                    decimalScale: 2,
-                                    fixedDecimalScale: false,
-                                    suffix: "%",
-                                  })}
-                                </Typography>
-                              </Grid>*/}
-
                               <Grid item xs={6} md={1}>
                                 <Typography variant="body2" color="text.secondary">
                                   Impuestos

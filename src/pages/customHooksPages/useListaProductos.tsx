@@ -55,7 +55,6 @@ import {
   getPlataformasHttp,
   getVariablesGlobalesPorPlataformaHttp,
 } from "actions/configuracion";
-import { C } from "@fullcalendar/core/internal-common";
 import env from "react-dotenv";
 
 type VariablesGlobales = {
@@ -63,6 +62,7 @@ type VariablesGlobales = {
   envio_base: number;
   costo_caja: number;
   envio_extra: number;
+  factor: number;
 } | null;
 
 export const useListaProductos = (tipoUsuario: number) => {
@@ -119,6 +119,7 @@ export const useListaProductos = (tipoUsuario: number) => {
   const [totalEnvioEditar, setTotalEnvioEditar] = useState("");
   const [totalEditar, setTotalEditar] = useState("");
   const [puntosEditar, setPuntosEditar] = useState("");
+  const [valorFactorEditar, setValorFactorEditar] = useState("");
   const [factorEditar, setFactorEditar] = useState("");
   const [fotoEditar, setFotoEditar] = useState("");
   const [tipoProductoEditar, setTipoProductoEditar] = useState("");
@@ -358,6 +359,63 @@ export const useListaProductos = (tipoUsuario: number) => {
     onSubmit: async (values) => {},
   });
 
+  const regexDecimal8_4 = /^\d{1,8}(\.\d{1,4})?$/; // hasta 8 enteros, 4 decimales
+  const regexValorFactor = /^\d{1,3}(\.\d{1,2})?$/; // hasta 3 enteros, 2 decimales
+
+  const formikEditarProducto = useFormik({
+    initialValues: {
+      nombre_producto: "",
+      descripcion: "",
+      marca: "",
+      sku: "",
+      color: "",
+      talla: "",
+      id_proveedor: "",
+      id_catalogo: "",
+      costo_con_iva: "",
+      costo_puntos_con_iva: "",
+      envio_base: "",
+      costo_caja: "",
+      envio_extra: "",
+      valor_factor: "",
+    },
+    validationSchema: Yup.object({
+      nombre_producto: Yup.string(),
+      descripcion: Yup.string(),
+      marca: Yup.string(),
+      sku: Yup.string(),
+      color: Yup.string(),
+      talla: Yup.string(),
+      id_proveedor: Yup.string(),
+      id_catalogo: Yup.string(),
+      costo_con_iva: Yup.string().matches(
+        regexDecimal8_4,
+        intl.formatMessage({ id: "input_validation_numero_decimal" })
+      ),
+      costo_puntos_con_iva: Yup.string().matches(
+        regexDecimal8_4,
+        intl.formatMessage({ id: "input_validation_numero_decimal" })
+      ),
+      envio_base: Yup.string().matches(
+        regexDecimal8_4,
+        intl.formatMessage({ id: "input_validation_numero_decimal" })
+      ),
+      costo_caja: Yup.string().matches(
+        regexDecimal8_4,
+        intl.formatMessage({ id: "input_validation_numero_decimal" })
+      ),
+      envio_extra: Yup.string().matches(
+        regexDecimal8_4,
+        intl.formatMessage({ id: "input_validation_numero_decimal" })
+      ),
+      valor_factor: Yup.string().matches(
+        regexValorFactor,
+        intl.formatMessage({ id: "input_validation_valor_factor" })
+      ),
+    }),
+    onSubmit: async (values) => {},
+  });
+
   const colorNameToHex = (color: string): string => {
     const ctx = document.createElement("canvas").getContext("2d");
     if (!ctx) return color;
@@ -431,31 +489,39 @@ export const useListaProductos = (tipoUsuario: number) => {
     const total = redondeo - 1;
     if (debug) console.log("2) total estimado (redondeo - 1):", total);
 
-    let fee_brimagy: number, envio_base: number, costo_caja: number, envio_extra: number;
+    let fee_brimagy: number,
+      envio_base: number,
+      costo_caja: number,
+      envio_extra: number,
+      factor: number;
 
     const tieneVariablesValidas =
       variablesGlobales &&
       variablesGlobales.fee_brimagy != null &&
       variablesGlobales.envio_base != null &&
-      variablesGlobales.costo_caja != null;
+      variablesGlobales.costo_caja != null &&
+      variablesGlobales.factor != null;
 
     if (tieneVariablesValidas) {
       fee_brimagy = variablesGlobales.fee_brimagy;
       envio_base = variablesGlobales.envio_base;
       costo_caja = variablesGlobales.costo_caja;
       envio_extra = variablesGlobales.envio_extra;
+      factor = variablesGlobales.factor;
       if (debug) console.log("3) variables globales (desde API):", variablesGlobales);
     } else {
-      envio_base = 180;
-      costo_caja = 19;
+      envio_base = plataforma === "club bohn" ? 180 : 180;
+      costo_caja = plataforma === "club bohn" ? 19 : 19;
       envio_extra = 0;
       fee_brimagy = plataforma === "club bohn" ? 15 : 12;
+      factor = 0;
       if (debug)
         console.log("3) variables globales (defaults, no había datos):", {
           fee_brimagy,
           envio_base,
           costo_caja,
           envio_extra,
+          factor,
         });
     }
 
@@ -494,6 +560,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     costoConIva: number,
     costoPuntosConIva: number,
     envioExtra: number,
+    valorFactor: number,
     variablesGlobales: VariablesGlobales,
     plataforma: string
   ) {
@@ -503,33 +570,46 @@ export const useListaProductos = (tipoUsuario: number) => {
 
     const costo_puntos_sin_iva = Math.round(costoPuntosConIva / 1.16);
 
-    let fee_brimagy: number, envio_base: number, costo_caja: number, envio_extra: number;
+    let fee_brimagy: number,
+      envio_base: number,
+      costo_caja: number,
+      envio_extra: number,
+      valor_factor: number;
 
     const tieneVariablesValidas =
       variablesGlobales &&
       variablesGlobales.fee_brimagy != null &&
       variablesGlobales.envio_base != null &&
-      variablesGlobales.costo_caja != null;
+      variablesGlobales.costo_caja != null &&
+      variablesGlobales.factor != null;
 
     if (tieneVariablesValidas) {
-      fee_brimagy = variablesGlobales.fee_brimagy;
-      envio_base = variablesGlobales.envio_base;
-      costo_caja = variablesGlobales.costo_caja;
+      fee_brimagy = Number(variablesGlobales.fee_brimagy);
+      envio_base = Number(variablesGlobales.envio_base);
+      costo_caja = Number(variablesGlobales.costo_caja);
+      valor_factor = Number(variablesGlobales.factor);
     } else {
-      envio_base = 180;
-      costo_caja = 19;
+      envio_base = plataforma === "club bohn" ? 180 : 180;
+      costo_caja = plataforma === "club bohn" ? 19 : 19;
       fee_brimagy = plataforma === "club bohn" ? 15 : 12;
+      valor_factor = 0;
+    }
+
+    const factorManualNum = Number(valorFactor);
+    if (valorFactor !== undefined && !isNaN(factorManualNum)) {
+      valor_factor = factorManualNum;
     }
 
     const envio_extra_num = Number(envioExtra) || 0;
 
     const porcentaje = fee_brimagy / 100;
-    const valor_con_fee = Math.round(costo_puntos_sin_iva * porcentaje);
-    const subtotal = Math.round(costo_puntos_sin_iva + valor_con_fee);
-    const total_envio = Math.round(envio_base + costo_caja + envio_extra_num);
-    const total = Math.round(subtotal + total_envio);
+    const valor_con_fee = costo_puntos_sin_iva * porcentaje;
+    const subtotal = costo_puntos_sin_iva + valor_con_fee;
+    const total_envio = envio_base + costo_caja + envio_extra_num;
+    const total = subtotal + total_envio;
     const redondeo = total % 2 !== 0 ? total + 2 : total + 1; // puntos en BD
-    const factor = Math.round(redondeo * 15); // factor en BD
+    //const factor = Math.round(redondeo * 15);
+    const factor = valor_factor == 0 ? Math.round(total) : Math.round(total * valor_factor); // factor en BD
 
     return {
       costo_puntos_sin_iva,
@@ -741,36 +821,32 @@ export const useListaProductos = (tipoUsuario: number) => {
     if (productoEditar && proveedores && categorias && plataformas) {
       const proveedorEncontrado = proveedores.find((p) => p.nombre === productoEditar.proveedor);
       const categoriaEncontrada = categorias.find((p) => p.desc === productoEditar.catalogo);
-      setNombreProductoEditar(productoEditar.nombre_producto || "");
-      setDescripcionEditar(productoEditar.descripcion || "");
-      setMarcaEditar(productoEditar.marca || "");
-      setSkuEditar(productoEditar.sku || "");
-      setColorEditar(productoEditar.color || "");
-      setTallaEditar(productoEditar.talla || "");
-      setIdProveedorEditar(proveedorEncontrado?.id || "");
-      setIdCatalogoEditar(categoriaEncontrada?.id || "");
-      setCostoConIvaEditar(productoEditar.costo_con_iva || "");
-      setCostoSinIvaEditar(productoEditar.costo_sin_iva || "");
-      setCostoPuntosConIvaEditar(productoEditar.costo_puntos_con_iva || "");
-      setCostoPuntosSinIvaEditar(productoEditar.costo_puntos_sin_iva || "");
-      setFeeBrimagyEditar(productoEditar.fee_brimagy || "");
-      setSubtotalEditar(productoEditar.subtotal || "");
-      setEnvioBaseEditar(productoEditar.envio_base || "");
-      setCostoCajaEditar(productoEditar.costo_caja || "");
-      setEnvioExtraEditar(productoEditar.envio_extra || "");
-      setTotalEnvioEditar(productoEditar.total_envio || "");
-      setTotalEditar(productoEditar.total || "");
-      setPuntosEditar(productoEditar.puntos || "");
-      setFactorEditar(productoEditar.factor || "");
-      setTipoProductoEditar(productoEditar.tipo_producto || "");
-      setPlataformaEditar(productoEditar.id_plataforma || "");
+
+      formikEditarProducto.setValues({
+        nombre_producto: productoEditar.nombre_producto || "",
+        descripcion: productoEditar.descripcion || "",
+        marca: productoEditar.marca || "",
+        sku: productoEditar.sku || "",
+        color: productoEditar.color || "",
+        talla: productoEditar.talla || "",
+        id_proveedor: proveedorEncontrado?.id || "",
+        id_catalogo: categoriaEncontrada?.id || "",
+        costo_con_iva: productoEditar.costo_con_iva || "",
+        costo_puntos_con_iva: productoEditar.costo_puntos_con_iva || "",
+        envio_base: productoEditar.envio_base || "",
+        costo_caja: productoEditar.costo_caja || "",
+        envio_extra: productoEditar.envio_extra || "",
+        valor_factor: productoEditar.valor_factor || "",
+      });
+
       setFotoEditar(
         productoEditar.foto_producto
-          ? `${env.API_URL_ASSETS}fotos_producto/${productoEditar.foto_producto}` //${productoEditar?.id}
+          ? `${env.API_URL_ASSETS}fotos_producto/${productoEditar.foto_producto}`
           : ""
       );
     }
   }, [productoEditar]);
+
   // Debounce para evitar muchas peticiones
   const handleBuscadorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -1136,6 +1212,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         const costoCajaRaw = getValueByHeader(row, "costo caja");
         const envioExtraRaw =
           getValueByHeader(row, "envío extra") || getValueByHeader(row, "envio extra");
+        const valorFactorRaw = getValueByHeader(row, "valor_factor");
         const totalEnvioRaw =
           getValueByHeader(row, "total envío") || getValueByHeader(row, "total envio");
         const totalRaw = getValueByHeader(row, "total");
@@ -1154,6 +1231,7 @@ export const useListaProductos = (tipoUsuario: number) => {
           { nombre: "Subtotal", valor: subtotalRaw },
           { nombre: "Envío base", valor: envioBaseRaw },
           { nombre: "Costo caja", valor: costoCajaRaw },
+          { nombre: "Factor", valor: valorFactorRaw },
           { nombre: "Envío extra", valor: envioExtraRaw },
           { nombre: "Total envío", valor: totalEnvioRaw },
           { nombre: "Total", valor: totalRaw },
@@ -1200,13 +1278,13 @@ export const useListaProductos = (tipoUsuario: number) => {
           subtotal: Math.round(limpiarNumero(subtotalRaw)),
           envio_base: Math.round(limpiarNumero(envioBaseRaw)),
           costo_caja: Math.round(limpiarNumero(costoCajaRaw)),
+          valor_factor: Math.round(limpiarNumero(valorFactorRaw)),
           envio_extra: Math.round(limpiarNumero(envioExtraRaw)),
           total_envio: Math.round(limpiarNumero(totalEnvioRaw)),
           total: Math.round(limpiarNumero(totalRaw)),
           puntos: Math.round(limpiarNumero(puntosRaw)),
           factor: Math.round(limpiarNumero(factorRaw)),
           tipo_producto: tipoProductoRaw,
-          //proveedor_valido: !!proveedorObj,
           proveedor_valido: proveedorVacio ? true : !!proveedorObj,
           proveedor_vacio: proveedorVacio,
           categoria_valida: !!categoriaObj,
@@ -1303,6 +1381,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         { header: "Talla", key: "talla", width: 15 },
         { header: "Costo con IVA", key: "costo_con_iva", width: 15 },
         { header: "Costo Puntos con IVA", key: "costo_puntos_con_iva", width: 20 },
+        { header: "Factor", key: "valor_factor", width: 15 },
         { header: "Envío Extra", key: "envio_extra", width: 15 },
         { header: "Tipo Producto", key: "tipo_producto", width: 15 },
         { header: "Plataforma", key: "plataforma", width: 15 },
@@ -1329,6 +1408,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         talla: "",
         costo_con_iva: 100,
         costo_puntos_con_iva: 100,
+        valor_factor: 10,
         envio_extra: 10,
         tipo_producto: "fisico",
         plataforma: "ejemplo1",
@@ -1371,6 +1451,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         { header: "Costo con IVA", key: "costo_con_iva", width: 15 },
         { header: "Costo Puntos con IVA", key: "costo_puntos_con_iva", width: 20 },
         { header: "Envío Extra", key: "envio_extra", width: 15 },
+        { header: "Factor", key: "valor_factor", width: 15 },
         { header: "Tipo Producto", key: "tipo_producto", width: 15 },
         { header: "Plataforma", key: "plataforma", width: 15 },
       ];
@@ -1417,8 +1498,7 @@ export const useListaProductos = (tipoUsuario: number) => {
           costo_con_iva: p.costo_con_iva ?? 0,
           costo_puntos_con_iva: p.costo_puntos_con_iva ?? costo_puntos_con_iva ?? 0,
           envio_extra: p.envio_extra ?? 0,
-          //p.catalogo.toLowerCase() === "gifs" ? "digital" : "fisico"
-          //p.tipo_producto
+          valor_factor: p.valor_factor ?? 0,
           tipo_producto:
             p.catalogo.toLowerCase() === "gifs" || p.catalogo.toLowerCase() === "bohn cardssss"
               ? "digital"
@@ -1494,6 +1574,7 @@ export const useListaProductos = (tipoUsuario: number) => {
           formData.append("total_envio", producto.total_envio);
           formData.append("total", producto.total);
           formData.append("puntos", producto.puntos);
+          formData.append("valor_factor", producto.valor_factor);
           formData.append("factor", producto.factor);
           formData.append("id_producto_brimagy", producto.id_producto_brimagy);
           formData.append("tipo_producto", producto.tipo_producto);
@@ -1549,7 +1630,6 @@ export const useListaProductos = (tipoUsuario: number) => {
           tipo_producto: esDigital ? "digital" : esFisico ? "fisico" : "todos",
         };
         const busqueda = await getBusquedaInteligenteHttp(datosConTipo);
-        // Formatear los datos igual que en getProductosCatalogo
         const datosFormateados = busqueda.map((e: any) => {
           return {
             ...e,
@@ -2512,5 +2592,8 @@ export const useListaProductos = (tipoUsuario: number) => {
     variablesGlobalesData,
     calcularPuntosEsperados,
     tallaArray,
+    valorFactorEditar,
+    setValorFactorEditar,
+    formikEditarProducto,
   };
 };

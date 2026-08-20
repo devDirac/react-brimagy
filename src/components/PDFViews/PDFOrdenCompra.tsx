@@ -102,12 +102,12 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 15,
     textAlign: "center",
-    borderBottom: "2 solid #084d6e",
+    borderBottom: "2 solid #a5eb2f",
     paddingBottom: 8,
   },
   title: {
     fontSize: 22,
-    color: "#084d6e",
+    color: "#a5eb2f",
     fontWeight: "bold",
     marginBottom: 4,
   },
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 12,
-    color: "#084d6e",
+    color: "#2f2f2f",
     fontWeight: "bold",
     marginBottom: 8,
     borderBottom: "1 solid #e0e0e0",
@@ -213,25 +213,25 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: "#084d6e",
+    backgroundColor: "#a5eb2f",
     padding: 6,
     borderTopLeftRadius: 3,
     borderTopRightRadius: 3,
   },
   tableHeaderText: {
-    color: "#ffffff",
+    color: "#2f2f2f",
     fontSize: 8,
     fontWeight: "bold",
     textAlign: "center",
   },
   tableHeaderTextLeft: {
-    color: "#ffffff",
+    color: "#2f2f2f",
     fontSize: 8,
     fontWeight: "bold",
     textAlign: "left",
   },
   tableHeaderTextRight: {
-    color: "#ffffff",
+    color: "#2f2f2f",
     fontSize: 8,
     fontWeight: "bold",
     textAlign: "right",
@@ -310,19 +310,19 @@ const styles = StyleSheet.create({
   totalFinalRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    borderTop: "1 solid #084d6e",
+    borderTop: "1 solid #a5eb2f",
     paddingTop: 6,
     marginTop: 4,
   },
   totalFinalLabel: {
     fontSize: 11,
     fontWeight: "bold",
-    color: "#084d6e",
+    color: "#2f2f2f",
   },
   totalFinalValue: {
     fontSize: 11,
     fontWeight: "bold",
-    color: "#084d6e",
+    color: "#2f2f2f",
   },
   footer: {
     position: "absolute",
@@ -349,11 +349,11 @@ const PDFOrdenCompra: React.FC<PDFOrdenCompraProps> = ({ ordenCompra }) => {
     });
   };
   // Calcular IVA (16%)
-  const calcularIVA = (cantidad: number, precioUnitario: number, descuento: number) => {
+  const calcularIVA = (cantidad: number, precioUnitario: number) => {//, descuento: number
     const subtotal = cantidad * precioUnitario;
-    const descuentoAplicado = subtotal * (descuento / 100);
-    const subtotalConDescuento = subtotal - descuentoAplicado;
-    return subtotalConDescuento * 0.16;
+    //const descuentoAplicado = subtotal * (descuento / 100);
+    //const subtotalConDescuento = subtotal - descuentoAplicado;
+    return subtotal * 0.16;
   };
   return (
     <Document>
@@ -423,7 +423,7 @@ const PDFOrdenCompra: React.FC<PDFOrdenCompraProps> = ({ ordenCompra }) => {
                 const iva = calcularIVA(
                   canje.cantidad_producto,
                   canje.precio_unitario,
-                  canje.porcentaje_descuento
+                  //canje.porcentaje_descuento
                 );
 
                 return (

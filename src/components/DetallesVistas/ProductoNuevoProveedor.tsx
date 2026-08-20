@@ -1,45 +1,26 @@
 import {
   Grid,
   Typography,
-  Divider,
   Box,
-  Chip,
   Paper,
   Button,
-  TextField,
   TablePagination,
-  Tooltip,
-  IconButton,
   CardContent,
   Card,
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 import { useIntl } from "react-intl";
-import ModalComponent from "components/Modal";
 import { useMemo, useState } from "react";
 import { Spinner } from "react-bootstrap";
-import { FormikProvider, useFormik } from "formik";
-import * as Yup from "yup";
-import { numericFormatter } from "react-number-format";
 import { grey, pink } from "@mui/material/colors";
 
 import { useSelector } from "react-redux";
 import { StoreType } from "../../types/genericTypes";
-import PDFViewerCanje from "components/PDFViews/PDFViewerCanje";
 import MDBox from "components/MDBox";
 import { useMaterialUIController } from "context";
-import DoubleArrowIcon from "@mui/icons-material/DoubleArrow";
-import MobileFriendlyIcon from "@mui/icons-material/MobileFriendly";
-import ModalConfirm from "components/ModalConfirm/ModalConfirm";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import SendIcon from "@mui/icons-material/Send";
-import PDFViewerOrdenCompra from "components/PDFViews/PDFViewerOrdenCompra";
 import MDTypography from "components/MDTypography";
-import InventoryIcon from "@mui/icons-material/Inventory";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import CategoryIcon from "@mui/icons-material/Category";
 
 interface ProductoDatos {
   id: number;
@@ -333,10 +314,9 @@ const ProductoNuevoProveedorModal = ({
                         <span style={{ marginLeft: "8px" }}>Enviando...</span>
                       </>
                     ) : (
-                      `Enviar a ${
-                        proveedorSeleccionado?.length
-                          ? ` ${proveedorSeleccionado?.[0].nombre_proveedor}`
-                          : ""
+                      `Enviar a ${proveedorSeleccionado?.length
+                        ? ` ${proveedorSeleccionado?.[0].nombre_proveedor}`
+                        : ""
                       }`
                     )}
                   </Button>

@@ -382,6 +382,9 @@ function ListaProductos(): JSX.Element {
     variablesGlobalesData,
     calcularPuntosEsperados,
     tallaArray,
+    valorFactorEditar,
+    setValorFactorEditar,
+    formikEditarProducto,
   } = useListaProductos(tipoUsuario);
 
   const independiente = () => {
@@ -422,19 +425,14 @@ function ListaProductos(): JSX.Element {
 
   const puntosEsperados = useMemo(() => {
     return calcularPuntosEsperados(
-      Number(costoConIvaEditar),
-      Number(costoPuntosConIvaEditar),
-      Number(envioExtraEditar),
+      Number(formikEditarProducto.values.costo_con_iva),
+      Number(formikEditarProducto.values.costo_puntos_con_iva),
+      Number(formikEditarProducto.values.envio_extra),
+      Number(formikEditarProducto.values.valor_factor),
       variablesGlobalesData,
       productoEditar?.nombre_plataforma || "puntotes"
     );
-  }, [
-    costoConIvaEditar,
-    costoPuntosConIvaEditar,
-    envioExtraEditar,
-    variablesGlobalesData,
-    productoEditar,
-  ]);
+  }, [formikEditarProducto.values, variablesGlobalesData, productoEditar]);
 
   const truncarTexto = (texto: string, limite: number): string => {
     if (!texto) return "";
@@ -479,9 +477,7 @@ function ListaProductos(): JSX.Element {
               variant="outlined"
               startIcon={<SimCardDownloadIcon />}
               onClick={() => {
-                productos?.length > 0
-                  ? descargarProductosExcel("") /*STF Viva In-Ear*/
-                  : descargarPlantillaExcel;
+                productos?.length > 0 ? descargarProductosExcel("") : descargarPlantillaExcel();
               }}
               sx={{
                 borderColor: "#084d6e",
@@ -811,7 +807,6 @@ function ListaProductos(): JSX.Element {
                                     id_producto: p?.id,
                                     plataforma: plataforma,
                                   };
-                                  //console.log(datos);
                                   p.stock === 0
                                     ? marcarDisponible(datos)
                                     : marcarNoDisponible(datos);
@@ -844,7 +839,6 @@ function ListaProductos(): JSX.Element {
                           <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
                             {truncarTexto(p.descripcion, 60)}
                           </Typography>
-                          {/*<Tooltip title={p.descripcion || ""}></Tooltip>*/}
 
                           <MDTypography
                             variant="caption"
@@ -975,10 +969,7 @@ function ListaProductos(): JSX.Element {
             <DinamicTableMejorada
               actions
               key={tableKey}
-              //sinBusqueda
-              //sinExport
               esListaProductos
-              //showCheckBox
               data={productos}
               enAccion={(accion, row) => {
                 handleAccion(accion, row);
@@ -1071,58 +1062,73 @@ function ListaProductos(): JSX.Element {
                     <Grid container spacing={2}>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="nombreEditar"
+                          id="nombre_producto"
                           fullWidth
                           label={intl.formatMessage({ id: "input_nombre" })}
                           variant="standard"
-                          name="nombreEditar"
-                          value={nombreProductoEditar || ""}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setNombreProductoEditar(e.target.value);
-                          }}
+                          name="nombre_producto"
+                          value={formikEditarProducto.values.nombre_producto}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.nombre_producto &&
+                            Boolean(formikEditarProducto.errors.nombre_producto)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.nombre_producto &&
+                            formikEditarProducto.errors.nombre_producto
+                          }
                         />
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="descripcionEditar"
+                          id="descripcion"
                           fullWidth
                           label={intl.formatMessage({ id: "input_descripcion" })}
                           variant="standard"
-                          name="descripcionEditar"
-                          value={descripcionEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setDescripcionEditar(e.target.value);
-                          }}
+                          name="descripcion"
+                          value={formikEditarProducto.values.descripcion}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.descripcion &&
+                            Boolean(formikEditarProducto.errors.descripcion)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.descripcion &&
+                            formikEditarProducto.errors.descripcion
+                          }
                         />
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="marcaEditar"
+                          id="marca"
                           fullWidth
                           label={intl.formatMessage({ id: "input_marca" })}
                           variant="standard"
-                          name="marcaEditar"
-                          value={marcaEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setMarcaEditar(e.target.value);
-                          }}
+                          name="marca"
+                          value={formikEditarProducto.values.marca}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.marca &&
+                            Boolean(formikEditarProducto.errors.marca)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.marca && formikEditarProducto.errors.marca
+                          }
                         />
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="skuEditar"
+                          id="sku"
                           fullWidth
                           label={intl.formatMessage({ id: "input_sku" })}
                           variant="standard"
-                          name="skuEditar"
-                          value={skuEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setSkuEditar(e.target.value);
-                          }}
+                          name="sku"
+                          value={formikEditarProducto.values.sku}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
                         />
                       </Grid>
                       <Grid item xs={6} sm={4}>
@@ -1133,20 +1139,15 @@ function ListaProductos(): JSX.Element {
                           label={`${intl.formatMessage({ id: "select_proveedores" })} *`}
                           variant="standard"
                           name="id_proveedor"
-                          value={idProveedorEditar}
+                          value={formikEditarProducto.values.id_proveedor}
                           disabled={!proveedores || proveedores.length === 0}
                           helperText={
                             !proveedores || proveedores.length === 0
                               ? intl.formatMessage({ id: "sin_proveedores_registrados" })
                               : ""
                           }
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setIdProveedorEditar(value);
-                          }}
-                          InputProps={{
-                            style: { padding: "5px" },
-                          }}
+                          onChange={formikEditarProducto.handleChange}
+                          InputProps={{ style: { padding: "5px" } }}
                         >
                           {proveedores?.map((option) => (
                             <MenuItem key={option.id} value={option.id}>
@@ -1157,26 +1158,25 @@ function ListaProductos(): JSX.Element {
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="id_categoria"
+                          id="id_catalogo"
                           select
                           fullWidth
                           label={`${intl.formatMessage({ id: "select_categoria_producto" })} *`}
                           variant="standard"
-                          name="id_categoria"
-                          value={idCatalogoEditar}
+                          name="id_catalogo"
+                          value={formikEditarProducto.values.id_catalogo}
                           disabled={!categorias || categorias.length === 0}
                           helperText={
-                            !categorias || categorias.length === 0
-                              ? intl.formatMessage({ id: "sin_categorias_registrados" })
-                              : ""
+                            formikEditarProducto.touched.id_catalogo &&
+                            formikEditarProducto.errors.id_catalogo
                           }
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setIdCatalogoEditar(e.target.value);
-                          }}
-                          InputProps={{
-                            style: { padding: "5px" },
-                          }}
+                          error={
+                            formikEditarProducto.touched.id_catalogo &&
+                            Boolean(formikEditarProducto.errors.id_catalogo)
+                          }
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          InputProps={{ style: { padding: "5px" } }}
                         >
                           {categorias?.map((option) => (
                             <MenuItem key={option.id} value={option.id}>
@@ -1185,49 +1185,88 @@ function ListaProductos(): JSX.Element {
                           ))}
                         </TextField>
                       </Grid>
-                      <Grid item xs={6} sm={4}>
+                      <Grid item xs={6} sm={3}>
                         <TextField
-                          id="costoConIvaEditar"
+                          id="costo_con_iva"
                           fullWidth
                           label={intl.formatMessage({ id: "input_costo_con_iva" })}
                           variant="standard"
-                          name="costoConIvaEditar"
+                          name="costo_con_iva"
                           type="number"
-                          value={costoConIvaEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setCostoConIvaEditar(e.target.value);
-                          }}
+                          value={formikEditarProducto.values.costo_con_iva}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.costo_con_iva &&
+                            Boolean(formikEditarProducto.errors.costo_con_iva)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.costo_con_iva &&
+                            formikEditarProducto.errors.costo_con_iva
+                          }
                         />
                       </Grid>
-                      <Grid item xs={6} sm={4}>
+                      <Grid item xs={6} sm={3}>
                         <TextField
-                          id="costoPuntosConIvaEditar"
+                          id="costo_puntos_con_iva"
                           fullWidth
                           label={intl.formatMessage({ id: "input_costo_puntos_con_iva" })}
                           variant="standard"
-                          name="costoPuntosConIvaEditar"
+                          name="costo_puntos_con_iva"
                           type="number"
-                          value={costoPuntosConIvaEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setCostoPuntosConIvaEditar(e.target.value);
-                          }}
+                          value={formikEditarProducto.values.costo_puntos_con_iva}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.costo_puntos_con_iva &&
+                            Boolean(formikEditarProducto.errors.costo_puntos_con_iva)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.costo_puntos_con_iva &&
+                            formikEditarProducto.errors.costo_puntos_con_iva
+                          }
                         />
                       </Grid>
-                      <Grid item xs={6} sm={4}>
+                      <Grid item xs={6} sm={3}>
                         <TextField
-                          id="envioExtraEditar"
+                          id="envio_extra"
                           fullWidth
                           label={intl.formatMessage({ id: "input_envio_extra" })}
                           variant="standard"
-                          name="envioExtra"
+                          name="envio_extra"
                           type="number"
-                          value={envioExtraEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setEnvioExtraEditar(e.target.value);
-                          }}
+                          value={formikEditarProducto.values.envio_extra}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.envio_extra &&
+                            Boolean(formikEditarProducto.errors.envio_extra)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.envio_extra &&
+                            formikEditarProducto.errors.envio_extra
+                          }
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <TextField
+                          id="valor_factor"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_valor_factor" })}
+                          variant="standard"
+                          name="valor_factor"
+                          type="number"
+                          value={formikEditarProducto.values.valor_factor}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.valor_factor &&
+                            Boolean(formikEditarProducto.errors.valor_factor)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.valor_factor &&
+                            formikEditarProducto.errors.valor_factor
+                          }
                         />
                       </Grid>
                       <Grid item xs={12} sm={4}>
@@ -1292,23 +1331,31 @@ function ListaProductos(): JSX.Element {
                           sx={{ color: "#fff", background: "#084d6e" }}
                           variant="contained"
                           endIcon={<EditIcon />}
-                          disabled={procesando}
+                          disabled={
+                            procesando || Object.keys(formikEditarProducto.errors).length > 0
+                          }
                           onClick={(e: any) => {
+                            if (Object.keys(formikEditarProducto.errors).length > 0) {
+                              return;
+                            }
+
+                            const v = formikEditarProducto.values;
                             const formData = new FormData();
                             formData.append("id_producto", productoEditar?.id);
-                            formData.append("nombre_producto", nombreProductoEditar);
-                            formData.append("descripcion", descripcionEditar);
-                            formData.append("marca", marcaEditar);
-                            formData.append("sku", skuEditar);
-                            formData.append("color", colorEditar);
-                            formData.append("talla", tallaEditar);
-                            formData.append("id_proveedor", idProveedorEditar);
-                            formData.append("id_catalogo", idCatalogoEditar);
-                            formData.append("costo_con_iva", costoConIvaEditar);
-                            formData.append("costo_puntos_con_iva", costoPuntosConIvaEditar);
-                            formData.append("envio_base", envioBaseEditar);
-                            formData.append("costo_caja", costoCajaEditar);
-                            formData.append("envio_extra", envioExtraEditar);
+                            formData.append("nombre_producto", v.nombre_producto);
+                            formData.append("descripcion", v.descripcion);
+                            formData.append("marca", v.marca);
+                            formData.append("sku", v.sku);
+                            formData.append("color", v.color);
+                            formData.append("talla", v.talla);
+                            formData.append("id_proveedor", v.id_proveedor);
+                            formData.append("id_catalogo", v.id_catalogo);
+                            formData.append("costo_con_iva", v.costo_con_iva);
+                            formData.append("costo_puntos_con_iva", v.costo_puntos_con_iva);
+                            formData.append("envio_base", v.envio_base);
+                            formData.append("costo_caja", v.costo_caja);
+                            formData.append("valor_factor", v.valor_factor);
+                            formData.append("envio_extra", v.envio_extra);
                             formData.append("tipo_registro", "edicion");
                             formData.append("nombre_plataforma", productoEditar?.nombre_plataforma);
                             formData.append(
@@ -1319,7 +1366,6 @@ function ListaProductos(): JSX.Element {
                             if (fotoProductoPrincipalFile) {
                               formData.append("foto_producto", fotoProductoPrincipalFile);
                             }
-                            //console.log(Object.fromEntries(formData.entries()));
                             editaProducto(formData);
                           }}
                         >

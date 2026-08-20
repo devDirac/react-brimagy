@@ -54,6 +54,8 @@ interface DetalleAlmacen {
   no_serie: string;
   sku: string;
   costo_sin_iva: number;
+  costo_con_iva: number;
+  costo_envio_real: number;
   id_orden_compra: number;
   no_orden: string;
   cantidad_producto: number;
@@ -109,20 +111,7 @@ const ProductoAlmacenModal = ({
   if (!verProducto) return null;
   const intl = useIntl();
 
-  /*const ahorroProducto =
-    verProducto.precio_compra === null ? 0 : verProducto.costo_sin_iva - verProducto.precio_compra;
-  const porcentajeAhorro =
-    verProducto.costo_sin_iva > 0 ? (ahorroProducto / verProducto.costo_sin_iva) * 100 : 0;
-  const esPositivoAhorro = ahorroProducto > 0;
-  const esNegativoAhorro = ahorroProducto < 0;*/
-
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
-  const isSuperAdmin = tipoUsuario === 6;
-  const isAdministracion = tipoUsuario === 5;
-  const isInventario = tipoUsuario === 4;
-  const isCompras = tipoUsuario === 3;
-  const isAuditor = tipoUsuario === 2;
-  const isInternauta = tipoUsuario === 1;
 
   const [pageProduct, setPageProduct] = useState(0);
   const [rowsProductsPerPage, setRowsProductsPerPage] = useState(1);
@@ -432,11 +421,9 @@ const ProductoAlmacenModal = ({
         <Grid item xs={12}>
           {productosModalPaginados.map((p: any, key: number) => {
             const ahorroProducto =
-              p?.precio_compra === null ? 0 : verProducto?.costo_sin_iva - p?.precio_compra;
+              p?.precio_compra === null ? 0 : verProducto?.costo_con_iva - p?.precio_compra;
             const porcentajeAhorro =
-              verProducto?.costo_sin_iva > 0
-                ? (ahorroProducto / verProducto?.costo_sin_iva) * 100
-                : 0;
+              p?.precio_compra > 0 ? (ahorroProducto / p?.precio_compra) * 100 : 0;
             const esPositivoAhorro = ahorroProducto > 0;
             const esNegativoAhorro = ahorroProducto < 0;
             const porcentajeAhorroMostrar =
@@ -445,7 +432,7 @@ const ProductoAlmacenModal = ({
               <>
                 <Paper elevation={2} sx={{ p: 2 }}>
                   <Typography variant="h6" color="primary" gutterBottom>
-                    Nuevos precios
+                    Historial de almacén
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Grid container spacing={2} key={p.id || key}>
@@ -502,10 +489,9 @@ const ProductoAlmacenModal = ({
                       </Grid>
                     )}
                   </Grid>
-                </Paper>
-                <Paper elevation={2} sx={{ p: 2 }}>
+
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
+                    <Grid item xs={12} md={4}>
                       <Typography variant="body2" color="text.secondary">
                         Precio de compra
                       </Typography>
@@ -520,7 +506,7 @@ const ProductoAlmacenModal = ({
                                 textDecorationThickness: "3px",
                               }}
                             >
-                              {numericFormatter(verProducto?.costo_sin_iva + "", {
+                              {numericFormatter(verProducto?.costo_con_iva + "", {
                                 thousandSeparator: ",",
                                 decimalScale: 2,
                                 fixedDecimalScale: true,
@@ -559,7 +545,7 @@ const ProductoAlmacenModal = ({
                                 textDecorationThickness: "3px",
                               }}
                             >
-                              {numericFormatter(verProducto?.costo_sin_iva + "", {
+                              {numericFormatter(verProducto?.costo_con_iva + "", {
                                 thousandSeparator: ",",
                                 decimalScale: 2,
                                 fixedDecimalScale: true,
@@ -589,11 +575,32 @@ const ProductoAlmacenModal = ({
                               })}
                           </>
                         ) : (
-                          ""
+                          <>
+                            <b
+                              style={{
+                                color: "green",
+                              }}
+                            >
+                              {numericFormatter(p?.precio_compra + "", {
+                                thousandSeparator: ",",
+                                decimalScale: 2,
+                                fixedDecimalScale: true,
+                                prefix: "$",
+                              })}
+                            </b>
+                          </>
                         )}
                       </Typography>
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid item xs={12} md={4}>
+                      <Typography variant="body2" color="text.secondary">
+                        Cantidad
+                      </Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        {p?.cantidad_almacen}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
                       <Typography variant="body2" color="text.secondary">
                         Comentarios
                       </Typography>
@@ -644,7 +651,7 @@ const ProductoAlmacenModal = ({
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={4}>
                 <Typography variant="body2" color="text.secondary">
                   No. orden
                 </Typography>
@@ -652,7 +659,7 @@ const ProductoAlmacenModal = ({
                   {verProducto.no_orden}
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={4}>
                 <Typography variant="body2" color="text.secondary">
                   Guía
                 </Typography>
@@ -662,6 +669,20 @@ const ProductoAlmacenModal = ({
                       Ver rastreo
                     </a>
                   )}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Typography variant="body2" color="text.secondary">
+                  Costo de envío real
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {verProducto.costo_envio_real &&
+                    numericFormatter(verProducto.costo_envio_real + "", {
+                      thousandSeparator: ",",
+                      decimalScale: 2,
+                      fixedDecimalScale: true,
+                      prefix: "$",
+                    })}
                 </Typography>
               </Grid>
             </Grid>

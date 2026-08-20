@@ -34,10 +34,11 @@ export const crearPlataformaHttp = async (data: any) => {
   }
 };
 
-export const sincronizarVariablesEnProductosHttp = async () => {
+export const sincronizarVariablesEnProductosHttp = async (data?: any) => {
   try {
     const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/sincronizarVariablesEnProductos"}`
+      `${env.API_URL}/sincronizarVariablesEnProductos`,
+      data
     );
     return response?.data || [];
   } catch (error) {
@@ -66,9 +67,15 @@ export const getPlataformasHttp = async () => {
   }
 };
 
-export const getProductosSincronizadosHttp = async () => {
+
+export const getProductosSincronizadosHttp = async (data?: any) => {
   try {
-    const response = await axios.get(`${env.API_URL}/getProductosSincronizados`);
+    const response: GeneralHttpResponse = await axios.get(
+      `${env.API_URL}${"/getProductosSincronizados"}`,
+      {
+        params: data,
+      }
+    );
     return response?.data || [];
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));

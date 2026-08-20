@@ -62,6 +62,8 @@ export const useNuevoProducto = () => {
     { id: 6, label: "XXL", value: "XXL" },
   ];
 
+  const regexDecimal8_4 = /^\d{1,8}(\.\d{1,4})?$/; // hasta 8 enteros, 4 decimales
+
   const formik = useFormik({
     initialValues: {
       nombre_producto: "",
@@ -76,15 +78,15 @@ export const useNuevoProducto = () => {
       //costo_sin_iva: "",
       costo_puntos_con_iva: "",
       /*costo_puntos_sin_iva: "",
-      fee_brimagy: "",
-      subtotal: "",
-      envio_base: "",
-      costo_caja: "",*/
+    fee_brimagy: "",
+    subtotal: "",
+    envio_base: "",
+    costo_caja: "",*/
       envio_extra: "",
       /*total_envio: "",
-      total: "",
-      puntos: "",
-      factor: "",*/
+    total: "",
+    puntos: "",
+    factor: "",*/
       tipo_producto: "",
       plataforma: "",
       tyc: "",
@@ -124,33 +126,35 @@ export const useNuevoProducto = () => {
       talla: Yup.string(),
       id_proveedor: Yup.string(),
       id_catalogo: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
-      costo_con_iva: Yup.string().required(
-        intl.formatMessage({ id: "input_validation_requerido" })
-      ),
+      costo_con_iva: Yup.string()
+        .required(intl.formatMessage({ id: "input_validation_requerido" }))
+        .matches(regexDecimal8_4, intl.formatMessage({ id: "input_validation_numero_decimal" })),
       /*costo_sin_iva: Yup.string().required(
-        intl.formatMessage({ id: "input_validation_requerido" })
-      ),*/
-      costo_puntos_con_iva: Yup.string().required(
-        intl.formatMessage({ id: "input_validation_requerido" })
-      ),
+      intl.formatMessage({ id: "input_validation_requerido" })
+    ),*/
+      costo_puntos_con_iva: Yup.string()
+        .required(intl.formatMessage({ id: "input_validation_requerido" }))
+        .matches(regexDecimal8_4, intl.formatMessage({ id: "input_validation_numero_decimal" })),
       /*costo_puntos_sin_iva: Yup.string().required(
-        intl.formatMessage({ id: "input_validation_requerido" })
-      ),
-      fee_brimagy: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
-      subtotal: Yup.number()
+      intl.formatMessage({ id: "input_validation_requerido" })
+    ),
+    fee_brimagy: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+    subtotal: Yup.number()
+      .required(intl.formatMessage({ id: "input_validation_requerido" }))
+      .positive(intl.formatMessage({ id: "debe_ser_mayor_cero" }))
+      .min(1, intl.formatMessage({ id: "debe_ser_mayor_cero" })),
+    envio_base: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+    costo_caja: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),*/
+      envio_extra: Yup.string()
         .required(intl.formatMessage({ id: "input_validation_requerido" }))
-        .positive(intl.formatMessage({ id: "debe_ser_mayor_cero" }))
-        .min(1, intl.formatMessage({ id: "debe_ser_mayor_cero" })),
-      envio_base: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
-      costo_caja: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),*/
-      envio_extra: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+        .matches(regexDecimal8_4, intl.formatMessage({ id: "input_validation_numero_decimal" })),
       /*total_envio: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
-      total: Yup.number()
-        .required(intl.formatMessage({ id: "input_validation_requerido" }))
-        .positive(intl.formatMessage({ id: "debe_ser_mayor_cero" }))
-        .min(1, intl.formatMessage({ id: "debe_ser_mayor_cero" })),
-      puntos: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
-      factor: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),*/
+    total: Yup.number()
+      .required(intl.formatMessage({ id: "input_validation_requerido" }))
+      .positive(intl.formatMessage({ id: "debe_ser_mayor_cero" }))
+      .min(1, intl.formatMessage({ id: "debe_ser_mayor_cero" })),
+    puntos: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
+    factor: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),*/
       tipo_producto: Yup.string().required(
         intl.formatMessage({ id: "input_validation_requerido" })
       ),

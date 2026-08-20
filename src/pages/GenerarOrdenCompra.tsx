@@ -763,37 +763,37 @@ function GenerarOrdenCompra(): JSX.Element {
               {!accionProducto && (
                 <Grid item xs={12} sm={accionProducto ? 6 : 4}>
                   <TextField
-                    id="costo_sin_iva"
+                    id="costo_con_iva"
                     fullWidth
-                    label={`${intl.formatMessage({ id: "input_costo_sin_iva" })} *`}
+                    label={`${intl.formatMessage({ id: "input_costo_con_iva" })} *`}
                     variant="standard"
-                    name="costo_sin_iva"
-                    value={formikAsignar.values.costo_sin_iva || ""}
+                    name="costo_con_iva"
+                    value={formikAsignar.values.costo_con_iva || ""}
                     disabled={!proveedores || proveedores.length === 0}
                     helperText={
-                      formikAsignar.touched.costo_sin_iva && formikAsignar.errors.costo_sin_iva
+                      formikAsignar.touched.costo_con_iva && formikAsignar.errors.costo_con_iva
                     }
                     error={
-                      formikAsignar.touched.costo_sin_iva &&
-                      Boolean(formikAsignar.errors.costo_sin_iva)
+                      formikAsignar.touched.costo_con_iva &&
+                      Boolean(formikAsignar.errors.costo_con_iva)
                     }
                     onChange={(e) => {
                       const value = e.target.value;
-                      formikAsignar.setFieldValue("costo_sin_iva", value);
+                      formikAsignar.setFieldValue("costo_con_iva", value);
                     }}
                     onBlur={formikAsignar.handleBlur}
                     sx={{
                       "& .MuiInputLabel-root": {
-                        color: getFieldColor("costo_sin_iva"),
+                        color: getFieldColor("costo_con_iva"),
                       },
                       "& .MuiInput-underline:after": {
-                        borderBottomColor: getFieldColor("costo_sin_iva"),
+                        borderBottomColor: getFieldColor("costo_con_iva"),
                       },
                       "& .MuiInput-underline:before": {
-                        borderBottomColor: getFieldColor("costo_sin_iva"),
+                        borderBottomColor: getFieldColor("costo_con_iva"),
                       },
                       "& .MuiInputBase-input": {
-                        color: getFieldColor("costo_sin_iva"),
+                        color: getFieldColor("costo_con_iva"),
                       },
                     }}
                   ></TextField>
@@ -815,12 +815,11 @@ function GenerarOrdenCompra(): JSX.Element {
                   onClick={(e: any) => {
                     const datos = {
                       id_proveedor: formikAsignar.values.id_proveedor,
-                      costo_sin_iva: formikAsignar.values.costo_sin_iva,
+                      costo_con_iva: formikAsignar.values.costo_con_iva,
                       id_producto: productoSeleccionado?.id_producto,
                       id_validacion: productoSeleccionado?.id_validacion_producto,
                       plataforma: plataforma,
                     };
-                    //console.log(datos);
                     accionProducto ? asignarProveedor(datos) : registrarNuevoPrecio(datos);
                   }}
                 >

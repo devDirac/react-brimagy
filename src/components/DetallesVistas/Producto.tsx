@@ -38,6 +38,7 @@ interface Producto {
   total: number;
   puntos: number;
   factor: number;
+  valor_factor: number;
 }
 
 interface DetalleProductoProps {
@@ -49,12 +50,6 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
   const intl = useIntl();
 
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
-  const isSuperAdmin = tipoUsuario === 6;
-  const isAdministracion = tipoUsuario === 5;
-  const isInventario = tipoUsuario === 4;
-  const isCompras = tipoUsuario === 3;
-  const isAuditor = tipoUsuario === 2;
-  const isInternauta = tipoUsuario === 1;
 
   return (
     <Box sx={{ px: 2, pb: 2, mt: 3 }}>
@@ -176,7 +171,7 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
                     thousandSeparator: ",",
                     decimalScale: 2,
                     fixedDecimalScale: false,
-                    prefix: "",
+                    prefix: "$",
                   })}
                 </Typography>
               </Grid>
@@ -189,7 +184,7 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
                     thousandSeparator: ",",
                     decimalScale: 2,
                     fixedDecimalScale: false,
-                    prefix: "",
+                    prefix: "$",
                   })}
                 </Typography>
               </Grid>
@@ -202,7 +197,7 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
                     thousandSeparator: ",",
                     decimalScale: 2,
                     fixedDecimalScale: false,
-                    prefix: "",
+                    prefix: "$",
                   })}
                 </Typography>
               </Grid>
@@ -215,7 +210,7 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
                     thousandSeparator: ",",
                     decimalScale: 2,
                     fixedDecimalScale: false,
-                    prefix: "",
+                    prefix: "$",
                   })}
                 </Typography>
               </Grid>
@@ -336,14 +331,14 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
               </Grid>
               <Grid item xs={4} md={4}>
                 <Typography variant="body2" color="text.secondary">
-                  Redondeo
+                  Factor
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
-                  {numericFormatter(verProducto.puntos + "", {
+                  {numericFormatter(verProducto.valor_factor + "", {
                     thousandSeparator: ",",
                     decimalScale: 2,
                     fixedDecimalScale: false,
-                    prefix: "",
+                    suffix: "%",
                   })}
                 </Typography>
               </Grid>
