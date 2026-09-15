@@ -260,6 +260,10 @@ function GestionAlmacen(): JSX.Element {
     fechaCompra,
     costoEnvioReal,
     setCostoEnvioReal,
+    isAlertOpenCostoEnvioReal,
+    handleisAlertOpenCostoEnvioReal,
+    handleisAlertCloseCostoEnvioReal,
+    procesandoCostoEnvioReal
   } = useGestionAlmacen(tipoUsuario);
 
   const handleChangeEvidencias = (newFiles: File[] | null) => {
@@ -605,6 +609,7 @@ function GestionAlmacen(): JSX.Element {
                 setProductoSeleccionado={setProductoSeleccionado}
                 handleisAlertOpenNuevoPrecio={handleisAlertOpenNuevoPrecio}
                 handleisAlertOpenProductosTecnologicos={handleisAlertOpenProductosTecnologicos}
+                handleisAlertOpenCostoEnvioReal={handleisAlertOpenCostoEnvioReal}
               />
             </>
           ) : null}
@@ -649,7 +654,7 @@ function GestionAlmacen(): JSX.Element {
                   disabled={!proveedoresSelect || proveedoresSelect.length === 0}
                   helperText={
                     formikCantidad.touched.cantidadProducto &&
-                    formikCantidad.errors.cantidadProducto
+                      formikCantidad.errors.cantidadProducto
                       ? formikCantidad.errors.cantidadProducto
                       : `Máximo: ${cantidadMaximaPermitida} unidades`
                   }
@@ -848,7 +853,22 @@ function GestionAlmacen(): JSX.Element {
                   />
                 </LocalizationProvider>
               </Grid>
-              <Grid item xs={12} sm={8}>
+              <Grid item xs={12} sm={3}>
+                <TextField
+                  id="folio_factura"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_folio_factura" })}`}
+                  variant="standard"
+                  name="folio_factura"
+                  value={formikCantidad.values.folio_factura || ""}
+                  disabled={!proveedoresSelect || proveedoresSelect.length === 0}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    formikCantidad.setFieldValue("folio_factura", value);
+                  }}
+                ></TextField>
+              </Grid>
+              <Grid item xs={12} sm={5}>
                 <TextField
                   id="comentarios"
                   fullWidth
@@ -892,6 +912,7 @@ function GestionAlmacen(): JSX.Element {
                       precio_compra: formikCantidad.values.precio_compra,
                       imei: formikCantidad.values.imei,
                       no_serie: formikCantidad.values.no_serie,
+                      folio_factura: formikCantidad.values.folio_factura,
                       comentarios: formikCantidad.values.comentarios,
                       fecha_compra: formikCantidad.values.fecha_compra,
                       id_producto: verProducto?.id_producto,
@@ -946,6 +967,53 @@ function GestionAlmacen(): JSX.Element {
                 }}
               />
             </Grid>
+            <Grid item xs={6} sm={6} display="flex" alignContent="center" justifyContent="center">
+              <Button
+                sx={{ color: "#fff", background: "#084d6e" }}
+                variant="contained"
+                endIcon={<AddCircleIcon />}
+                disabled={procesandoGuiaProducto}
+                onClick={(e: any) => {
+                  const datos = {
+                    id_producto_almacen: verProducto?.id_producto_almacen,
+                    id_canje: verProducto?.id_canje,
+                    guia_producto: guiaProducto,
+                  };
+                  addGuiaProductoAlmacen(datos);
+                }}
+              >
+                {procesandoGuiaProducto ? (
+                  <>
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                    {intl.formatMessage({ id: "general_añadiendo" })}...{" "}
+                  </>
+                ) : (
+                  intl.formatMessage({ id: "set_añadir_guia_producto_almacen" })
+                )}
+              </Button>
+            </Grid>
+          </Grid>
+        ) : null}
+      </ModalComponent>
+      {/* MODAL PARA REGISTRAR COSTO DE ENVIO REAL AL RECIBIR EL PRODUCTO */}
+      <ModalComponent
+        handleClose={handleisAlertCloseCostoEnvioReal}
+        isOpen={isAlertOpenCostoEnvioReal}
+        key={"alertaGuia"}
+      >
+        {verProducto ? (
+          <Grid container spacing={2} style={{ textAlign: "center" }}>
+            <Grid item xs={12}>
+              <Typography variant="h6" color="primary" gutterBottom>
+                Añadir costo de envío real
+              </Typography>
+            </Grid>
             <Grid item xs={6} sm={6}>
               <TextField
                 id="costoEnvioReal"
@@ -968,14 +1036,14 @@ function GestionAlmacen(): JSX.Element {
                 disabled={procesandoGuiaProducto}
                 onClick={(e: any) => {
                   const datos = {
+                    id_producto_almacen: verProducto?.id_producto_almacen,
                     id_canje: verProducto?.id_canje,
-                    guia_producto: guiaProducto,
                     costo_envio_real: costoEnvioReal,
                   };
-                  addGuiaProductoAlmacen(datos);
+                  confirmarRecepcionProductoAlmacen(datos);
                 }}
               >
-                {procesandoGuiaProducto ? (
+                {procesandoCostoEnvioReal ? (
                   <>
                     <Spinner
                       as="span"
@@ -984,10 +1052,10 @@ function GestionAlmacen(): JSX.Element {
                       role="status"
                       aria-hidden="true"
                     />
-                    {intl.formatMessage({ id: "general_añadiendo" })}...{" "}
+                    {intl.formatMessage({ id: "general_recibiendo" })}...{" "}
                   </>
                 ) : (
-                  intl.formatMessage({ id: "set_añadir_guia_producto_almacen" })
+                  intl.formatMessage({ id: "recepcion_producto_almacen" })
                 )}
               </Button>
             </Grid>

@@ -670,12 +670,12 @@ function GenerarOrdenCompra(): JSX.Element {
                 <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
                   Asignar {productoSeleccionado?.nombre_premio} a un proveedor
                 </Typography>
-                <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
+                {/*<Typography variant="caption" gutterBottom sx={{ display: "block" }}>
                   Da clic y selecciona la accion que deseas tomar con el producto
-                </Typography>
+                </Typography>*/}
               </Grid>
 
-              <Grid item xs={12}>
+              {/*<Grid item xs={12}>
                 <FormControlLabel
                   control={
                     <MaterialUISwitch
@@ -695,7 +695,7 @@ function GenerarOrdenCompra(): JSX.Element {
                     gap: 0,
                   }}
                 />
-              </Grid>
+              </Grid>*/}
               <Grid item xs={12} sm={accionProducto ? 6 : 4}>
                 <TextField
                   id="id_proveedor"

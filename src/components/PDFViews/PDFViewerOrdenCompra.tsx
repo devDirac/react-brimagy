@@ -14,7 +14,7 @@ interface Producto {
   email: string;
   phone: number;
   number_of_awards: number;
-  size: string;
+  talla: string;
   color: string;
   category: string;
   puntos_canjeados: number;
@@ -49,6 +49,7 @@ interface Producto {
   estatus_almacen: number;
   importe_total: number;
   subtotal: number;
+  categoria: string;
 }
 interface ordenCompraResponse {
   estadisticas?: {

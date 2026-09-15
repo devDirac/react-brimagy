@@ -104,23 +104,6 @@ export const useListaProductos = (tipoUsuario: number) => {
   const [marcaEditar, setMarcaEditar] = useState("");
   const [skuEditar, setSkuEditar] = useState("");
   const [colorEditar, setColorEditar] = useState("");
-  const [tallaEditar, setTallaEditar] = useState("");
-  const [idProveedorEditar, setIdProveedorEditar] = useState("");
-  const [idCatalogoEditar, setIdCatalogoEditar] = useState("");
-  const [costoConIvaEditar, setCostoConIvaEditar] = useState("");
-  const [costoSinIvaEditar, setCostoSinIvaEditar] = useState("");
-  const [costoPuntosConIvaEditar, setCostoPuntosConIvaEditar] = useState("");
-  const [costoPuntosSinIvaEditar, setCostoPuntosSinIvaEditar] = useState("");
-  const [feeBrimagyEditar, setFeeBrimagyEditar] = useState("");
-  const [subtotalEditar, setSubtotalEditar] = useState("");
-  const [envioBaseEditar, setEnvioBaseEditar] = useState("");
-  const [costoCajaEditar, setCostoCajaEditar] = useState("");
-  const [envioExtraEditar, setEnvioExtraEditar] = useState("");
-  const [totalEnvioEditar, setTotalEnvioEditar] = useState("");
-  const [totalEditar, setTotalEditar] = useState("");
-  const [puntosEditar, setPuntosEditar] = useState("");
-  const [valorFactorEditar, setValorFactorEditar] = useState("");
-  const [factorEditar, setFactorEditar] = useState("");
   const [fotoEditar, setFotoEditar] = useState("");
   const [tipoProductoEditar, setTipoProductoEditar] = useState("");
   const [tipoPlataformaEditar, setPlataformaEditar] = useState("");
@@ -332,7 +315,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     validationSchema: Yup.object({
       color: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
     }),
-    onSubmit: async (values) => {},
+    onSubmit: async (values) => { },
   });
 
   const formikTalla = useFormik({
@@ -342,7 +325,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     validationSchema: Yup.object({
       talla: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
     }),
-    onSubmit: async (values) => {},
+    onSubmit: async (values) => { },
   });
 
   const formikMonto = useFormik({
@@ -356,7 +339,7 @@ export const useListaProductos = (tipoUsuario: number) => {
       puntos: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
       descripcion: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
     }),
-    onSubmit: async (values) => {},
+    onSubmit: async (values) => { },
   });
 
   const regexDecimal8_4 = /^\d{1,8}(\.\d{1,4})?$/; // hasta 8 enteros, 4 decimales
@@ -378,6 +361,8 @@ export const useListaProductos = (tipoUsuario: number) => {
       costo_caja: "",
       envio_extra: "",
       valor_factor: "",
+      tyc: "",
+      vigencia: "",
     },
     validationSchema: Yup.object({
       nombre_producto: Yup.string(),
@@ -388,6 +373,8 @@ export const useListaProductos = (tipoUsuario: number) => {
       talla: Yup.string(),
       id_proveedor: Yup.string(),
       id_catalogo: Yup.string(),
+      tyc: Yup.string(),
+      vigencia: Yup.string(),
       costo_con_iva: Yup.string().matches(
         regexDecimal8_4,
         intl.formatMessage({ id: "input_validation_numero_decimal" })
@@ -413,7 +400,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         intl.formatMessage({ id: "input_validation_valor_factor" })
       ),
     }),
-    onSubmit: async (values) => {},
+    onSubmit: async (values) => { },
   });
 
   const colorNameToHex = (color: string): string => {
@@ -837,6 +824,8 @@ export const useListaProductos = (tipoUsuario: number) => {
         costo_caja: productoEditar.costo_caja || "",
         envio_extra: productoEditar.envio_extra || "",
         valor_factor: productoEditar.valor_factor || "",
+        tyc: productoEditar.tyc || "",
+        vigencia: productoEditar.vigencia || "",
       });
 
       setFotoEditar(
@@ -1160,9 +1149,9 @@ export const useListaProductos = (tipoUsuario: number) => {
 
         const categoria = String(
           getValueByHeader(row, "categoría") ||
-            getValueByHeader(row, "categoria") ||
-            getValueByHeader(row, "catalogo") ||
-            ""
+          getValueByHeader(row, "categoria") ||
+          getValueByHeader(row, "catalogo") ||
+          ""
         ).trim();
 
         const nombre_producto = limpiarTextoConCaracteres(getValueByHeader(row, "nombre"));
@@ -1174,7 +1163,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         const skuVacio = !sku || sku.trim() === "" || sku === "N/A";
         const color = limpiarTexto(getValueByHeader(row, "color"));
         const talla = getValueByHeader(row, "talla");
-        const id_producto_brimagy = getValueByHeader(row, "id producto");
+        const id_producto_brimagy = getValueByHeader(row, "id producto brimagy");
         const idBrimagyVacio = !id_producto_brimagy;
 
         // Validaciones de campos de texto
@@ -1306,10 +1295,8 @@ export const useListaProductos = (tipoUsuario: number) => {
       if (erroresValidacion.length > 0) {
         setProcesando(false);
         setMensajeAlert(
-          `Se encontraron ${
-            erroresValidacion.length
-          } error(es) de validación:\n\n${erroresValidacion.slice(0, 5).join("\n")}${
-            erroresValidacion.length > 5 ? `\n... y ${erroresValidacion.length - 5} más` : ""
+          `Se encontraron ${erroresValidacion.length
+          } error(es) de validación:\n\n${erroresValidacion.slice(0, 5).join("\n")}${erroresValidacion.length > 5 ? `\n... y ${erroresValidacion.length - 5} más` : ""
           }`
         );
         handleisAlertOpen();
@@ -1318,7 +1305,6 @@ export const useListaProductos = (tipoUsuario: number) => {
       }
 
       const skus = datosFormateados.map((p) => p.sku).filter(Boolean);
-      /*const ids = datosFormateados.map((p) => p.id_producto_brimagy).filter(Boolean);*/
       const ids = datosFormateados
         .map((p) => p.id_producto_brimagy)
         .filter(Boolean)
@@ -1327,10 +1313,22 @@ export const useListaProductos = (tipoUsuario: number) => {
       if (ids.length > 0) {
         try {
           const idsExistentesResponse = await verificarIdProductoBrimagyHttp(ids);
-          const idsExistentes = idsExistentesResponse?.ids_existentes || [];
+          //const idsExistentes = idsExistentesResponse?.ids_existentes || [];
+          const idsExistentes: string[] = (idsExistentesResponse?.ids_existentes || []).map(
+            (id: any) => String(id)
+          );
 
-          datosFormateados.forEach((producto) => {
+          const idsExistentesSet = new Set(idsExistentes);
+          /*datosFormateados.forEach((producto) => {
             if (idsExistentes.includes(producto.id_producto_brimagy)) {
+              producto.id_producto_brimagy_duplicado = true;
+            }
+          });*/
+          datosFormateados.forEach((producto) => {
+            if (
+              producto.id_producto_brimagy &&
+              idsExistentesSet.has(String(producto.id_producto_brimagy))
+            ) {
               producto.id_producto_brimagy_duplicado = true;
             }
           });
@@ -1452,6 +1450,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         { header: "Costo Puntos con IVA", key: "costo_puntos_con_iva", width: 20 },
         { header: "Envío Extra", key: "envio_extra", width: 15 },
         { header: "Factor", key: "valor_factor", width: 15 },
+        { header: "Id producto brimagy", key: "id_producto_brimagy", width: 15 },
         { header: "Tipo Producto", key: "tipo_producto", width: 15 },
         { header: "Plataforma", key: "plataforma", width: 15 },
       ];
@@ -1468,8 +1467,8 @@ export const useListaProductos = (tipoUsuario: number) => {
       // Si se pasa un nombreFiltro, solo procesamos ese producto; si no, todos.
       const productosAProcesar = nombreFiltro
         ? productos.filter(
-            (p) => p.nombre_producto?.trim().toLowerCase() === nombreFiltro.trim().toLowerCase()
-          )
+          (p) => p.nombre_producto?.trim().toLowerCase() === nombreFiltro.trim().toLowerCase()
+        )
         : productos;
 
       if (nombreFiltro && productosAProcesar.length === 0) {
@@ -1486,7 +1485,7 @@ export const useListaProductos = (tipoUsuario: number) => {
           true
         );
         const row = worksheet.addRow({
-          id_producto: p.id ?? p.id_producto_brimagy ?? 0, //p.id_producto_brimagy
+          id_producto: p.id ?? 0,
           categoria: p.catalogo || "",
           nombre_producto: p.nombre_producto || "",
           descripcion: p.descripcion || "",
@@ -1499,6 +1498,7 @@ export const useListaProductos = (tipoUsuario: number) => {
           costo_puntos_con_iva: p.costo_puntos_con_iva ?? costo_puntos_con_iva ?? 0,
           envio_extra: p.envio_extra ?? 0,
           valor_factor: p.valor_factor ?? 0,
+          id_producto_brimagy: p.id_producto_brimagy ?? 0,
           tipo_producto:
             p.catalogo.toLowerCase() === "gifs" || p.catalogo.toLowerCase() === "bohn cardssss"
               ? "digital"
@@ -1788,8 +1788,8 @@ export const useListaProductos = (tipoUsuario: number) => {
         message
           ? message
           : !!datos?.id_color
-          ? intl.formatMessage({ id: "error_editar_color" })
-          : intl.formatMessage({ id: "error_crear_color" })
+            ? intl.formatMessage({ id: "error_editar_color" })
+            : intl.formatMessage({ id: "error_crear_color" })
       );
       handleisAlertOpen();
     }
@@ -1903,8 +1903,8 @@ export const useListaProductos = (tipoUsuario: number) => {
         message
           ? message
           : !!datos?.id_tall
-          ? intl.formatMessage({ id: "error_editar_talla" })
-          : intl.formatMessage({ id: "error_crear_talla" })
+            ? intl.formatMessage({ id: "error_editar_talla" })
+            : intl.formatMessage({ id: "error_crear_talla" })
       );
       handleisAlertOpen();
     }
@@ -2150,12 +2150,12 @@ export const useListaProductos = (tipoUsuario: number) => {
           prevMontos.map((t) =>
             t.id === montoData?.id
               ? {
-                  ...t,
-                  monto: montoData?.monto,
-                  puntos: montoData?.puntos,
-                  descripcion: montoData?.descripcion,
-                  status: montoData?.status,
-                }
+                ...t,
+                monto: montoData?.monto,
+                puntos: montoData?.puntos,
+                descripcion: montoData?.descripcion,
+                status: montoData?.status,
+              }
               : t
           )
         );
@@ -2184,8 +2184,8 @@ export const useListaProductos = (tipoUsuario: number) => {
         message
           ? message
           : !!datos?.id_monto
-          ? intl.formatMessage({ id: "error_editar_monto" })
-          : intl.formatMessage({ id: "error_crear_monto" })
+            ? intl.formatMessage({ id: "error_editar_monto" })
+            : intl.formatMessage({ id: "error_crear_monto" })
       );
       handleisAlertOpen();
     }
@@ -2352,21 +2352,11 @@ export const useListaProductos = (tipoUsuario: number) => {
     isSuperAdmin,
     handleBuscadorChange,
     buscador,
-    setBuscador,
-    navigate,
-    productosSeleccionados,
-    setProductosSeleccionados,
-    asignarPdfDatos,
-    isAlertOpenAsignar,
-    handleisAlerCloseAsignar,
-    handleisAlertOpenAsignar,
     procesando,
     isAlertOpen,
     handleisAlerClose,
     mensajeAlert,
     intl,
-    errorLogin,
-    setProcesando,
     setProductoId,
     productoId,
     eliminarProducto,
@@ -2375,48 +2365,6 @@ export const useListaProductos = (tipoUsuario: number) => {
     handleisAlertOpenEliminaProducto,
     categorias,
     proveedores,
-    nombreProductoEditar,
-    setNombreProductoEditar,
-    descripcionEditar,
-    setDescripcionEditar,
-    marcaEditar,
-    setMarcaEditar,
-    skuEditar,
-    setSkuEditar,
-    colorEditar,
-    setColorEditar,
-    tallaEditar,
-    setTallaEditar,
-    idProveedorEditar,
-    setIdProveedorEditar,
-    idCatalogoEditar,
-    setIdCatalogoEditar,
-    costoConIvaEditar,
-    setCostoConIvaEditar,
-    costoSinIvaEditar,
-    setCostoSinIvaEditar,
-    costoPuntosConIvaEditar,
-    setCostoPuntosConIvaEditar,
-    costoPuntosSinIvaEditar,
-    setCostoPuntosSinIvaEditar,
-    feeBrimagyEditar,
-    setFeeBrimagyEditar,
-    subtotalEditar,
-    setSubtotalEditar,
-    envioBaseEditar,
-    setEnvioBaseEditar,
-    costoCajaEditar,
-    setCostoCajaEditar,
-    envioExtraEditar,
-    setEnvioExtraEditar,
-    totalEnvioEditar,
-    setTotalEnvioEditar,
-    totalEditar,
-    setTotalEditar,
-    puntosEditar,
-    setPuntosEditar,
-    factorEditar,
-    setFactorEditar,
     procesandoEditar,
     tableKey,
     productoEditar,
@@ -2467,13 +2415,11 @@ export const useListaProductos = (tipoUsuario: number) => {
     getProductosCatalogo,
     //ver bitacora del producto
     verBitacoraProducto,
-    setVerBitacoraProducto,
     isAlertOpenVerBitacoraProducto,
     handleisAlertOpenVerBitacoraProducto,
     handleisAlertCloseVerBitacoraProducto,
     getBitacoraProductoPorId,
     //color picker
-    colorNameToHex,
     esColorValido,
     anchorEl,
     setAnchorEl,
@@ -2485,7 +2431,6 @@ export const useListaProductos = (tipoUsuario: number) => {
     //colores
     crearEditarColorProducto,
     getProductoColorPorId,
-    formikColor,
     colores,
     setVerEditarColor,
     verEditarColor,
@@ -2516,9 +2461,6 @@ export const useListaProductos = (tipoUsuario: number) => {
     procesandoFotosProducto,
     fotosProductoFiles,
     setFotosProductoFiles,
-    isModalFotosProducto,
-    handleOpenFotosProducto,
-    handleCloseFotosProducto,
     isModalVistaFotosProducto,
     fotosProductoSeleccionada,
     handleOpenVistaFotosProducto,
@@ -2532,9 +2474,6 @@ export const useListaProductos = (tipoUsuario: number) => {
     procesandoFotosPromoProducto,
     fotosPromoProductoFiles,
     setFotosPromoProductoFiles,
-    isModalFotosPromoProducto,
-    handleOpenFotosPromoProducto,
-    handleCloseFotosPromoProducto,
     isModalVistaFotosPromoProducto,
     fotosPromoProductoSeleccionada,
     handleOpenVistaFotosPromoProducto,
@@ -2554,7 +2493,6 @@ export const useListaProductos = (tipoUsuario: number) => {
     //montos digital
     crearEditarMontoProducto,
     getProductoMontoPorId,
-    formikMonto,
     montos,
     setVerEditarMonto,
     verEditarMonto,
@@ -2574,13 +2512,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     procesandoFotoMonto,
     fotoMontoFiles,
     setFotoMontoFiles,
-    isModalFotoMonto,
-    handleOpenFotoMonto,
-    handleCloseFotoMonto,
-    isModalVistaFotoMonto,
-    fotoMontoSeleccionada,
     handleOpenVistaFotoMonto,
-    handleCloseVistaFotoMonto,
     subirFotoMonto,
     getFotoMontoPorId,
     fotoMonto,
@@ -2592,8 +2524,6 @@ export const useListaProductos = (tipoUsuario: number) => {
     variablesGlobalesData,
     calcularPuntosEsperados,
     tallaArray,
-    valorFactorEditar,
-    setValorFactorEditar,
     formikEditarProducto,
   };
 };

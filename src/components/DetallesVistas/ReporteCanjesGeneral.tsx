@@ -1,21 +1,62 @@
 import { Grid, Typography, Divider, Box } from "@mui/material";
 import { useIntl } from "react-intl";
 import { Spinner } from "react-bootstrap";
-import { ReporteGeneralResponse } from "../../modules/reporteCanjesGlobal/types/reporteCanjes";
+import {
+  ReporteGeneralResponse,
+  Periodos,
+} from "../../modules/reporteCanjesGlobal/types/reporteCanjes";
 import { reporteCanjesColumns } from "../../modules/reporteCanjesGlobal/config/reporteCanjesColumns";
 import GenericGroupedTable from "components/GenericGroupedTable/GenericGroupedTable";
 import AhorroStatsCards from "components/AhorroStatsCards/AhorroStatsCards";
+import { FormikProps } from "formik";
 
-interface Props {
+interface PeriodoFormValues {
+  fecha_inicio_periodo: string;
+  fecha_fin_periodo: string;
+}
+
+interface PropsReporteGeneral {
   verEstadisticas?: ReporteGeneralResponse | null;
   procesando?: boolean;
+  descargando?: boolean;
+  rangoFechas?: boolean;
   fechaInicio: string;
   setFechaInicio: (v: string) => void;
   fechaFin: string;
   setFechaFin: (v: string) => void;
+  handleExportarExcel: (inicio?: string, fin?: string, plataforma?: string) => Promise<void>;
+  plataforma?: string;
+  periodos?: Periodos[] | null;
+  formik: FormikProps<PeriodoFormValues>;
+  getFieldColor: (fieldName: keyof PeriodoFormValues) => string | undefined;
+  createPeriodo: (data: any) => Promise<void>;
+  procesandoPeriodo?: boolean;
+  handleisAlertOpenPeriodo: () => void;
+  handleisAlertClosePeriodo: () => void;
+  isAlertOpenPeriodo: boolean;
+  setPeriodoEditar: React.Dispatch<React.SetStateAction<any>>;
+  periodoEditar: Periodos | null;
+  editarPeriodo: (datos: any) => void;
 }
 
-const ReporteCanjesGeneralModulo = ({ verEstadisticas, procesando }: Props) => {
+const ReporteCanjesGeneralModulo = ({
+  verEstadisticas,
+  procesando,
+  descargando,
+  handleExportarExcel,
+  plataforma,
+  periodos,
+  formik,
+  getFieldColor,
+  createPeriodo,
+  procesandoPeriodo,
+  handleisAlertOpenPeriodo,
+  handleisAlertClosePeriodo,
+  isAlertOpenPeriodo,
+  setPeriodoEditar,
+  periodoEditar,
+  editarPeriodo,
+}: PropsReporteGeneral) => {
   const intl = useIntl();
 
   if (!verEstadisticas && !procesando) return null;
@@ -37,13 +78,33 @@ const ReporteCanjesGeneralModulo = ({ verEstadisticas, procesando }: Props) => {
           </Box>
         ) : verEstadisticas ? (
           <>
-            <AhorroStatsCards totales={verEstadisticas.totales} />
+            <AhorroStatsCards
+              periodos={periodos}
+              totales={verEstadisticas.totales}
+              handleisAlertOpenPeriodo={handleisAlertOpenPeriodo}
+              isAlertOpenPeriodo={isAlertOpenPeriodo}
+              handleisAlertClosePeriodo={handleisAlertClosePeriodo}
+              setPeriodoEditar={setPeriodoEditar}
+            />
             <GenericGroupedTable
               data={verEstadisticas.detalle}
               columns={reporteCanjesColumns}
               totales={verEstadisticas.totales}
               searchColumnId="premio"
               searchPlaceholder="Buscar por premio..."
+              descargando={descargando}
+              handleExportarExcel={handleExportarExcel}
+              plataforma={plataforma}
+              periodos={periodos}
+              formik={formik}
+              getFieldColor={getFieldColor}
+              createPeriodo={createPeriodo}
+              procesandoPeriodo={procesandoPeriodo}
+              handleisAlertOpenPeriodo={handleisAlertOpenPeriodo}
+              isAlertOpenPeriodo={isAlertOpenPeriodo}
+              handleisAlertClosePeriodo={handleisAlertClosePeriodo}
+              periodoEditar={periodoEditar}
+              editarPeriodo={editarPeriodo}
             />
           </>
         ) : (

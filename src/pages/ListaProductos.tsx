@@ -78,7 +78,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import SimCardDownloadIcon from "@mui/icons-material/SimCardDownload";
-import TipsAndUpdatesIcon from "@mui/icons-material/TipsAndUpdates";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 import TableRowsIcon from "@mui/icons-material/TableRows";
@@ -142,21 +141,11 @@ function ListaProductos(): JSX.Element {
     isSuperAdmin,
     handleBuscadorChange,
     buscador,
-    setBuscador,
-    navigate,
-    productosSeleccionados,
-    setProductosSeleccionados,
-    asignarPdfDatos,
-    isAlertOpenAsignar,
-    handleisAlerCloseAsignar,
-    handleisAlertOpenAsignar,
     procesando,
     isAlertOpen,
     handleisAlerClose,
     mensajeAlert,
     intl,
-    errorLogin,
-    setProcesando,
     setProductoId,
     productoId,
     eliminarProducto,
@@ -165,48 +154,6 @@ function ListaProductos(): JSX.Element {
     handleisAlertOpenEliminaProducto,
     categorias,
     proveedores,
-    nombreProductoEditar,
-    setNombreProductoEditar,
-    descripcionEditar,
-    setDescripcionEditar,
-    marcaEditar,
-    setMarcaEditar,
-    skuEditar,
-    setSkuEditar,
-    colorEditar,
-    setColorEditar,
-    tallaEditar,
-    setTallaEditar,
-    idProveedorEditar,
-    setIdProveedorEditar,
-    idCatalogoEditar,
-    setIdCatalogoEditar,
-    costoConIvaEditar,
-    setCostoConIvaEditar,
-    costoSinIvaEditar,
-    setCostoSinIvaEditar,
-    costoPuntosConIvaEditar,
-    setCostoPuntosConIvaEditar,
-    costoPuntosSinIvaEditar,
-    setCostoPuntosSinIvaEditar,
-    feeBrimagyEditar,
-    setFeeBrimagyEditar,
-    subtotalEditar,
-    setSubtotalEditar,
-    envioBaseEditar,
-    setEnvioBaseEditar,
-    costoCajaEditar,
-    setCostoCajaEditar,
-    envioExtraEditar,
-    setEnvioExtraEditar,
-    totalEnvioEditar,
-    setTotalEnvioEditar,
-    totalEditar,
-    setTotalEditar,
-    puntosEditar,
-    setPuntosEditar,
-    factorEditar,
-    setFactorEditar,
     procesandoEditar,
     tableKey,
     productoEditar,
@@ -257,13 +204,11 @@ function ListaProductos(): JSX.Element {
     getProductosCatalogo,
     //ver bitacora del producto
     verBitacoraProducto,
-    setVerBitacoraProducto,
     isAlertOpenVerBitacoraProducto,
     handleisAlertOpenVerBitacoraProducto,
     handleisAlertCloseVerBitacoraProducto,
     getBitacoraProductoPorId,
     //color picker
-    colorNameToHex,
     esColorValido,
     anchorEl,
     setAnchorEl,
@@ -275,7 +220,6 @@ function ListaProductos(): JSX.Element {
     //colores
     crearEditarColorProducto,
     getProductoColorPorId,
-    formikColor,
     colores,
     setVerEditarColor,
     verEditarColor,
@@ -306,9 +250,6 @@ function ListaProductos(): JSX.Element {
     procesandoFotosProducto,
     fotosProductoFiles,
     setFotosProductoFiles,
-    isModalFotosProducto,
-    handleOpenFotosProducto,
-    handleCloseFotosProducto,
     isModalVistaFotosProducto,
     fotosProductoSeleccionada,
     handleOpenVistaFotosProducto,
@@ -322,9 +263,6 @@ function ListaProductos(): JSX.Element {
     procesandoFotosPromoProducto,
     fotosPromoProductoFiles,
     setFotosPromoProductoFiles,
-    isModalFotosPromoProducto,
-    handleOpenFotosPromoProducto,
-    handleCloseFotosPromoProducto,
     isModalVistaFotosPromoProducto,
     fotosPromoProductoSeleccionada,
     handleOpenVistaFotosPromoProducto,
@@ -344,7 +282,6 @@ function ListaProductos(): JSX.Element {
     //montos digital
     crearEditarMontoProducto,
     getProductoMontoPorId,
-    formikMonto,
     montos,
     setVerEditarMonto,
     verEditarMonto,
@@ -364,13 +301,7 @@ function ListaProductos(): JSX.Element {
     procesandoFotoMonto,
     fotoMontoFiles,
     setFotoMontoFiles,
-    isModalFotoMonto,
-    handleOpenFotoMonto,
-    handleCloseFotoMonto,
-    isModalVistaFotoMonto,
-    fotoMontoSeleccionada,
     handleOpenVistaFotoMonto,
-    handleCloseVistaFotoMonto,
     subirFotoMonto,
     getFotoMontoPorId,
     fotoMonto,
@@ -382,8 +313,6 @@ function ListaProductos(): JSX.Element {
     variablesGlobalesData,
     calcularPuntosEsperados,
     tallaArray,
-    valorFactorEditar,
-    setValorFactorEditar,
     formikEditarProducto,
   } = useListaProductos(tipoUsuario);
 
@@ -1185,7 +1114,7 @@ function ListaProductos(): JSX.Element {
                           ))}
                         </TextField>
                       </Grid>
-                      <Grid item xs={6} sm={3}>
+                      <Grid item xs={6} sm={4}>
                         <TextField
                           id="costo_con_iva"
                           fullWidth
@@ -1206,7 +1135,7 @@ function ListaProductos(): JSX.Element {
                           }
                         />
                       </Grid>
-                      <Grid item xs={6} sm={3}>
+                      <Grid item xs={6} sm={4}>
                         <TextField
                           id="costo_puntos_con_iva"
                           fullWidth
@@ -1227,7 +1156,7 @@ function ListaProductos(): JSX.Element {
                           }
                         />
                       </Grid>
-                      <Grid item xs={6} sm={3}>
+                      <Grid item xs={6} sm={4}>
                         <TextField
                           id="envio_extra"
                           fullWidth
@@ -1248,7 +1177,7 @@ function ListaProductos(): JSX.Element {
                           }
                         />
                       </Grid>
-                      <Grid item xs={6} sm={3}>
+                      <Grid item xs={6} sm={4}>
                         <TextField
                           id="valor_factor"
                           fullWidth
@@ -1266,6 +1195,46 @@ function ListaProductos(): JSX.Element {
                           helperText={
                             formikEditarProducto.touched.valor_factor &&
                             formikEditarProducto.errors.valor_factor
+                          }
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="tyc"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_tyc" })}
+                          variant="standard"
+                          name="tyc"
+                          value={formikEditarProducto.values.tyc}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.tyc &&
+                            Boolean(formikEditarProducto.errors.tyc)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.tyc &&
+                            formikEditarProducto.errors.tyc
+                          }
+                        />
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <TextField
+                          id="vigencia"
+                          fullWidth
+                          label={intl.formatMessage({ id: "input_vigencia" })}
+                          variant="standard"
+                          name="vigencia"
+                          value={formikEditarProducto.values.vigencia}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.vigencia &&
+                            Boolean(formikEditarProducto.errors.vigencia)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.vigencia &&
+                            formikEditarProducto.errors.vigencia
                           }
                         />
                       </Grid>
@@ -1289,10 +1258,10 @@ function ListaProductos(): JSX.Element {
                           <MDTypography variant="h6" sx={{ color: "#2f7a2f", fontWeight: 700 }}>
                             {puntosEsperados
                               ? numericFormatter(puntosEsperados.factor + "", {
-                                  thousandSeparator: ",",
-                                  decimalScale: 0,
-                                  fixedDecimalScale: true,
-                                })
+                                thousandSeparator: ",",
+                                decimalScale: 0,
+                                fixedDecimalScale: true,
+                              })
                               : "—"}
                           </MDTypography>
                         </MDBox>
@@ -1356,6 +1325,8 @@ function ListaProductos(): JSX.Element {
                             formData.append("costo_caja", v.costo_caja);
                             formData.append("valor_factor", v.valor_factor);
                             formData.append("envio_extra", v.envio_extra);
+                            formData.append("tyc", v.tyc);
+                            formData.append("vigencia", v.vigencia);
                             formData.append("tipo_registro", "edicion");
                             formData.append("nombre_plataforma", productoEditar?.nombre_plataforma);
                             formData.append(
@@ -2017,10 +1988,8 @@ function ListaProductos(): JSX.Element {
                     Registrando proveedores y categorías...
                   </>
                 ) : (
-                  `Registrar ${obtenerProveedoresFaltantes().length} proveedor(es) | ${
-                    obtenerCategoriasFaltantes().length
-                  } Categoría(s) faltantes  | ${
-                    obtenerPlataformasFaltantes().length
+                  `Registrar ${obtenerProveedoresFaltantes().length} proveedor(es) | ${obtenerCategoriasFaltantes().length
+                  } Categoría(s) faltantes  | ${obtenerPlataformasFaltantes().length
                   } Plataforma(s) faltantes`
                 )}
               </Button>
@@ -2056,23 +2025,22 @@ function ListaProductos(): JSX.Element {
                   producto_status: p.id_producto_brimagy_vacio
                     ? "⚠️ PRODUCTO NUEVO"
                     : p.id_producto_brimagy_duplicado
-                    ? "🔄 " + p.id_producto_brimagy + " (Existente)"
-                    : p.id_producto_brimagy,
+                      ? "🔄 " + p.id_producto_brimagy + " (Existente)"
+                      : p.id_producto_brimagy,
                   plataforma_status: p.plataforma_valida
                     ? "✓ " + p.plataforma
                     : "✗ " + p.plataforma,
-                  //proveedor_status: p.proveedor_valido ? "✓ " + p.proveedor : "✗ " + p.proveedor,
                   proveedor_status: p.proveedor_vacio
                     ? "⚠️ Sin proveedor"
                     : p.proveedor_valido
-                    ? "✓ " + p.proveedor
-                    : "✗ " + p.proveedor,
+                      ? "✓ " + p.proveedor
+                      : "✗ " + p.proveedor,
                   catalogo_status: p.categoria_valida ? "✓ " + p.catalogo : "✗ " + p.catalogo,
                   sku_status: p.sku_vacio
                     ? "⚠️ SKU VACÍO"
                     : p.sku_duplicado
-                    ? "🔄 " + p.sku + " (Existente)"
-                    : p.sku,
+                      ? "🔄 " + p.sku + " (Existente)"
+                      : p.sku,
                 }))}
                 columnsToShow={[
                   "nombre_producto",
@@ -2121,11 +2089,10 @@ function ListaProductos(): JSX.Element {
                   Guardando productos...
                 </>
               ) : (
-                `Guardar ${
-                  excelData?.filter(
-                    (p) =>
-                      p?.sku_vacio || (p?.proveedor_valido && p?.categoria_valida && !p?.sku_vacio)
-                  ).length || 0
+                `Guardar ${excelData?.filter(
+                  (p) =>
+                    p?.sku_vacio || (p?.proveedor_valido && p?.categoria_valida && !p?.sku_vacio)
+                ).length || 0
                 } productos válidos`
               )}
             </Button>

@@ -13,21 +13,11 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import { useMemo, useState } from "react";
-
-// formik components
-import { Formik, Form } from "formik";
-
 // @mui material components
 import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
-import Stepper from "@mui/material/Stepper";
-import Step from "@mui/material/Step";
-import StepLabel from "@mui/material/StepLabel";
 
 // Material Dashboard 2 PRO React TS components
 import MDBox from "components/MDBox";
-import MDButton from "components/MDButton";
 
 // Material Dashboard 2 PRO React TS examples components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -36,9 +26,6 @@ import logo from "assets/images/profile_icon.png";
 import Footer from "examples/Footer";
 
 // NewUser layout schemas for form and form feilds
-import validations from "layouts/pages/users/new-user/schemas/validations";
-import form from "layouts/pages/users/new-user/schemas/form";
-import initialValues from "layouts/pages/users/new-user/schemas/initialValues";
 import { useListaUsuarios } from "./customHooksPages/useListaUsuarios";
 import { useSelector } from "react-redux";
 import { StoreType } from "../types/genericTypes";
@@ -47,7 +34,6 @@ import ModalComponent from "components/Modal";
 import Header from "components/Header";
 import DinamicTable from "components/DinamicTable/DinamicTable";
 import CampoAvatar from "components/CampoAvatar";
-import { editarUsuarioHttp } from "actions/users";
 import { Button, Spinner } from "react-bootstrap";
 
 function ListaUsuarios(): JSX.Element {
@@ -131,10 +117,7 @@ function ListaUsuarios(): JSX.Element {
                 <DinamicTable
                   actions
                   key={tableKey}
-                  //sinBusqueda
-                  //sinExport
                   esListaUsuarios
-                  //showCheckBox
                   data={usuarios}
                   enAccion={(accion, row) => {
                     handleAccion(accion, row);
@@ -177,7 +160,7 @@ function ListaUsuarios(): JSX.Element {
                   value={nombreEditar || usuarioEditar?.name}
                   onChange={(e) => {
                     const value = e.target.value;
-                    setNombreEditar(e.target.value);
+                    setNombreEditar(value);
                   }}
                 />
               </Grid>
@@ -191,7 +174,7 @@ function ListaUsuarios(): JSX.Element {
                   value={correoEditar || usuarioEditar?.email}
                   onChange={(e) => {
                     const value = e.target.value;
-                    setCorreoEditar(e.target.value);
+                    setCorreoEditar(value);
                   }}
                 />
               </Grid>
@@ -206,7 +189,7 @@ function ListaUsuarios(): JSX.Element {
                   value={telefonoEditar || usuarioEditar?.phone}
                   onChange={(e) => {
                     const value = e.target.value;
-                    setTelefonoEditar(e.target.value);
+                    setTelefonoEditar(value);
                   }}
                 />
               </Grid>

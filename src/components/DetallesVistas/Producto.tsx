@@ -39,6 +39,8 @@ interface Producto {
   puntos: number;
   factor: number;
   valor_factor: number;
+  tyc: string;
+  vigencia: string;
 }
 
 interface DetalleProductoProps {
@@ -124,6 +126,22 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
                   {verProducto.proveedor ?? "Sin proveedor"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="body2" color="text.secondary">
+                  Términos y condiciones
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {verProducto.tyc ?? "N/A"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="body2" color="text.secondary">
+                  Vigencia
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {verProducto.vigencia ?? "N/A"}
                 </Typography>
               </Grid>
               <Grid item xs={12} md={6}>

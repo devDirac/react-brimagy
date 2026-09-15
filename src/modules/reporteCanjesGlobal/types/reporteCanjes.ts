@@ -1,3 +1,14 @@
+export interface Periodos {
+  id: number;
+  id_plataforma: number;
+  id_usuario_creador: number;
+  fecha_inicio: Date;
+  fecha_fin: Date;
+  activo: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface CanjeReporteItem {
   id: number;
   api_id: string;
@@ -22,6 +33,8 @@ export interface CanjeReporteItem {
   puntos_premio: number;
   puntos_canjeados: number;
   fecha_canje: string;
+  mes_periodo: string;
+  semana_periodo: number;
   fecha_compra: string | null;
   folio_factura: string | null;
   marca: string | null;

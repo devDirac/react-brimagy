@@ -2,15 +2,6 @@ import { GeneralHttpResponse } from "../types/genericTypes";
 import axios from "axios";
 import env from "react-dotenv";
 
-/*export const getEstadisticasHomeHttp = async () => {
-  try {
-    const response = await axios.get(`${env.API_URL}${"/getEstadisticasHome"}`);
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
-};*/
 export const getEstadisticasHomeHttp = async (data?: any) => {
   try {
     const response: GeneralHttpResponse = await axios.get(
@@ -99,6 +90,23 @@ export const getReporteGeneralCanjesHttp = async (params?: {
       params,
     });
     return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const getReporteGlobalExcelHttp = async (params?: {
+  fecha_inicio?: string;
+  fecha_fin?: string;
+  plataforma?: string;
+}) => {
+  try {
+    const response = await axios.get(`${env.API_URL}${"/exportarExcel"}`, {
+      params,
+      responseType: "blob",
+    });
+    return response;
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));
     return promise;

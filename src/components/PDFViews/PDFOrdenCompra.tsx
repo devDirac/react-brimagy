@@ -16,7 +16,7 @@ interface Producto {
   email: string;
   phone: number;
   number_of_awards: number;
-  size: string;
+  talla: string;
   color: string;
   category: string;
   puntos_canjeados: number;
@@ -51,6 +51,7 @@ interface Producto {
   estatus_almacen: number;
   importe_total: number;
   subtotal: number;
+  categoria: string;
 }
 interface OrdenCompraResponse {
   orden_compra: {
@@ -265,23 +266,43 @@ const styles = StyleSheet.create({
   },
   // Anchos de columna
   colProducto: {
-    width: "40%",
+    width: "35%",
+    paddingRight: 4,
+  },
+  colCategoria: {
+    width: "10%",
+    paddingRight: 4,
+  },
+  colMarca: {
+    width: "10%",
+    paddingRight: 4,
+  },
+  colColor: {
+    width: "5%",
+    paddingRight: 4,
+  },
+  colTalla: {
+    width: "5%",
+    paddingRight: 4,
+  },
+  colSku: {
+    width: "5%",
     paddingRight: 4,
   },
   colCantidad: {
-    width: "8%",
+    width: "5%",
     paddingRight: 4,
   },
   colPrecio: {
-    width: "17%",
+    width: "10%",
     paddingRight: 4,
   },
   colIVA: {
-    width: "15%",
+    width: "10%",
     paddingRight: 4,
   },
   colTotal: {
-    width: "20%",
+    width: "15%",
     paddingRight: 4,
   },
   // Totales
@@ -361,7 +382,7 @@ const PDFOrdenCompra: React.FC<PDFOrdenCompraProps> = ({ ordenCompra }) => {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>ORDEN DE COMPRA</Text>
-          <Text style={styles.subtitle}>No. {ordenCompra?.orden_compra?.no_orden}</Text>
+          <Text style={styles.subtitle}>{ordenCompra?.orden_compra?.no_orden}</Text>
         </View>
 
         {/* Información Brimagy */}
@@ -402,6 +423,18 @@ const PDFOrdenCompra: React.FC<PDFOrdenCompraProps> = ({ ordenCompra }) => {
               <View style={styles.colProducto}>
                 <Text style={styles.tableHeaderTextLeft}>Producto</Text>
               </View>
+              <View style={styles.colMarca}>
+                <Text style={styles.tableHeaderTextLeft}>Marca</Text>
+              </View>
+              <View style={styles.colColor}>
+                <Text style={styles.tableHeaderText}>Color</Text>
+              </View>
+              <View style={styles.colTalla}>
+                <Text style={styles.tableHeaderText}>Talla</Text>
+              </View>
+              <View style={styles.colSku}>
+                <Text style={styles.tableHeaderText}>SKU</Text>
+              </View>
               <View style={styles.colCantidad}>
                 <Text style={styles.tableHeaderText}>Cant.</Text>
               </View>
@@ -433,6 +466,18 @@ const PDFOrdenCompra: React.FC<PDFOrdenCompraProps> = ({ ordenCompra }) => {
                   >
                     <View style={styles.colProducto}>
                       <Text style={styles.tableCellLeft}>{canje?.nombre_premio}</Text>
+                    </View>
+                    <View style={styles.colMarca}>
+                      <Text style={styles.tableCellLeft}>{canje?.marca}</Text>
+                    </View>
+                    <View style={styles.colColor}>
+                      <Text style={styles.tableCellLeft}>{canje?.color}</Text>
+                    </View>
+                    <View style={styles.colTalla}>
+                      <Text style={styles.tableCellLeft}>{canje?.talla}</Text>
+                    </View>
+                    <View style={styles.colSku}>
+                      <Text style={styles.tableCellLeft}>{canje?.sku}</Text>
                     </View>
                     <View style={styles.colCantidad}>
                       <Text style={styles.tableCell}>{canje?.cantidad_producto}</Text>

@@ -34,6 +34,7 @@ interface ProductoAlmacen {
   sku_nuevo: string;
   precio_compra: number;
   cantidad_almacen: number;
+  folio_factura: string | null;
   comentarios: string | null;
   imei: string;
   no_serie: string;
@@ -64,6 +65,7 @@ interface DetalleAlmacen {
   fecha_pago: string | null;
   cantidad_almacen: number;
   evidencias: any | null;
+  folio_factura: string | null;
   comentarios: string | null;
   guia: string | null;
   productos: ProductoAlmacen[];
@@ -87,6 +89,7 @@ interface DetalleCanjeProps {
   handleOpenVistaEvidencia: (evidencia: any) => void;
   setDatosEncuestaEnviar: React.Dispatch<React.SetStateAction<any>>;
   setProductoSeleccionado: React.Dispatch<React.SetStateAction<any>>;
+  handleisAlertOpenCostoEnvioReal: () => void;
 }
 
 const ProductoAlmacenModal = ({
@@ -107,6 +110,7 @@ const ProductoAlmacenModal = ({
   procesandoRecibirProducto,
   procesandoEnvioProducto,
   procesandoRecepcionProducto,
+  handleisAlertOpenCostoEnvioReal
 }: DetalleCanjeProps) => {
   if (!verProducto) return null;
   const intl = useIntl();
@@ -282,10 +286,7 @@ const ProductoAlmacenModal = ({
             endIcon={<AddIcon />}
             disabled={verProducto.estatus !== "enviado"}
             onClick={(e: any) => {
-              const datos = {
-                id_producto_almacen: verProducto?.id_producto_almacen,
-              };
-              confirmarRecepcionProductoAlmacen(datos);
+              handleisAlertOpenCostoEnvioReal();
             }}
           >
             {procesandoRecepcionProducto ? (
@@ -491,7 +492,7 @@ const ProductoAlmacenModal = ({
                   </Grid>
 
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={6}>
                       <Typography variant="body2" color="text.secondary">
                         Precio de compra
                       </Typography>
@@ -592,7 +593,7 @@ const ProductoAlmacenModal = ({
                         )}
                       </Typography>
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={6}>
                       <Typography variant="body2" color="text.secondary">
                         Cantidad
                       </Typography>
@@ -600,7 +601,15 @@ const ProductoAlmacenModal = ({
                         {p?.cantidad_almacen}
                       </Typography>
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Factura
+                      </Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        {p?.folio_factura}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
                       <Typography variant="body2" color="text.secondary">
                         Comentarios
                       </Typography>

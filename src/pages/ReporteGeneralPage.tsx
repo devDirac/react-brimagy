@@ -55,6 +55,21 @@ function ReporteGeneralPage(): JSX.Element {
     setFechaInicio,
     fechaFin,
     setFechaFin,
+    handleExportarExcel,
+    descargando,
+    plataforma,
+    //periodos
+    periodos,
+    formik,
+    getFieldColor,
+    createPeriodo,
+    procesandoPeriodo,
+    isAlertOpenPeriodo,
+    handleisAlertOpenPeriodo,
+    handleisAlertClosePeriodo,
+    setPeriodoEditar,
+    periodoEditar,
+    editarPeriodo,
   } = useReporteGeneralPage(tipoUsuario);
 
   return (
@@ -65,10 +80,24 @@ function ReporteGeneralPage(): JSX.Element {
         <ReporteCanjesGeneralModulo
           verEstadisticas={reporteGeneralDatos}
           procesando={procesando}
+          descargando={descargando}
           fechaInicio={fechaInicio}
           setFechaInicio={setFechaInicio}
           fechaFin={fechaFin}
           setFechaFin={setFechaFin}
+          handleExportarExcel={handleExportarExcel}
+          plataforma={plataforma}
+          periodos={periodos}
+          formik={formik}
+          getFieldColor={getFieldColor}
+          createPeriodo={createPeriodo}
+          procesandoPeriodo={procesandoPeriodo}
+          handleisAlertOpenPeriodo={handleisAlertOpenPeriodo}
+          isAlertOpenPeriodo={isAlertOpenPeriodo}
+          handleisAlertClosePeriodo={handleisAlertClosePeriodo}
+          setPeriodoEditar={setPeriodoEditar}
+          periodoEditar={periodoEditar}
+          editarPeriodo={editarPeriodo}
         />
       </Grid>
       <Footer />

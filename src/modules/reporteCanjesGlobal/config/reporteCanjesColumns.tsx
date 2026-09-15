@@ -5,7 +5,13 @@ import { formatNumber, formatCurrency } from "../utils/formatters";
 
 const columnHelper = createColumnHelper<CanjeReporteItem>();
 
-const leaf = (accessor: keyof CanjeReporteItem, header: string, cellBgColor?: string, size = 130, formatter?: (value: any) => string) =>
+const leaf = (
+  accessor: keyof CanjeReporteItem,
+  header: string,
+  cellBgColor?: string,
+  size = 130,
+  formatter?: (value: any) => string
+) =>
   columnHelper.accessor(accessor, {
     header,
     cell: (info) => {
@@ -51,11 +57,15 @@ export const reporteCanjesColumns: ColumnDef<CanjeReporteItem, any>[] = [
       leaf("talla", "Talla", reporteColors.canje.cell, 80),
       leaf("color", "Color", reporteColors.canje.cell, 90),
       leaf("puntos_premio", "Puntos premio", reporteColors.canje.cell, 110, (v) =>
-        formatCurrency(v)),
+        formatCurrency(v)
+      ),
       leaf("premios_canjeados", "Premios canjeados", reporteColors.canje.cell, 130),
       leaf("puntos_canjeados", "Puntos canjeados", reporteColors.canje.cell, 130, (v) =>
-        formatCurrency(v)),
+        formatCurrency(v)
+      ),
       leaf("fecha_canje", "Fecha canje", reporteColors.canje.cell, 150),
+      leaf("mes_periodo", "Mes", reporteColors.canje.cell, 100),
+      leaf("semana_periodo", "Semana", reporteColors.canje.cell, 110),
     ],
   }),
 
@@ -90,21 +100,42 @@ export const reporteCanjesColumns: ColumnDef<CanjeReporteItem, any>[] = [
         170,
         (v) => formatCurrency(v)
       ),
-      leaf("precio_compra_sin_iva", "Precio compra s/IVA", reporteColors.verde, 150,
-        (v) => formatCurrency(v)),
-      leaf("diferencia_precio_usuario", "Diferencia precio usuario", reporteColors.verde, 160,
-        (v) => formatCurrency(v)),
-      leaf("diferencia_precio_proveedor", "Diferencia precio proveedor", reporteColors.verde, 170,
-        (v) => formatCurrency(v)),
+      leaf("precio_compra_sin_iva", "Precio compra s/IVA", reporteColors.verde, 150, (v) =>
+        formatCurrency(v)
+      ),
+      leaf(
+        "diferencia_precio_usuario",
+        "Diferencia precio usuario",
+        reporteColors.verde,
+        160,
+        (v) => formatCurrency(v)
+      ),
+      leaf(
+        "diferencia_precio_proveedor",
+        "Diferencia precio proveedor",
+        reporteColors.verde,
+        170,
+        (v) => formatCurrency(v)
+      ),
 
-      leaf("fee_presupuestado_puntos", "Fee presup. puntos", reporteColors.gris, 140,
-        (v) => formatCurrency(v)),
-      leaf("fee_presupuestado_proveedor_puntos", "Fee presup. proveedor", reporteColors.gris, 150,
-        (v) => formatCurrency(v)),
-      leaf("fee_real", "Fee real", reporteColors.gris, 110,
-        (v) => formatCurrency(v)),
-      leaf("diferencia_precio_usuario_2", "Diferencia precio usuario 2", reporteColors.gris, 170,
-        (v) => formatCurrency(v)),
+      leaf("fee_presupuestado_puntos", "Fee presup. puntos", reporteColors.gris, 140, (v) =>
+        formatCurrency(v)
+      ),
+      leaf(
+        "fee_presupuestado_proveedor_puntos",
+        "Fee presup. proveedor",
+        reporteColors.gris,
+        150,
+        (v) => formatCurrency(v)
+      ),
+      leaf("fee_real", "Fee real", reporteColors.gris, 110, (v) => formatCurrency(v)),
+      leaf(
+        "diferencia_precio_usuario_2",
+        "Diferencia precio usuario 2",
+        reporteColors.gris,
+        170,
+        (v) => formatCurrency(v)
+      ),
       leaf(
         "diferencia_precio_proveedor_2",
         "Diferencia precio proveedor 2",
@@ -113,15 +144,19 @@ export const reporteCanjesColumns: ColumnDef<CanjeReporteItem, any>[] = [
         (v) => formatCurrency(v)
       ),
 
-      leaf("envio_presupuestado", "Envío presupuestado", reporteColors.naranjaAmarillo, 150,
-        (v) => formatCurrency(v)),
-      leaf("costo_envio_real", "Costo envío real", reporteColors.naranjaAmarillo, 140,
-        (v) => formatCurrency(v)),
-      leaf("diferencia_envio", "Diferencia envío", reporteColors.naranjaAmarillo, 140,
-        (v) => formatCurrency(v)),
+      leaf("envio_presupuestado", "Envío presupuestado", reporteColors.naranjaAmarillo, 150, (v) =>
+        formatCurrency(v)
+      ),
+      leaf("costo_envio_real", "Costo envío real", reporteColors.naranjaAmarillo, 140, (v) =>
+        formatCurrency(v)
+      ),
+      leaf("diferencia_envio", "Diferencia envío", reporteColors.naranjaAmarillo, 140, (v) =>
+        formatCurrency(v)
+      ),
 
-      leaf("total_presupuestado_puntos", "Total presup. puntos", reporteColors.naranja, 150,
-        (v) => formatCurrency(v)),
+      leaf("total_presupuestado_puntos", "Total presup. puntos", reporteColors.naranja, 150, (v) =>
+        formatCurrency(v)
+      ),
       leaf(
         "total_presupuestado_proveedor_puntos",
         "Total presup. proveedor",
@@ -129,12 +164,21 @@ export const reporteCanjesColumns: ColumnDef<CanjeReporteItem, any>[] = [
         160,
         (v) => formatCurrency(v)
       ),
-      leaf("total_real", "Total real", reporteColors.naranja, 110,
-        (v) => formatCurrency(v)),
-      leaf("total_diferencia_puntos_usuario", "Total dif. usuario", reporteColors.naranja, 150,
-        (v) => formatCurrency(v)),
-      leaf("total_diferencia_puntos_proveedor", "Total dif. proveedor", reporteColors.naranja, 160,
-        (v) => formatCurrency(v)),
+      leaf("total_real", "Total real", reporteColors.naranja, 110, (v) => formatCurrency(v)),
+      leaf(
+        "total_diferencia_puntos_usuario",
+        "Total dif. usuario",
+        reporteColors.naranja,
+        150,
+        (v) => formatCurrency(v)
+      ),
+      leaf(
+        "total_diferencia_puntos_proveedor",
+        "Total dif. proveedor",
+        reporteColors.naranja,
+        160,
+        (v) => formatCurrency(v)
+      ),
     ],
   }),
 ];

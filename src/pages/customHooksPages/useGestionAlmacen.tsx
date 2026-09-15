@@ -136,6 +136,11 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
   const [fechaCompra, setFechaCompra] = useState("");
   const [costoEnvioReal, setCostoEnvioReal] = useState("");
 
+  const [procesandoCostoEnvioReal, setProcesandoCostoEnvioReal] = useState<boolean>(false);
+  const [isAlertOpenCostoEnvioReal, setIsAlertOpenCostoEnvioReal] = useState(false);
+  const handleisAlertOpenCostoEnvioReal = () => setIsAlertOpenCostoEnvioReal(true);
+  const handleisAlertCloseCostoEnvioReal = () => setIsAlertOpenCostoEnvioReal(false);
+
   useEffect(() => {
     setAuth(token);
   }, [token]);
@@ -291,10 +296,9 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       await getProductoAlmacenPorId(datosRefresh);
 
       setMensajeAlert(
-        `${intl.formatMessage({ id: "exito_recibir_producto" })}. ${
-          recibirProducto.estatus === "en_almacen"
-            ? "Producto completamente recibido."
-            : `Pendiente: ${recibirProducto.cantidad_pendiente} unidades.`
+        `${intl.formatMessage({ id: "exito_recibir_producto" })}. ${recibirProducto.estatus === "en_almacen"
+          ? "Producto completamente recibido."
+          : `Pendiente: ${recibirProducto.cantidad_pendiente} unidades.`
         }`
       );
       formikCantidad.resetForm();
@@ -361,10 +365,12 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       setVerProducto((prevProducto: any) => ({
         ...prevProducto,
         estatus: "entregado",
+        costo_envio_real: costoEnvioReal,
       }));
 
       setMensajeAlert(intl.formatMessage({ id: "producto_entregado_correctamente" }));
-      setCantidadProducto("");
+      setCostoEnvioReal("");
+      handleisAlertCloseCostoEnvioReal();
       handleisAlertOpen();
       setProcesandoRecepcionProducto(false);
     } catch (error) {
@@ -538,21 +544,22 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       Yup.object({
         cantidadProducto: accionProducto
           ? Yup.number()
-              .required(intl.formatMessage({ id: "input_validation_requerido" }))
-              .min(1, intl.formatMessage({ id: "input_validation_minimo" }, { min: 1 }))
-              .max(cantidadMaximaPermitida, `Máximo: ${cantidadMaximaPermitida} unidades`)
+            .required(intl.formatMessage({ id: "input_validation_requerido" }))
+            .min(1, intl.formatMessage({ id: "input_validation_minimo" }, { min: 1 }))
+            .max(cantidadMaximaPermitida, `Máximo: ${cantidadMaximaPermitida} unidades`)
           : Yup.number().notRequired(),
         id_proveedor:
           accionProducto && !verProducto?.nombre_proveedor
             ? Yup.number().required(intl.formatMessage({ id: "input_validation_requerido" }))
             : !accionProducto
-            ? Yup.number().required(intl.formatMessage({ id: "input_validation_requerido" }))
-            : Yup.number().notRequired(),
+              ? Yup.number().required(intl.formatMessage({ id: "input_validation_requerido" }))
+              : Yup.number().notRequired(),
         precio_compra: !accionProducto
           ? Yup.number().required(intl.formatMessage({ id: "input_validation_requerido" }))
           : Yup.number().notRequired(),
         imei: Yup.string().notRequired(),
         no_serie: Yup.string().notRequired(),
+        folio_factura: Yup.string().notRequired(),
         comentarios: Yup.string().notRequired(),
         fecha_compra: Yup.string().required(),
       }),
@@ -566,6 +573,7 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       precio_compra: "",
       imei: "",
       no_serie: "",
+      folio_factura: "",
       comentarios: "",
       fecha_compra: "",
     },
@@ -584,6 +592,7 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
         precio_compra: "",
         imei: "",
         no_serie: "",
+        folio_factura: "",
         comentarios: "",
         fecha_compra: "",
       },
@@ -712,5 +721,9 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     fechaCompra,
     costoEnvioReal,
     setCostoEnvioReal,
+    isAlertOpenCostoEnvioReal,
+    handleisAlertOpenCostoEnvioReal,
+    handleisAlertCloseCostoEnvioReal,
+    procesandoCostoEnvioReal
   };
 };

@@ -46,7 +46,7 @@ interface Producto {
   email: string;
   phone: number;
   number_of_awards: number;
-  size: string;
+  talla: string;
   color: string;
   category: string;
   puntos_canjeados: number;
@@ -82,6 +82,7 @@ interface Producto {
   importe_total: number;
   subtotal: number;
   tipo_producto: string;
+  categoria: string;
 }
 interface Proveedor {
   id: number;
@@ -334,7 +335,7 @@ const CanjeValidadoProveedorModal = ({
     if (!verCanje?.productos || verCanje.productos.length === 0) {
       return false;
     }
-    return verCanje.productos.some((p) => Number(p.costo_sin_iva || 0) === 0);
+    return verCanje.productos.some((p) => Number(p.costo_sin_iva || 0) === 0 && p.tipo_producto === "fisico");
   }, [verCanje]);
 
   return (
@@ -444,12 +445,12 @@ const CanjeValidadoProveedorModal = ({
                           sx={
                             canje.estatus_proveedor === 2
                               ? {
-                                  textDecoration: "line-through",
-                                  textDecorationColor: "red",
-                                }
+                                textDecoration: "line-through",
+                                textDecorationColor: "red",
+                              }
                               : canje.tipo_producto === "digital"
-                              ? { color: "#ff9809" }
-                              : {}
+                                ? { color: "#ff9809" }
+                                : {}
                           }
                         >
                           {canje.nombre_premio}
@@ -466,12 +467,12 @@ const CanjeValidadoProveedorModal = ({
                           sx={
                             canje.estatus_proveedor === 2
                               ? {
-                                  textDecoration: "line-through",
-                                  textDecorationColor: "red",
-                                }
+                                textDecoration: "line-through",
+                                textDecorationColor: "red",
+                              }
                               : canje.tipo_producto === "digital"
-                              ? { color: "#ff9809" }
-                              : {}
+                                ? { color: "#ff9809" }
+                                : {}
                           }
                         >
                           {cantidad}
@@ -488,12 +489,12 @@ const CanjeValidadoProveedorModal = ({
                           sx={
                             canje.estatus_proveedor === 2
                               ? {
-                                  textDecoration: "line-through",
-                                  textDecorationColor: "red",
-                                }
+                                textDecoration: "line-through",
+                                textDecorationColor: "red",
+                              }
                               : canje.tipo_producto === "digital"
-                              ? { color: "#ff9809" }
-                              : {}
+                                ? { color: "#ff9809" }
+                                : {}
                           }
                         >
                           {numericFormatter(precioUnitario.toString(), {
@@ -515,12 +516,12 @@ const CanjeValidadoProveedorModal = ({
                           sx={
                             canje.estatus_proveedor === 2
                               ? {
-                                  textDecoration: "line-through",
-                                  textDecorationColor: "red",
-                                }
+                                textDecoration: "line-through",
+                                textDecorationColor: "red",
+                              }
                               : canje.tipo_producto === "digital"
-                              ? { color: "#ff9809" }
-                              : {}
+                                ? { color: "#ff9809" }
+                                : {}
                           }
                         >
                           IVA (16%)
@@ -537,12 +538,12 @@ const CanjeValidadoProveedorModal = ({
                           sx={
                             canje.estatus_proveedor === 2
                               ? {
-                                  textDecoration: "line-through",
-                                  textDecorationColor: "red",
-                                }
+                                textDecoration: "line-through",
+                                textDecorationColor: "red",
+                              }
                               : canje.tipo_producto === "digital"
-                              ? { color: "#ff9809" }
-                              : {}
+                                ? { color: "#ff9809" }
+                                : {}
                           }
                         >
                           {numericFormatter(importeTotal.toString(), {
@@ -667,7 +668,7 @@ const CanjeValidadoProveedorModal = ({
             )}
 
             {verCanje?.orden_compra?.estatus === "orden_compra_enviada_a_proveedor" ||
-            verCanje?.orden_compra?.estatus === "xml_validado_correctamente_proveedor" ? (
+              verCanje?.orden_compra?.estatus === "xml_validado_correctamente_proveedor" ? (
               <>
                 <Divider sx={{ mb: 2 }} />
                 <Grid item xs={12}>
@@ -973,7 +974,8 @@ const CanjeValidadoProveedorModal = ({
                   disabled={
                     hayProductoSinPrecioUnitario ||
                     procesandoValidacionFinal ||
-                    verCanje?.orden_compra?.estatus === "cotizacion_validada_por_proveedor"
+                    verCanje?.orden_compra?.estatus === "cotizacion_validada_por_proveedor" ||
+                    !verCanje.productos.some((p) => p.tipo_producto === "fisico")
                   }
                   onClick={(e: any) => {
                     const datos = {

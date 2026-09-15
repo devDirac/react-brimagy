@@ -333,6 +333,21 @@ const textosMx = {
   input_costo_envio_real: "Costo de envío real",
   input_validation_numero_decimal: "Máximo 4 dígitos enteros y 4 decimales",
   input_validation_numero_decimal: "Máximo 8 dígitos enteros y 4 decimales",
+  get_excel_error: "Error al obtener el excel",
+  general_descargar_excel: "Descargar excel",
+  input_folio_factura: "Factura",
+  input_vigencia: "Vigencia",
+  general_recibiendo: "Recibiendo",
+  recepcion_producto_almacen: "Confirmar recepción",
+  general_sin_registros: "Sin registros",
+  select_periodo: "Periodo",
+  registrar_periodo: "Registrar periodo",
+  periodo_agregado_correctamente: "Periodo agregado correctamente",
+  periodo_agregado_error: "Error al agregar el periodo",
+  general_añadir_periodo: "Añadir periodo",
+  editar_periodo: "Editar periodo",
+  periodo_editado_correctamente: "Periodo editado correctamente",
+  periodo_editado_error: "Error al editar el periodo",
 };
 
 export default textosMx;

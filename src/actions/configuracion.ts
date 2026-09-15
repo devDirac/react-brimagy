@@ -97,3 +97,44 @@ export const getVariablesGlobalesPorPlataformaHttp = async (data?: any) => {
     return promise;
   }
 };
+
+export const crearPeriodoHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.post(
+      `${env.API_URL}${"/crearPeriodo"}`,
+      data
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const editarPeriodoHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.put(
+      `${env.API_URL}${"/editarPeriodo"}`,
+      data
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const getPeriodosHttp = async (plataforma: string) => {
+  try {
+    const response: GeneralHttpResponse = await axios.get(
+      `${env.API_URL}${"/getPeriodos"}`,
+      {
+        params: { plataforma },
+      }
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
