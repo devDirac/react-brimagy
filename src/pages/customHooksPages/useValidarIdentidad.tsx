@@ -11,7 +11,12 @@ import {
 import { getErrorHttpMessage } from "utils";
 
 export const useValidarIdentidad = () => {
-  const { codigo, plataforma } = useParams<{ codigo: string; plataforma: string }>();
+  //const { codigo, plataforma } = useParams<{ codigo: string; plataforma: number }>();
+  const { codigo, plataforma: plataformaParam } = useParams<{
+    codigo: string;
+    plataforma: string;
+  }>();
+  const plataforma = Number(plataformaParam);
   const navigate = useNavigate();
   const intl = useIntl();
 
@@ -30,7 +35,7 @@ export const useValidarIdentidad = () => {
 
   const [showInput, setShowInput] = useState(false);
 
-  const cargarCanjePorId = useCallback(async (id_canje: string, plataforma: string) => {
+  const cargarCanjePorId = useCallback(async (id_canje: string, plataforma: number) => {
     try {
       setProcesando(true);
       const response = await getCanjeByIdHttp(id_canje, plataforma);
@@ -45,7 +50,7 @@ export const useValidarIdentidad = () => {
   }, []);
 
   const cargarCodigoVerificacionPorId = useCallback(
-    async (id_canje: string, plataforma: string) => {
+    async (id_canje: string, plataforma: number) => {
       try {
         setProcesando(true);
         const response = await getCodigoVerificacionByIdHttp(id_canje, plataforma);
@@ -88,7 +93,7 @@ export const useValidarIdentidad = () => {
   const validarIdentidadPorCodigo = async (codigo: number, id_canje: number) => {
     try {
       setProcesando(true);
-      const response = await validarIdentidadPorCodigoHttp(codigo, id_canje, plataforma);
+      const response = await validarIdentidadPorCodigoHttp(codigo, id_canje);
       setCanje((prevCanje: any) => ({
         ...prevCanje,
         estado_validacion: "identidad_validada",
@@ -106,7 +111,7 @@ export const useValidarIdentidad = () => {
   };
 
   useEffect(() => {
-    if (codigo && plataforma) {
+    if (codigo && !Number.isNaN(plataforma)) {
       cargarCanjePorId(codigo, plataforma);
       cargarCodigoVerificacionPorId(codigo, plataforma);
     }

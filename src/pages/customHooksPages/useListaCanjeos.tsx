@@ -50,6 +50,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
   const handleisAlertCloseFechas = () => setIsAlertOpenFechas(false);
 
   const [procesandoIdentidad, setProcesandoIdentidad] = useState<boolean>(false);
+  const [procesandoIdentidadDirecto, setProcesandoIdentidadDirecto] = useState<boolean>(false);
   //Generación PDF
   const [isPDFViewerOpen, setIsPDFViewerOpen] = useState(false);
   const handleOpenPDFViewer = () => setIsPDFViewerOpen(true);
@@ -175,7 +176,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
 
   const validarIdentidadSinProveedor = async (data: any) => {
     try {
-      setProcesandoIdentidad(true);
+      setProcesandoIdentidadDirecto(true);
       await enviarValidacionSinProveedorHttp(data);
       setVerCanje((prevCanje: any) => ({
         ...prevCanje,
@@ -188,9 +189,9 @@ export const useListaCanjeos = (tipoUsuario: number) => {
       );
       setMensajeAlert(intl.formatMessage({ id: "canje_validado_correctamente" }));
       handleisAlertOpen();
-      setProcesandoIdentidad(false);
+      setProcesandoIdentidadDirecto(false);
     } catch (error) {
-      setProcesandoIdentidad(false);
+      setProcesandoIdentidadDirecto(false);
       const message = getErrorHttpMessage(error);
       setMensajeAlert(message || intl.formatMessage({ id: "canje_validado_error" }));
       handleisAlertOpen();
@@ -243,5 +244,6 @@ export const useListaCanjeos = (tipoUsuario: number) => {
     setFecha2,
     getCanjes,
     plataforma,
+    procesandoIdentidadDirecto
   };
 };

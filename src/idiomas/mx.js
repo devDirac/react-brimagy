@@ -109,7 +109,7 @@ const textosMx = {
   realizar_busqueda_magica: "Realizar búsqueda",
   sin_canjes_registrados: "Sin canjes registrados",
   generar_pdf_input: "Generar PDF",
-  validar_identidad_input: "Validar identidad del cliente",
+  validar_identidad_input: "Validar identidad con el cliente",
   validacion_enviada_correctamente: "Validación enviada correctamente al cliente",
   validacion_enviada_error: "Error al enviar la validación al cliente",
   codigo_enviado_whatsapp_correctamente: "Código enviado correctamente por WhatsApp",

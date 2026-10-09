@@ -131,6 +131,7 @@ function ListaCanjeos(): JSX.Element {
     setFecha2,
     getCanjes,
     plataforma,
+    procesandoIdentidadDirecto
   } = useListaCanjeos(tipoUsuario);
 
   const independiente = () => {
@@ -513,6 +514,7 @@ function ListaCanjeos(): JSX.Element {
                 validarIdentidad={validarIdentidad}
                 validarIdentidadSinProveedor={validarIdentidadSinProveedor}
                 procesandoIdentidad={procesandoIdentidad}
+                procesandoIdentidadDirecto={procesandoIdentidadDirecto}
               />
             </>
           ) : null}

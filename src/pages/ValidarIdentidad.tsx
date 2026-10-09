@@ -1,8 +1,4 @@
 import { useRef, useState } from "react";
-import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
-import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import Footer from "examples/Footer";
-import Header from "components/Header";
 import MDBox from "components/MDBox";
 import {
   Grid,
@@ -11,29 +7,18 @@ import {
   TextField,
   Button,
   Typography,
-  Alert,
   Box,
   Divider,
   Paper,
   Backdrop,
   CircularProgress,
-  Chip,
   Stack,
-  Tooltip,
 } from "@mui/material";
 import { useSelector } from "react-redux";
 import { StoreType } from "../types/genericTypes";
 import logo from "assets/images/logo_puntotes_2026.png";
 import { useValidarIdentidad } from "./customHooksPages/useValidarIdentidad";
-import VerifiedIcon from "@mui/icons-material/Verified";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ErrorIcon from "@mui/icons-material/Error";
-import { green, red } from "@mui/material/colors";
 import ModalComponent from "components/Modal";
-import GppBadIcon from "@mui/icons-material/GppBad";
-import { numericFormatter } from "react-number-format";
-import AddIcon from "@mui/icons-material/Add";
-import HttpsIcon from "@mui/icons-material/Https";
 import { Spinner } from "react-bootstrap";
 import Forward10Icon from "@mui/icons-material/Forward10";
 

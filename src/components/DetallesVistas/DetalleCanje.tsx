@@ -11,6 +11,7 @@ import { numericFormatter } from "react-number-format";
 import { useSelector } from "react-redux";
 import { StoreType } from "../../types/genericTypes";
 import PDFViewerCanje from "components/PDFViews/PDFViewerCanje";
+import { IconBrandAuth0, IconIdBadge2 } from "@tabler/icons-react";
 
 interface Canje {
   id: number;
@@ -50,6 +51,7 @@ interface DetalleCanjeProps {
   validarIdentidadSinProveedor: (data: any) => Promise<void>;
   validarIdentidad: (data: any) => Promise<void>;
   procesandoIdentidad: boolean;
+  procesandoIdentidadDirecto: boolean;
 }
 
 const DetallesCanjeModal = ({
@@ -60,6 +62,7 @@ const DetallesCanjeModal = ({
   validarIdentidad,
   verCanje,
   procesandoIdentidad,
+  procesandoIdentidadDirecto
 }: DetalleCanjeProps) => {
   if (!verCanje) return null;
   const intl = useIntl();
@@ -139,17 +142,56 @@ const DetallesCanjeModal = ({
             {intl.formatMessage({ id: "generar_pdf_input" })}
           </Button>
           <Button
-            sx={{ color: "#fff", background: "#3ec972", fontSize: "0.75rem", padding: "6px 8px" }}
+            sx={{
+              color: "#fff",
+              background: "#2a9954",
+              fontSize: "0.75rem",
+              padding: "6px 8px",
+              "&:hover": {
+                background: "#19753b"
+              },
+              "&:focus": {
+                background: "#19753b"
+              }
+            }}
             variant="contained"
-            endIcon={<AddIcon />}
+            startIcon={<IconBrandAuth0 stroke={2} />}
             disabled={
               verCanje.estado_canje === "INACTIVE" ||
               verCanje.estado_validacion === "identidad_validada"
             }
             onClick={(e: any) => {
-              verCanje?.id_proveedor == null
-                ? validarIdentidadSinProveedor({ plataforma: plataforma, ...verCanje })
-                : validarIdentidad({ plataforma: plataforma, ...verCanje });
+              validarIdentidadSinProveedor({ plataforma: plataforma, ...verCanje })
+            }}
+          >
+            {procesandoIdentidadDirecto ? (
+              <>
+                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                Validando...{" "}
+              </>
+            ) : intl.formatMessage({ id: "validar_identidad_directa" })}
+          </Button>
+          <Button
+            sx={{
+              color: "#000",
+              background: "#ffc800",
+              fontSize: "0.75rem",
+              padding: "6px 8px",
+              "&:hover": {
+                background: "#cfa300"
+              },
+              "&:focus": {
+                background: "#cfa300"
+              }
+            }}
+            variant="contained"
+            startIcon={<IconIdBadge2 stroke={2} />}
+            disabled={
+              verCanje.estado_canje === "INACTIVE" ||
+              verCanje.estado_validacion === "identidad_validada"
+            }
+            onClick={(e: any) => {
+              validarIdentidad({ plataforma: plataforma, ...verCanje });
             }}
           >
             {procesandoIdentidad ? (
@@ -157,11 +199,7 @@ const DetallesCanjeModal = ({
                 <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
                 Enviando validación...{" "}
               </>
-            ) : verCanje?.id_proveedor == null ? (
-              intl.formatMessage({ id: "validar_identidad_directa" })
-            ) : (
-              intl.formatMessage({ id: "validar_identidad_input" })
-            )}
+            ) : intl.formatMessage({ id: "validar_identidad_input" })}
           </Button>
         </Grid>
 
