@@ -122,7 +122,7 @@ function ListaUsuarios(): JSX.Element {
                   enAccion={(accion, row) => {
                     handleAccion(accion, row);
                   }}
-                  columnsToShow={["name", "email", "tipo_usuario", "status"]}
+                  columnsToShow={["name", "email", "phone", "tipo_usuario", "status"]}
                 />
               ) : (
                 independiente()
