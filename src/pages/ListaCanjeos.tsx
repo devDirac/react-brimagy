@@ -79,6 +79,7 @@ import "dayjs/locale/es";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { ProductosCanje } from "components/DetallesVistas/ProductosCanje";
 
 function ListaCanjeos(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -131,7 +132,8 @@ function ListaCanjeos(): JSX.Element {
     setFecha2,
     getCanjes,
     plataforma,
-    procesandoIdentidadDirecto
+    procesandoIdentidadDirecto,
+    canjesAgrupados,
   } = useListaCanjeos(tipoUsuario);
 
   const independiente = () => {
@@ -167,6 +169,7 @@ function ListaCanjeos(): JSX.Element {
     NOTIFICACION_ENVIADA: "EN ESPERA DE VALIDACIÓN DE IDENTIDAD",
     SOLICITUD_ENVIADA: "SOLICITUD DE CÓDIGO ENVIADA",
     IDENTIDAD_VALIDADA: "IDENTIDAD VALIDADA",
+    VALIDACION_PARCIAL: "VALIDACIÓN PARCIAL"
   };
 
   const traducirEstadoValidacion = (estado: string | null): string => {
@@ -174,16 +177,10 @@ function ListaCanjeos(): JSX.Element {
     const estadoUpper = estado.toUpperCase();
     return estadosValidacionMap[estadoUpper] || estadoUpper;
   };
-
-  const canjesFiltrados = useMemo(() => {
-    return canjes?.filter((p: any) => p.id_producto != null) || [];
-  }, [canjes]);
-
   const canjesPaginados = useMemo(() => {
-    const startIndex = page * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    return canjes?.slice(startIndex, endIndex) || [];
-  }, [canjesFiltrados, page, rowsPerPage]);
+    const inicio = page * rowsPerPage;
+    return canjesAgrupados.slice(inicio, inicio + rowsPerPage);
+  }, [canjesAgrupados, page, rowsPerPage]);
 
   return (
     <DashboardLayout>
@@ -257,11 +254,10 @@ function ListaCanjeos(): JSX.Element {
             )}
           </Grid>
         </Grid>
-        {canjesFiltrados?.length > 0 && visualizacion === "cuadricula" ? (
+        {canjesPaginados?.length > 0 && visualizacion === "cuadricula" ? (
           <>
             <Grid container spacing={2}>
               {canjesPaginados
-                .filter((p: any) => p.id_producto != null)
                 .map((p: any, key: number) => {
                   return (
                     <Grid item xs={12} sm={6} md={4} lg={4} key={key}>
@@ -410,16 +406,10 @@ function ListaCanjeos(): JSX.Element {
                               overflow: "hidden",
                             }}
                           >
-                            <Tooltip title={p.nombre_premio}>
-                              <Typography
-                                variant="button"
-                                gutterBottom
-                                noWrap
-                                sx={{ fontWeight: 600 }}
-                              >
-                                {p.nombre_premio}
-                              </Typography>
-                            </Tooltip>
+                            <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+                              {p.productos.length} producto(s) · {numericFormatter(String(p.total_puntos), { thousandSeparator: "," })} pts
+                            </Typography>
+                            <ProductosCanje productos={p.productos} porPagina={3} />
                           </CardContent>
                         </Box>
                       </Card>
@@ -432,7 +422,7 @@ function ListaCanjeos(): JSX.Element {
             <MDBox mt={3} sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
               <TablePagination
                 component="div"
-                count={canjesFiltrados?.length}
+                count={canjesPaginados?.length}
                 page={page}
                 onPageChange={handleChangePage}
                 rowsPerPage={rowsPerPage}
@@ -465,7 +455,7 @@ function ListaCanjeos(): JSX.Element {
               //sinExport
               esListaCanjes
               //showCheckBox
-              data={canjes}
+              data={canjesAgrupados}
               enAccion={(accion, row) => {
                 handleAccion(accion, row);
               }}

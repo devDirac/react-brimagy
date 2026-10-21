@@ -109,6 +109,8 @@ export default function App() {
   } = controller;
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const { pathname } = useLocation();
+  const rutasSinMenu = ["/validar-ordencompra", "/encuesta/satisfaccion_compra"];
+  const ocultarMenu = rutasSinMenu.some((r) => pathname.startsWith(r));
   const inSession = useSelector((state: StoreType) => state?.app?.user?.token || false);
   const userName = useSelector((state: StoreType) => state?.app?.user?.data?.name || false);
   const fotoUser = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
@@ -190,7 +192,7 @@ export default function App() {
     <ThemeProvider theme={darkMode ? themeDarkRTL : themeRTL}>
       <CssBaseline />
       <IntlProvider onError={onError} locale={local} messages={loadLocaleData(local)}>
-        {inSession && (
+        {inSession && !ocultarMenu && (
           <>
             <Sidenav
               key={""}
@@ -203,9 +205,9 @@ export default function App() {
                 .map((a: any, key: any) => {
                   return key === 0
                     ? {
-                        ...a,
-                        ...routes_,
-                      }
+                      ...a,
+                      ...routes_,
+                    }
                     : a;
                 })}
               onMouseEnter={handleOnMouseEnter}

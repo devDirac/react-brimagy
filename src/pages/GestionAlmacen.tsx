@@ -520,6 +520,9 @@ function GestionAlmacen(): JSX.Element {
                           </Tooltip>
                           <Box sx={{ mt: "auto" }}>
                             <MDTypography variant="caption" display="block" color="text" noWrap>
+                              <strong>Canje:</strong> #{p.id_canje ?? "N/A"}
+                            </MDTypography>
+                            <MDTypography variant="caption" display="block" color="text" noWrap>
                               <strong>Proveedor:</strong> {p.nombre_proveedor ?? "N/A"}
                             </MDTypography>
                             <MDTypography variant="caption" display="block" color="text" noWrap>

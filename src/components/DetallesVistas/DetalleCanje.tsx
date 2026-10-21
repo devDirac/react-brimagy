@@ -12,36 +12,8 @@ import { useSelector } from "react-redux";
 import { StoreType } from "../../types/genericTypes";
 import PDFViewerCanje from "components/PDFViews/PDFViewerCanje";
 import { IconBrandAuth0, IconIdBadge2 } from "@tabler/icons-react";
-
-interface Canje {
-  id: number;
-  folio: string;
-  nombre_usuario: string;
-  email: string;
-  phone: number;
-  number_of_awards: string;
-  size: string;
-  color: string;
-  category: string;
-  puntos_canjeados: string;
-  nombre_premio: string;
-  costo_premio: string;
-  sku: string;
-  calle: string;
-  numero_calle: string;
-  colonia: string;
-  codigo_postal: number;
-  municipio: string;
-  numero_interior: string;
-  between_1: string;
-  between_2: string;
-  referencia_adicional: string;
-  creacion_canje: string;
-  estado_canje: string;
-  estado_validacion: string;
-  id_producto: number;
-  id_proveedor: number;
-}
+import { ProductosCanje } from "./ProductosCanje";
+import { Canje } from "../../types/canjeTypes";
 
 interface DetalleCanjeProps {
   verCanje?: Canje | null;
@@ -81,7 +53,7 @@ const DetallesCanjeModal = ({
         return "default";
     }
   };
-  const getEstadoColorValidacion = (estado_validacion: string) => {
+  const getEstadoColorValidacion = (estado_validacion?: string | null) => {
     if (!estado_validacion) return "default";
     switch (estado_validacion.toLowerCase()) {
       case "notificacion_enviada":
@@ -90,6 +62,8 @@ const DetallesCanjeModal = ({
         return "error";
       case "identidad_validada":
         return "success";
+      case "validacion_parcial":
+        return "warning"
       default:
         return "default";
     }
@@ -104,6 +78,7 @@ const DetallesCanjeModal = ({
     NOTIFICACION_ENVIADA: "NOTIFICACIÓN ENVIADA",
     SOLICITUD_ENVIADA: "SOLICITUD ENVIADA",
     IDENTIDAD_VALIDADA: "IDENTIDAD VALIDADA",
+    VALIDACION_PARCIAL: "VALIDACIÓN PARCIAL"
   };
 
   // Función helper para traducir estados
@@ -113,7 +88,7 @@ const DetallesCanjeModal = ({
     return estadosCanjeMap[estadoUpper] || estadoUpper;
   };
 
-  const traducirEstadoValidacion = (estado: string | null): string => {
+  const traducirEstadoValidacion = (estado?: string | null): string => {
     if (!estado) return "SIN VALIDAR";
     const estadoUpper = estado.toUpperCase();
     return estadosValidacionMap[estadoUpper] || estadoUpper;
@@ -264,83 +239,14 @@ const DetallesCanjeModal = ({
         <Grid item xs={12}>
           <Paper elevation={2} sx={{ p: 2 }}>
             <Typography variant="h6" color="primary" gutterBottom>
-              Información del Premio
+              Productos del canje ({verCanje.productos.length})
             </Typography>
             <Divider sx={{ mb: 2 }} />
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={12}>
-                <Typography variant="body2" color="text.secondary">
-                  Nombre del premio
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {verCanje.nombre_premio}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Tamaño
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {verCanje.size}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Color
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {verCanje.color}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Categoría
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {verCanje.category}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={12}>
-                <Typography variant="body2" color="text.secondary">
-                  SKU
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {verCanje.sku}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Costo
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {numericFormatter(verCanje.costo_premio + "", {
-                    thousandSeparator: ",",
-                    fixedDecimalScale: false,
-                    prefix: "",
-                  })}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Premios solicitados
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {verCanje.number_of_awards}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Puntos canjeados
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {numericFormatter(verCanje.puntos_canjeados + "", {
-                    thousandSeparator: ",",
-                    fixedDecimalScale: false,
-                    prefix: "",
-                  })}
-                </Typography>
-              </Grid>
-            </Grid>
+            <ProductosCanje productos={verCanje.productos} porPagina={3} />
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="body2" fontWeight="medium">
+              Total: {numericFormatter(String(verCanje.total_puntos), { thousandSeparator: "," })} puntos
+            </Typography>
           </Paper>
         </Grid>
 

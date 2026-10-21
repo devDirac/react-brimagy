@@ -864,6 +864,7 @@ const CanjeValidadoProveedorModal = ({
                   id_orden_compra: verCanje?.orden_compra?.id,
                   id_proveedor: verProveedor.id,
                 };
+                //console.log(datos);
                 enviarOrdenCompraProveedor(datos);
               }}
             >
@@ -996,6 +997,7 @@ const CanjeValidadoProveedorModal = ({
                       plataforma: plataforma,
                       tipo_envio: "directo",
                     };
+                    //console.log(datos);
                     enviarCotizacionProveedor(datos);
                   }}
                 >
@@ -1048,6 +1050,7 @@ const CanjeValidadoProveedorModal = ({
                         plataforma: plataforma,
                         tipo_envio: "directo",
                       };
+                      //console.log(datos);
                       enviarCotizacionProveedor(datos);
                     }}
                   >
@@ -1106,6 +1109,7 @@ const CanjeValidadoProveedorModal = ({
                       plataforma: plataforma,
                       tipo_envio: "proveedor",
                     };
+                    //console.log(datos);
                     enviarCotizacionProveedor(datos);
                   }}
                 >
@@ -1157,6 +1161,7 @@ const CanjeValidadoProveedorModal = ({
                           }),
                         tipo_envio: "proveedor",
                       };
+                      //console.log(datos);
                       enviarCotizacionProveedor(datos);
                     }}
                   >

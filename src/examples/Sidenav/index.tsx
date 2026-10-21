@@ -65,16 +65,16 @@ interface Props {
   brandName?: string;
   routes: {
     [key: string]:
+    | ReactNode
+    | string
+    | {
+      [key: string]:
       | ReactNode
       | string
       | {
-          [key: string]:
-            | ReactNode
-            | string
-            | {
-                [key: string]: ReactNode | string;
-              }[];
-        }[];
+        [key: string]: ReactNode | string;
+      }[];
+    }[];
   }[];
   [key: string]: any;
 }
@@ -347,6 +347,26 @@ function Sidenav({ color, brand, brandName, routes, ...rest }: Props): JSX.Eleme
           {...rest}
           variant="permanent"
           ownerState={{ transparentSidenav, whiteSidenav, miniSidenav, darkMode }}
+          sx={{
+            // Texto de los menús principales y submenús
+            "& .MuiListItemText-primary, & .MuiListItemText-root span": {
+              fontSize: "0.7rem !important",
+              lineHeight: 1.3,
+            },
+            // Permite que los nombres largos bajen de línea en vez de cortarse o empujar
+            "& .MuiListItemText-root": {
+              whiteSpace: "normal",
+              wordBreak: "break-word",
+            },
+            // Íconos un poco más chicos para que alineen con el texto
+            "& .MuiListItemIcon-root .MuiIcon-root, & .MuiListItemIcon-root svg": {
+              fontSize: "1.15rem !important",
+            },
+            // Títulos de sección (type: "title")
+            "& .MuiTypography-caption": {
+              fontSize: "0.65rem",
+            },
+          }}
         >
           <MDBox pt={3} pb={1} px={4} textAlign="center">
             <MDBox

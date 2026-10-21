@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getErrorHttpMessage } from "../../utils";
@@ -12,6 +12,45 @@ import {
   enviarValidacionSinProveedorHttp,
   getCanjesHttp,
 } from "actions/canjes";
+
+const CAMPOS_PRODUCTO = [
+  "id_producto", "id_proveedor", "nombre_premio", "sku", "sku_catalogo",
+  "size", "color", "category", "number_of_awards", "costo_premio",
+  "puntos_canjeados", "estado_validacion",
+] as const;
+
+export const agruparCanjes = (rows: any[]) => {
+  const mapa = new Map<number, any>();
+
+  rows.forEach((row) => {
+    if (row.id_producto == null) return;
+
+    const producto: any = {};
+    CAMPOS_PRODUCTO.forEach((k) => (producto[k] = row[k]));
+
+    const existente = mapa.get(row.id);
+    if (existente) {
+      existente.productos.push(producto);
+    } else {
+      // datos del canje = todo lo que no es del producto
+      const canje: any = { ...row };
+      CAMPOS_PRODUCTO.forEach((k) => delete canje[k]);
+      mapa.set(row.id, { ...canje, productos: [producto] });
+    }
+  });
+
+  return Array.from(mapa.values()).map((c) => {
+    const estados = c.productos.map((p: any) => p.estado_validacion);
+    const todos = estados.every((e: string | null) => e === "identidad_validada");
+    const ninguno = estados.every((e: string | null) => !e);
+    return {
+      ...c,
+      estado_validacion: todos ? "identidad_validada" : ninguno ? null : "validacion_parcial",
+      total_puntos: c.productos.reduce((acc: number, p: any) => acc + Number(p.puntos_canjeados || 0), 0),
+      total_premios: c.productos.reduce((acc: number, p: any) => acc + Number(p.number_of_awards || 0), 0),
+    };
+  });
+};
 
 export const useListaCanjeos = (tipoUsuario: number) => {
   const dispatch = useDispatch();
@@ -66,6 +105,8 @@ export const useListaCanjeos = (tipoUsuario: number) => {
 
   const esDigital = location.pathname.includes("canjes-digitales");
 
+  const canjesAgrupados = useMemo(() => agruparCanjes(canjes), [canjes]);
+
   const handleVisualizacion = (
     event: React.MouseEvent<HTMLElement>,
     nuevaVisualizacion: string | null
@@ -76,7 +117,9 @@ export const useListaCanjeos = (tipoUsuario: number) => {
   const handleAccion = (accion: string, row: any) => {
     switch (accion) {
       case "vista_previa":
-        setVerCanje(row);
+        const canje = canjesAgrupados.find((c) => c.id === row.id);
+        if (!canje) break;
+        setVerCanje(canje);
         handleisAlertOpenVerCanje();
         break;
       case "editar":
@@ -147,7 +190,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
         handleisAlertOpen();
       }
     },
-    [esDigital]
+    [esDigital, plataforma]
   );
 
   const validarIdentidad = async (data: any) => {
@@ -244,6 +287,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
     setFecha2,
     getCanjes,
     plataforma,
-    procesandoIdentidadDirecto
+    procesandoIdentidadDirecto,
+    canjesAgrupados,
   };
 };

@@ -1,40 +1,13 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet, Font, Image } from "@react-pdf/renderer";
 import { numericFormatter } from "react-number-format";
+import { Canje } from "../../types/canjeTypes";
 
 // Registrar fuentes
 Font.register({
   family: "Roboto",
   src: "https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-light-webfont.ttf",
 });
-
-interface Canje {
-  id: number;
-  folio: string;
-  nombre_usuario: string;
-  email: string;
-  phone: number;
-  number_of_awards: string;
-  size: string;
-  color: string;
-  category: string;
-  puntos_canjeados: string;
-  nombre_premio: string;
-  costo_premio: string;
-  sku: string;
-  calle: string;
-  numero_calle: string;
-  colonia: string;
-  codigo_postal: number;
-  municipio: string;
-  numero_interior: string;
-  between_1: string;
-  between_2: string;
-  referencia_adicional: string;
-  creacion_canje: string;
-  estado_canje: string;
-  estado_validacion: string;
-}
 
 interface PDFCanjeProps {
   canje: Canje;
@@ -43,6 +16,7 @@ interface PDFCanjeProps {
 const styles = StyleSheet.create({
   page: {
     padding: 30,
+    paddingBottom: 60,
     fontSize: 9,
     fontFamily: "Roboto",
     backgroundColor: "#ffffff",
@@ -172,6 +146,25 @@ const styles = StyleSheet.create({
     borderTop: "1 solid #e0e0e0",
     paddingTop: 8,
   },
+  productoItem: {
+    marginBottom: 8,
+    paddingBottom: 6,
+    borderBottom: "1 solid #e0e0e0",
+  },
+  productoNombre: {
+    fontSize: 10,
+    color: "#000",
+    marginBottom: 4,
+  },
+  totalRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 4,
+  },
+  totalText: {
+    fontSize: 10,
+    color: "#084d6e",
+  },
 });
 
 const PDFCanje: React.FC<PDFCanjeProps> = ({ canje }) => {
@@ -206,50 +199,71 @@ const PDFCanje: React.FC<PDFCanjeProps> = ({ canje }) => {
         </View>
 
         {/* Información del premio canjeado */}
+        {/* Productos del canje */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Información del Premio</Text>
+          <Text style={styles.sectionTitle}>Productos del canje ({canje.productos.length})</Text>
 
-          <View style={styles.row}>
-            <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Nombre del premio</Text>
-              <Text style={styles.fieldValue}>{canje.nombre_premio}</Text>
-            </View>
-          </View>
-
-          <View style={styles.doubleColumn}>
-            <View style={styles.doubleContainer}>
-              <Text style={styles.doubleLabel}>Tamaño</Text>
-              <Text style={styles.doubleValue}>{canje.size}</Text>
-            </View>
-            <View style={styles.doubleContainer}>
-              <Text style={styles.doubleLabel}>Color</Text>
-              <Text style={styles.doubleValue}>{canje.color}</Text>
-            </View>
-          </View>
-
-          <View style={styles.doubleColumn}>
-            <View style={styles.doubleContainer}>
-              <Text style={styles.doubleLabel}>Categoría</Text>
-              <Text style={styles.doubleValue}>{canje.category}</Text>
-            </View>
-            <View style={styles.doubleContainer}>
-              <Text style={styles.doubleLabel}>SKU</Text>
-              <Text style={styles.doubleValue}>{canje.sku}</Text>
-            </View>
-          </View>
-
-          <View style={styles.doubleColumn}>
-            <View style={styles.doubleContainer}>
-              <Text style={styles.doubleLabel}>Costo</Text>
-              <Text style={styles.doubleValue}>
-                {numericFormatter(canje.costo_premio + "", {
-                  thousandSeparator: ",",
-                  decimalScale: 2,
-                  fixedDecimalScale: true,
-                  prefix: "",
-                })}
+          {canje.productos.map((p, i) => (
+            <View key={`${p.id_producto}-${i}`} style={styles.productoItem} wrap={false}>
+              <Text style={styles.productoNombre}>
+                {i + 1}. {p.nombre_premio}
               </Text>
+
+              <View style={styles.doubleColumn}>
+                <View style={styles.doubleContainer}>
+                  <Text style={styles.doubleLabel}>Tamaño</Text>
+                  <Text style={styles.doubleValue}>{p.size}</Text>
+                </View>
+                <View style={styles.doubleContainer}>
+                  <Text style={styles.doubleLabel}>Color</Text>
+                  <Text style={styles.doubleValue}>{p.color}</Text>
+                </View>
+              </View>
+
+              <View style={styles.doubleColumn}>
+                <View style={styles.doubleContainer}>
+                  <Text style={styles.doubleLabel}>Categoría</Text>
+                  <Text style={styles.doubleValue}>{p.category}</Text>
+                </View>
+                <View style={styles.doubleContainer}>
+                  <Text style={styles.doubleLabel}>SKU</Text>
+                  <Text style={styles.doubleValue}>{p.sku}</Text>
+                </View>
+              </View>
+
+              <View style={styles.doubleColumn}>
+                <View style={styles.doubleContainer}>
+                  <Text style={styles.doubleLabel}>Costo</Text>
+                  <Text style={styles.doubleValue}>
+                    {numericFormatter(p.costo_premio + "", {
+                      thousandSeparator: ",",
+                      decimalScale: 2,
+                      fixedDecimalScale: true,
+                    })}
+                  </Text>
+                </View>
+                <View style={styles.doubleContainer}>
+                  <Text style={styles.doubleLabel}>Cantidad</Text>
+                  <Text style={styles.doubleValue}>{p.number_of_awards}</Text>
+                </View>
+              </View>
+
+              <View style={styles.doubleColumn}>
+                <View style={styles.doubleContainer}>
+                  <Text style={styles.doubleLabel}>Puntos canjeados</Text>
+                  <Text style={styles.doubleValue}>
+                    {numericFormatter(p.puntos_canjeados + "", { thousandSeparator: "," })}
+                  </Text>
+                </View>
+              </View>
             </View>
+          ))}
+
+          <View style={styles.totalRow}>
+            <Text style={styles.totalText}>
+              Total: {numericFormatter(canje.total_puntos + "", { thousandSeparator: "," })} puntos ·{" "}
+              {canje.total_premios} premio(s)
+            </Text>
           </View>
         </View>
 
@@ -312,11 +326,12 @@ const PDFCanje: React.FC<PDFCanjeProps> = ({ canje }) => {
         </View>
 
         {/* Footer */}
-        <View style={styles.footer}>
+        <View style={styles.footer} fixed>
           <Text>
             Documento generado el {new Date().toLocaleDateString("es-MX")} a las{" "}
             {new Date().toLocaleTimeString("es-MX")}
           </Text>
+          <Text render={({ pageNumber, totalPages }) => `Página ${pageNumber} de ${totalPages}`} />
         </View>
       </Page>
     </Document>
