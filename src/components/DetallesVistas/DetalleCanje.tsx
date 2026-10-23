@@ -14,6 +14,8 @@ import PDFViewerCanje from "components/PDFViews/PDFViewerCanje";
 import { IconBrandAuth0, IconIdBadge2 } from "@tabler/icons-react";
 import { ProductosCanje } from "./ProductosCanje";
 import { Canje } from "../../types/canjeTypes";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
 
 interface DetalleCanjeProps {
   verCanje?: Canje | null;
@@ -93,6 +95,10 @@ const DetallesCanjeModal = ({
     const estadoUpper = estado.toUpperCase();
     return estadosValidacionMap[estadoUpper] || estadoUpper;
   };
+
+  const formatearFecha = (fecha?: string | null) =>
+    fecha ? dayjs(fecha).locale("es").format("DD [de] MMMM [de] YYYY, HH:mm") : "Sin fecha";
+
   return (
     <Box sx={{ px: 2, pb: 2, mt: 3 }}>
       <Grid container spacing={3}>
@@ -178,7 +184,15 @@ const DetallesCanjeModal = ({
           </Button>
         </Grid>
 
-        <Grid item xs={6}>
+        <Grid item xs={12} md={4}>
+          <Typography variant="body2" color="text.secondary">
+            Fecha del canje
+          </Typography>
+          <Typography variant="body2" fontWeight="medium" sx={{ mt: 0.5, fontSize: 14 }}>
+            {formatearFecha(verCanje.creacion_canje)}
+          </Typography>
+        </Grid>
+        <Grid item xs={12} md={4}>
           <Typography variant="body2" color="text.secondary">
             Estatus del Canje
           </Typography>
@@ -188,7 +202,7 @@ const DetallesCanjeModal = ({
             sx={{ fontWeight: "bold" }}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={12} md={4}>
           <Typography variant="body2" color="text.secondary">
             Estatus de Validación
           </Typography>

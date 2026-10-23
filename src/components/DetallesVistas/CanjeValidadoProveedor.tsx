@@ -35,6 +35,8 @@ import PDFViewerOrdenCompra from "components/PDFViews/PDFViewerOrdenCompra";
 import { MuiFileInput } from "mui-file-input";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { InputAdornment } from "@mui/material";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
 
 interface Producto {
   id: number;
@@ -338,6 +340,9 @@ const CanjeValidadoProveedorModal = ({
     return verCanje.productos.some((p) => Number(p.costo_sin_iva || 0) === 0 && p.tipo_producto === "fisico");
   }, [verCanje]);
 
+  const formatearFecha = (fecha?: string | null) =>
+    fecha ? dayjs(fecha).locale("es").format("DD [de] MMMM [de] YYYY, HH:mm") : "Sin fecha";
+
   return (
     <Box sx={{ px: 2, pb: 2, mt: 3 }}>
       <Grid container spacing={2}>
@@ -414,6 +419,16 @@ const CanjeValidadoProveedorModal = ({
                   </Typography>
                 </Grid>
               )}
+              {verCanje?.orden_compra?.created_at && (
+                <Grid item xs={6} md={4}>
+                  <Typography variant="body2" color="text.secondary">
+                    Fecha de creación de la orden
+                  </Typography>
+                  <Typography variant="body2" fontWeight="medium">
+                    {formatearFecha(verCanje.orden_compra.created_at)}
+                  </Typography>
+                </Grid>
+              )}
             </Grid>
           </Paper>
         </Grid>
@@ -432,28 +447,28 @@ const CanjeValidadoProveedorModal = ({
                 // Total
                 const importeTotal = subtotalSinDescuento + iva;
 
+                const estiloTexto =
+                  canje.estatus_proveedor === 2
+                    ? { textDecoration: "line-through", textDecorationColor: "red" }
+                    : canje.tipo_producto === "digital"
+                      ? { color: "#ff9809" }
+                      : {};
+
                 return (
-                  <>
-                    <Grid container spacing={2} key={canje.id}>
+                  <Box
+                    key={canje.id_validacion_producto ?? canje.id}
+                    sx={{ py: 2, borderBottom: "1px solid", borderColor: "divider" }}
+                  >
+                    <Grid container spacing={2}>
                       <Grid item xs={6} md={!verCanje?.orden_compra ? 3 : 4}>
                         <Typography variant="body2" color="text.secondary">
                           Nombre del producto
                         </Typography>
-                        <Typography
-                          variant="body2"
-                          fontWeight="medium"
-                          sx={
-                            canje.estatus_proveedor === 2
-                              ? {
-                                textDecoration: "line-through",
-                                textDecorationColor: "red",
-                              }
-                              : canje.tipo_producto === "digital"
-                                ? { color: "#ff9809" }
-                                : {}
-                          }
-                        >
+                        <Typography variant="body2" fontWeight="medium" sx={estiloTexto}>
                           {canje.nombre_premio}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          <b>SKU:</b> {canje.sku ?? "N/A"} · <b>Marca:</b> {canje.marca ?? "N/A"}
                         </Typography>
                       </Grid>
 
@@ -604,8 +619,7 @@ const CanjeValidadoProveedorModal = ({
                         </Typography>
                       </Grid>
                     </Grid>
-                    <Divider sx={{ mb: 2 }} />
-                  </>
+                  </Box>
                 );
               })
             ) : (
@@ -864,7 +878,6 @@ const CanjeValidadoProveedorModal = ({
                   id_orden_compra: verCanje?.orden_compra?.id,
                   id_proveedor: verProveedor.id,
                 };
-                //console.log(datos);
                 enviarOrdenCompraProveedor(datos);
               }}
             >
@@ -997,7 +1010,6 @@ const CanjeValidadoProveedorModal = ({
                       plataforma: plataforma,
                       tipo_envio: "directo",
                     };
-                    //console.log(datos);
                     enviarCotizacionProveedor(datos);
                   }}
                 >
@@ -1050,7 +1062,6 @@ const CanjeValidadoProveedorModal = ({
                         plataforma: plataforma,
                         tipo_envio: "directo",
                       };
-                      //console.log(datos);
                       enviarCotizacionProveedor(datos);
                     }}
                   >
@@ -1109,7 +1120,6 @@ const CanjeValidadoProveedorModal = ({
                       plataforma: plataforma,
                       tipo_envio: "proveedor",
                     };
-                    //console.log(datos);
                     enviarCotizacionProveedor(datos);
                   }}
                 >
@@ -1161,7 +1171,6 @@ const CanjeValidadoProveedorModal = ({
                           }),
                         tipo_envio: "proveedor",
                       };
-                      //console.log(datos);
                       enviarCotizacionProveedor(datos);
                     }}
                   >

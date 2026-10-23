@@ -109,7 +109,7 @@ export default function App() {
   } = controller;
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const { pathname } = useLocation();
-  const rutasSinMenu = ["/validar-ordencompra", "/encuesta/satisfaccion_compra"];
+  const rutasSinMenu = ["/validar-ordencompra", "/encuesta/satisfaccion_compra", "/validar-canje"];
   const ocultarMenu = rutasSinMenu.some((r) => pathname.startsWith(r));
   const inSession = useSelector((state: StoreType) => state?.app?.user?.token || false);
   const userName = useSelector((state: StoreType) => state?.app?.user?.data?.name || false);

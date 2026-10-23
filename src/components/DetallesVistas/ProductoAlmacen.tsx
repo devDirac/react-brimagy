@@ -24,6 +24,8 @@ import { useSelector } from "react-redux";
 import { StoreType } from "../../types/genericTypes";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
 
 interface ProductoAlmacen {
   id_producto_almacen: number;
@@ -38,6 +40,7 @@ interface ProductoAlmacen {
   comentarios: string | null;
   imei: string;
   no_serie: string;
+  fecha_compra?: string | null;
 }
 
 interface DetalleAlmacen {
@@ -194,6 +197,9 @@ const ProductoAlmacenModal = ({
     const endIndex = startIndex + rowsProductsPerPage;
     return verProducto?.productos.slice(startIndex, endIndex) || [];
   }, [verProducto?.productos, pageProduct, rowsProductsPerPage]);
+
+  const formatearFechaCorta = (fecha?: string | null) =>
+    fecha ? dayjs(fecha).locale("es").format("DD [de] MMMM [de] YYYY") : "Sin fecha";
 
   return (
     <Box sx={{ px: 2, pb: 2, mt: 3 }}>
@@ -599,6 +605,14 @@ const ProductoAlmacenModal = ({
                       </Typography>
                       <Typography variant="body2" fontWeight="medium">
                         {p?.cantidad_almacen}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Fecha de compra
+                      </Typography>
+                      <Typography variant="body2" fontWeight="medium">
+                        {formatearFechaCorta(p?.fecha_compra)}
                       </Typography>
                     </Grid>
                     <Grid item xs={12} md={6}>

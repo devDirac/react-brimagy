@@ -73,6 +73,13 @@ import TableRowsIcon from "@mui/icons-material/TableRows";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import DinamicTableMejorada from "components/DinamicTable/DinamicTable";
 import DateRangeIcon from "@mui/icons-material/DateRange";
+import {
+  IconHourglassHigh,
+  IconMailCheck,
+  IconShieldCheck,
+  IconProgressCheck,
+  IconHelpCircle,
+} from "@tabler/icons-react";
 
 import dayjs from "dayjs";
 import "dayjs/locale/es";
@@ -136,6 +143,8 @@ function ListaCanjeos(): JSX.Element {
     canjesAgrupados,
   } = useListaCanjeos(tipoUsuario);
 
+  const iconProps = { size: 18, stroke: 2 };
+
   const independiente = () => {
     return !canjes?.length && !procesando ? (
       <Grid container spacing={2}>
@@ -165,22 +174,55 @@ function ListaCanjeos(): JSX.Element {
     setPage(0);
   };
 
-  const estadosValidacionMap: { [key: string]: string } = {
-    NOTIFICACION_ENVIADA: "EN ESPERA DE VALIDACIÓN DE IDENTIDAD",
-    SOLICITUD_ENVIADA: "SOLICITUD DE CÓDIGO ENVIADA",
-    IDENTIDAD_VALIDADA: "IDENTIDAD VALIDADA",
-    VALIDACION_PARCIAL: "VALIDACIÓN PARCIAL"
+  const estadosValidacionConfig: {
+    [key: string]: { label: string; bg: string; color: string; icon: JSX.Element };
+  } = {
+    NOTIFICACION_ENVIADA: {
+      label: "ENVIADO A USUARIO",
+      bg: "#f5a623",
+      color: "#ffffff",
+      icon: <IconHourglassHigh {...iconProps} />,
+    },
+    SOLICITUD_ENVIADA: {
+      label: "SOLICITUD DE CÓDIGO ENVIADA",
+      bg: "#084d6e",
+      color: "#ffffff",
+      icon: <IconMailCheck {...iconProps} />,
+    },
+    IDENTIDAD_VALIDADA: {
+      label: "IDENTIDAD VALIDADA",
+      bg: "#3ec972",
+      color: "#ffffff",
+      icon: <IconShieldCheck {...iconProps} />,
+    },
+    VALIDACION_PARCIAL: {
+      label: "VALIDACIÓN PARCIAL",
+      bg: "#eb2fa5",
+      color: "#FFF9C4",
+      icon: <IconProgressCheck {...iconProps} />,
+    },
   };
 
-  const traducirEstadoValidacion = (estado: string | null): string => {
-    if (!estado) return "SIN VALIDAR";
-    const estadoUpper = estado.toUpperCase();
-    return estadosValidacionMap[estadoUpper] || estadoUpper;
+  const estadoDefault = {
+    label: "SIN VALIDAR",
+    bg: "#9e9e9e",
+    color: "#ffffff",
+    icon: <IconHelpCircle {...iconProps} />,
   };
+
+  const getEstadoValidacion = (estado?: string | null) =>
+    (estado && estadosValidacionConfig[estado.toUpperCase()]) || {
+      ...estadoDefault,
+      label: estado ? estado.toUpperCase() : estadoDefault.label,
+    };
+
   const canjesPaginados = useMemo(() => {
     const inicio = page * rowsPerPage;
     return canjesAgrupados.slice(inicio, inicio + rowsPerPage);
   }, [canjesAgrupados, page, rowsPerPage]);
+
+  const formatearFecha = (fecha?: string) =>
+    fecha ? dayjs(fecha).locale("es").format("DD MMM YYYY, HH:mm") : "Sin fecha";
 
   return (
     <DashboardLayout>
@@ -274,40 +316,45 @@ function ListaCanjeos(): JSX.Element {
                           },
                         }}
                       >
-                        <Chip
-                          icon={<AutoAwesomeIcon />}
-                          label={traducirEstadoValidacion(p.estado_validacion?.toUpperCase())}
-                          sx={{
-                            position: "absolute",
-                            top: 0,
-                            right: 0,
-                            flexDirection: "row",
-                            bgcolor: pink[50],
-                            p: 1,
-                            fontWeight: 500,
-                            borderRadius: "0 0 0 20px",
-                            background: "#eb2fa5",
-                            maxWidth: "150px",
-                            height: "auto",
-                            whiteSpace: "normal",
-                            "& .MuiChip-label": {
-                              whiteSpace: "normal",
-                              overflow: "visible",
-                              textOverflow: "clip",
-                              display: "block",
-                              lineHeight: "12px",
-                              color: "#FFF9C4 !important",
-                            },
-                            "& .MuiChip-icon": {
-                              color: "#FFF9C4 !important",
-                              fontSize: "20px !important",
-                              width: "20px !important",
-                              height: "20px !important",
-                              marginTop: "2px",
-                              alignSelf: "flex-start",
-                            },
-                          }}
-                        />
+                        {(() => {
+                          const estado = getEstadoValidacion(p.estado_validacion);
+                          return (
+                            <Chip
+                              icon={estado.icon}
+                              label={estado.label}
+                              sx={{
+                                position: "absolute",
+                                top: 0,
+                                right: 0,
+                                flexDirection: "row",
+                                p: 1,
+                                fontWeight: 500,
+                                borderRadius: "0 0 0 20px",
+                                background: estado.bg,
+                                maxWidth: "150px",
+                                height: "auto",
+                                whiteSpace: "normal",
+                                fontSize: "11px !important",
+                                "& .MuiChip-label": {
+                                  whiteSpace: "normal",
+                                  overflow: "visible",
+                                  textOverflow: "clip",
+                                  display: "block",
+                                  lineHeight: "12px",
+                                  color: `${estado.color} !important`,
+                                },
+                                "& .MuiChip-icon": {
+                                  color: `${estado.color} !important`,
+                                  fontSize: "18px !important",
+                                  width: "20px !important",
+                                  height: "20px !important",
+                                  marginTop: "2px",
+                                  alignSelf: "flex-start",
+                                },
+                              }}
+                            />
+                          );
+                        })()}
                         {/* Fila superior*/}
                         <Box
                           sx={{
@@ -338,15 +385,16 @@ function ListaCanjeos(): JSX.Element {
                             sx={{
                               flex: 1,
                               display: "flex",
-                              alignItems: "center",
+                              flexDirection: "column",
+                              justifyContent: "center",
                               overflow: "hidden",
+                              paddingLeft: "10px",
                             }}
                           >
                             <MDTypography
                               variant="caption"
                               color="text"
                               sx={{
-                                paddingLeft: "10px",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                                 fontWeight: 600,
@@ -354,6 +402,9 @@ function ListaCanjeos(): JSX.Element {
                               }}
                             >
                               {p.folio}
+                            </MDTypography>
+                            <MDTypography variant="caption" sx={{ color: green[900], fontSize: "0.7rem" }}>
+                              {formatearFecha(p.creacion_canje ?? p.productos?.[0]?.creacion_canje)}
                             </MDTypography>
                           </Box>
                         </Box>
@@ -422,7 +473,7 @@ function ListaCanjeos(): JSX.Element {
             <MDBox mt={3} sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
               <TablePagination
                 component="div"
-                count={canjesPaginados?.length}
+                count={canjesAgrupados?.length}
                 page={page}
                 onPageChange={handleChangePage}
                 rowsPerPage={rowsPerPage}

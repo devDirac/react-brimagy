@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
@@ -47,6 +47,8 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { InputAdornment } from "@mui/material";
 import PDFOrdenCompra from "components/PDFViews/PDFOrdenCompra";
 import PDFViewerOrdenCompra from "components/PDFViews/PDFViewerOrdenCompra";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
 
 function ValidarOrdenCompra(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -184,6 +186,18 @@ function ValidarOrdenCompra(): JSX.Element {
       ? "COTIZACIÓN"
       : "ORDEN DE COMPRA";
 
+  const ESTATUS_SIN_PDF = [
+    "cotizacion_enviada_a_proveedor",
+    "cotizacion_validada_por_proveedor",
+  ];
+
+  const pdfHabilitado = !ESTATUS_SIN_PDF.includes(
+    ordenCompra?.orden_compra?.estatus ?? ""
+  );
+
+  const formatearFecha = (fecha?: string | null) =>
+    fecha ? dayjs(fecha).locale("es").format("DD [de] MMMM [de] YYYY, HH:mm") : "Sin fecha";
+
   return (
     <DashboardLayout withSidebar={false}>
       <MDBox py={0} mb={0}>
@@ -297,8 +311,8 @@ function ValidarOrdenCompra(): JSX.Element {
                     <Grid container spacing={2}>
                       <Grid
                         item
-                        xs={12}
-                        md={6}
+                        xs={6}
+                        md={4}
                         display="flex"
                         justifyContent="center"
                         alignItems="center"
@@ -313,8 +327,24 @@ function ValidarOrdenCompra(): JSX.Element {
                       </Grid>
                       <Grid
                         item
+                        xs={6}
+                        md={4}
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        flexDirection="column"
+                      >
+                        <Typography variant="caption" color="text.secondary">
+                          Fecha de creación
+                        </Typography>
+                        <Typography variant="body1" fontWeight="bold">
+                          {formatearFecha(ordenCompra?.orden_compra?.created_at)}
+                        </Typography>
+                      </Grid>
+                      <Grid
+                        item
                         xs={12}
-                        md={6}
+                        md={4}
                         display="flex"
                         justifyContent="center"
                         alignItems="center"
@@ -512,110 +542,125 @@ function ValidarOrdenCompra(): JSX.Element {
 
                       {productosPaginados.map((producto: any) => {
                         return (
-                          <>
-                            <Grid container spacing={2} key={producto.id}>
-                              <Grid
-                                item
-                                xs={6}
-                                md={
-                                  ordenCompra?.orden_compra?.estatus ===
-                                    "cotizacion_enviada_a_proveedor"
-                                    ? 3
-                                    : 4
-                                }
-                              >
-                                <Typography variant="body2" color="text.secondary">
-                                  Producto
-                                </Typography>
-                                <Typography variant="body2" fontWeight="medium">
-                                  {producto?.nombre_premio}
-                                </Typography>
-                              </Grid>
-
-                              <Grid item xs={6} md={1}>
-                                <Typography variant="body2" color="text.secondary">
-                                  Cantidad
-                                </Typography>
-                                <Typography variant="body2" fontWeight="medium">
-                                  {producto?.cantidad_producto}
-                                </Typography>
-                              </Grid>
-
-                              <Grid item xs={6} md={2}>
-                                <Typography variant="body2" color="text.secondary">
-                                  Precio unitario
-                                </Typography>
-                                <Typography variant="body2" fontWeight="medium">
-                                  {numericFormatter(producto?.precio_unitario.toString(), {
-                                    thousandSeparator: ",",
-                                    decimalScale: 2,
-                                    fixedDecimalScale: true,
-                                    prefix: "$",
-                                  })}
-                                </Typography>
-                              </Grid>
-
-                              <Grid item xs={6} md={1}>
-                                <Typography variant="body2" color="text.secondary">
-                                  Impuestos
-                                </Typography>
-                                <Typography variant="body2" fontWeight="medium">
-                                  IVA (16%)
-                                </Typography>
-                              </Grid>
-
-                              <Grid item xs={6} md={2}>
-                                <Typography variant="body2" color="text.secondary">
-                                  Importe
-                                </Typography>
-                                <Typography variant="body2" fontWeight="medium">
-                                  {numericFormatter(producto?.importe_total.toString(), {
-                                    thousandSeparator: ",",
-                                    decimalScale: 2,
-                                    fixedDecimalScale: true,
-                                    prefix: "$",
-                                  })}
-                                </Typography>
-                              </Grid>
-                              {ordenCompra?.orden_compra?.estatus ===
-                                "cotizacion_enviada_a_proveedor" ? (
-                                <Grid item xs={6} md={1}>
+                          <Grid item xs={12} key={producto.id}>
+                            <Box
+                              sx={{
+                                p: 2,
+                                mb: 1.5,
+                                border: "1px solid",
+                                borderColor: "divider",
+                                borderRadius: 2,
+                                "&:hover": { bgcolor: "action.hover" },
+                              }}
+                            >
+                              <Grid container spacing={2}>
+                                <Grid
+                                  item
+                                  xs={6}
+                                  md={ordenCompra?.orden_compra?.estatus === "cotizacion_enviada_a_proveedor" ? 3 : 4}
+                                >
                                   <Typography variant="body2" color="text.secondary">
-                                    Acciones
+                                    Producto
                                   </Typography>
                                   <Typography variant="body2" fontWeight="medium">
-                                    <Tooltip title={intl.formatMessage({ id: "validar_producto" })}>
-                                      <IconButton
-                                        onClick={() => aceptarProductoOC(producto?.id)}
-                                        sx={{ color: "#13e9bf", padding: "0" }}
-                                      >
-                                        <CheckIcon />
-                                      </IconButton>
-                                    </Tooltip>
-                                    <Tooltip
-                                      title={intl.formatMessage({ id: "rechazar_producto" })}
-                                    >
-                                      <IconButton
-                                        onClick={() => rechazarProductoOC(producto?.id)}
-                                        sx={{ color: "#f64e52", padding: "0" }}
-                                      >
-                                        <CloseIcon />
-                                      </IconButton>
-                                    </Tooltip>
+                                    {producto?.nombre_premio}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary" display="block">
+                                    <b>SKU:</b> {producto?.sku ?? "N/A"} · <b>Marca:</b> {producto?.marca ?? "N/A"}
                                   </Typography>
                                 </Grid>
-                              ) : null}
-                              <Grid item xs={6} md={2}>
-                                <Typography variant="body2" color="text.secondary">
-                                  Estatus del producto
-                                </Typography>
-                                <Typography variant="body2" fontWeight="medium">
-                                  {renderEstatusChip(producto?.estatus_proveedor)}
-                                </Typography>
+
+                                <Grid item xs={6} md={1}>
+                                  <Typography variant="body2" color="text.secondary">
+                                    Cantidad
+                                  </Typography>
+                                  <Typography variant="body2" fontWeight="medium">
+                                    {producto?.cantidad_producto}
+                                  </Typography>
+                                </Grid>
+
+                                <Grid item xs={6} md={1}>
+                                  <Typography variant="body2" color="text.secondary">
+                                    P. Unitario
+                                  </Typography>
+                                  <Typography variant="body2" fontWeight="medium">
+                                    {numericFormatter(producto?.precio_unitario.toString(), {
+                                      thousandSeparator: ",",
+                                      decimalScale: 2,
+                                      fixedDecimalScale: true,
+                                      prefix: "$",
+                                    })}
+                                  </Typography>
+                                </Grid>
+
+                                {/*<Grid item xs={6} md={2}>
+                                  <Typography variant="body2" color="text.secondary">
+                                    Impuestos
+                                  </Typography>
+                                  <Typography variant="body2" fontWeight="medium">
+                                    IVA (16%)
+                                  </Typography>
+                                </Grid>*/}
+
+                                <Grid item xs={6} md={2}>
+                                  <Typography variant="body2" color="text.secondary">
+                                    Importe
+                                  </Typography>
+                                  <Typography variant="body2" fontWeight="medium">
+                                    {numericFormatter(producto?.importe_total.toString(), {
+                                      thousandSeparator: ",",
+                                      decimalScale: 2,
+                                      fixedDecimalScale: true,
+                                      prefix: "$",
+                                    })}
+                                  </Typography>
+                                </Grid>
+                                {ordenCompra?.orden_compra?.estatus === "cotizacion_enviada_a_proveedor" ? (
+                                  <Grid item xs={6} md={1}>
+                                    <Typography variant="body2" color="text.secondary">
+                                      Acciones
+                                    </Typography>
+                                    <Typography variant="body2" fontWeight="medium">
+                                      <Tooltip title={intl.formatMessage({ id: "validar_producto" })}>
+                                        <span>
+                                          <IconButton
+                                            disabled={procesandoCodigo || producto?.estatus_proveedor === 1}
+                                            onClick={() =>
+                                              aceptarProductoOC(ordenCompra.orden_compra.id, producto.id)
+                                            }
+                                            sx={{ color: "#13e9bf", padding: "0" }}
+                                          >
+                                            <CheckIcon />
+                                          </IconButton>
+                                        </span>
+                                      </Tooltip>
+                                      <Tooltip title={intl.formatMessage({ id: "rechazar_producto" })}>
+                                        <span>
+                                          <IconButton
+                                            disabled={procesandoCodigo || producto?.estatus_proveedor === 2}
+                                            onClick={() =>
+                                              rechazarProductoOC(ordenCompra.orden_compra.id, producto.id)
+                                            }
+                                            sx={{ color: "#f64e52", padding: "0" }}
+                                          >
+                                            <CloseIcon />
+                                          </IconButton>
+                                        </span>
+                                      </Tooltip>
+                                    </Typography>
+                                  </Grid>
+                                ) : null}
+                                <Grid item xs={6} md={2}>
+                                  <Typography variant="body2" color="text.secondary">
+                                    Estatus del producto
+                                  </Typography>
+                                  <Typography variant="body2" fontWeight="medium">
+                                    {renderEstatusChip(producto?.estatus_proveedor)}
+                                  </Typography>
+                                </Grid>
                               </Grid>
-                            </Grid>
-                            <Divider sx={{ mb: 2 }} />
-                          </>
+                            </Box>
+                          </Grid>
                         );
                       })}
                       {/* Componente de paginación */}
@@ -935,7 +980,7 @@ function ValidarOrdenCompra(): JSX.Element {
                         }}
                         variant="contained"
                         endIcon={<PictureAsPdfIcon />}
-                        disabled={procesando || !todosProductosValidados}
+                        disabled={procesando || !pdfHabilitado}
                         onClick={(e: any) => {
                           handleOpenPDFViewer();
                         }}

@@ -19,6 +19,19 @@ const CAMPOS_PRODUCTO = [
   "puntos_canjeados", "estado_validacion",
 ] as const;
 
+const ORDEN_ESTADOS = ["notificacion_enviada", "solicitud_enviada", "identidad_validada"];
+
+const calcularEstadoGrupo = (productos: any[]): string | null => {
+  const unicos = Array.from(
+    new Set(productos.map((p) => p.estado_validacion?.toLowerCase() ?? null))
+  );
+  if (unicos.length === 1) return unicos[0];
+
+  if (unicos.includes("identidad_validada")) return "validacion_parcial";
+
+  return ORDEN_ESTADOS.find((e) => unicos.includes(e)) ?? null;
+};
+
 export const agruparCanjes = (rows: any[]) => {
   const mapa = new Map<number, any>();
 
@@ -32,24 +45,24 @@ export const agruparCanjes = (rows: any[]) => {
     if (existente) {
       existente.productos.push(producto);
     } else {
-      // datos del canje = todo lo que no es del producto
       const canje: any = { ...row };
       CAMPOS_PRODUCTO.forEach((k) => delete canje[k]);
       mapa.set(row.id, { ...canje, productos: [producto] });
     }
   });
 
-  return Array.from(mapa.values()).map((c) => {
-    const estados = c.productos.map((p: any) => p.estado_validacion);
-    const todos = estados.every((e: string | null) => e === "identidad_validada");
-    const ninguno = estados.every((e: string | null) => !e);
-    return {
-      ...c,
-      estado_validacion: todos ? "identidad_validada" : ninguno ? null : "validacion_parcial",
-      total_puntos: c.productos.reduce((acc: number, p: any) => acc + Number(p.puntos_canjeados || 0), 0),
-      total_premios: c.productos.reduce((acc: number, p: any) => acc + Number(p.number_of_awards || 0), 0),
-    };
-  });
+  return Array.from(mapa.values()).map((c) => ({
+    ...c,
+    estado_validacion: calcularEstadoGrupo(c.productos),
+    total_puntos: c.productos.reduce(
+      (acc: number, p: any) => acc + Number(p.puntos_canjeados || 0),
+      0
+    ),
+    total_premios: c.productos.reduce(
+      (acc: number, p: any) => acc + Number(p.number_of_awards || 0),
+      0
+    ),
+  }));
 };
 
 export const useListaCanjeos = (tipoUsuario: number) => {
@@ -105,7 +118,15 @@ export const useListaCanjeos = (tipoUsuario: number) => {
 
   const esDigital = location.pathname.includes("canjes-digitales");
 
-  const canjesAgrupados = useMemo(() => agruparCanjes(canjes), [canjes]);
+  const canjesAgrupados = useMemo(
+    () =>
+      agruparCanjes(canjes).sort((a, b) => {
+        const aValidado = a.estado_validacion === "identidad_validada" ? 1 : 0;
+        const bValidado = b.estado_validacion === "identidad_validada" ? 1 : 0;
+        return aValidado - bValidado;
+      }),
+    [canjes]
+  );
 
   const handleVisualizacion = (
     event: React.MouseEvent<HTMLElement>,

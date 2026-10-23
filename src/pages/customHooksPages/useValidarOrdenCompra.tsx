@@ -66,53 +66,59 @@ export const useValidarOrdenCompra = () => {
     }
   }, []);
 
-  const aceptarProductoOC = async (id_producto: number) => {
+  const aceptarProductoOC = async (id_orden_compra: number, id_producto: number) => {
     try {
       setProcesandoCodigo(true);
-      const response = await aceptarProductoOCHttp({ id_producto: id_producto });
+      await aceptarProductoOCHttp({ id_orden_compra, id_producto });
       setOrdenCompra((prevOrden: any) => {
         if (!prevOrden?.productos) return prevOrden;
-
         return {
           ...prevOrden,
           productos: prevOrden.productos.map((producto: any) =>
-            producto.id === id_producto ? { ...producto, estatus_proveedor: 1 } : producto
+            Number(producto.id) === Number(id_producto)
+              ? { ...producto, estatus_proveedor: 1 }
+              : producto
           ),
         };
       });
       setMensajeAlert(intl.formatMessage({ id: "producto_aceptado_correctamente" }));
       handleisAlertOpen();
-      setProcesandoCodigo(false);
     } catch (error) {
-      setProcesandoCodigo(false);
       const message = getErrorHttpMessage(error);
       setMensajeAlert(message || intl.formatMessage({ id: "producto_aceptado_error" }));
       handleisAlertOpen();
+    } finally {
+      setProcesandoCodigo(false);
     }
   };
 
-  const rechazarProductoOC = async (id_producto: number) => {
+  const rechazarProductoOC = async (
+    id_orden_compra: number,
+    id_producto: number,
+    motivo?: string
+  ) => {
     try {
       setProcesandoCodigo(true);
-      const response = await rechazarProductoOCHttp({ id_producto: id_producto });
+      await rechazarProductoOCHttp({ id_orden_compra, id_producto, motivo });
       setOrdenCompra((prevOrden: any) => {
         if (!prevOrden?.productos) return prevOrden;
-
         return {
           ...prevOrden,
           productos: prevOrden.productos.map((producto: any) =>
-            producto.id === id_producto ? { ...producto, estatus_proveedor: 2 } : producto
+            Number(producto.id) === Number(id_producto)
+              ? { ...producto, estatus_proveedor: 2 }
+              : producto
           ),
         };
       });
       setMensajeAlert(intl.formatMessage({ id: "producto_rechazado_correctamente" }));
       handleisAlertOpen();
-      setProcesandoCodigo(false);
     } catch (error) {
-      setProcesandoCodigo(false);
       const message = getErrorHttpMessage(error);
       setMensajeAlert(message || intl.formatMessage({ id: "producto_rechazado_error" }));
       handleisAlertOpen();
+    } finally {
+      setProcesandoCodigo(false);
     }
   };
   const enviarAprobacion = async (data: any) => {

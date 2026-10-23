@@ -19,7 +19,7 @@ export const ProductosCanje = ({ productos, porPagina = 3 }: { productos: any[];
                         {p.nombre_premio}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                        SKU {p.sku} · x{p.number_of_awards} ·{" "}
+                        {p.sku} · x{p.number_of_awards}
                         {numericFormatter(String(p.puntos_canjeados), { thousandSeparator: "," })} pts
                     </Typography>
                 </Box>
