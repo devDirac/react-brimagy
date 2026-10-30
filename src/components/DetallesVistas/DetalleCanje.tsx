@@ -1,4 +1,4 @@
-import { Grid, Typography, Divider, Box, Chip, Paper, Button, TextField } from "@mui/material";
+import { Grid, Typography, Divider, Box, Chip, Paper, Button, TextField, Alert } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useIntl } from "react-intl";
 import ModalComponent from "components/Modal";
@@ -38,7 +38,7 @@ const DetallesCanjeModal = ({
   procesandoIdentidad,
   procesandoIdentidadDirecto
 }: DetalleCanjeProps) => {
-  if (!verCanje) return null;
+
   const intl = useIntl();
 
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -99,6 +99,11 @@ const DetallesCanjeModal = ({
   const formatearFecha = (fecha?: string | null) =>
     fecha ? dayjs(fecha).locale("es").format("DD [de] MMMM [de] YYYY, HH:mm") : "Sin fecha";
 
+  const productosRegistrados = verCanje?.productos.filter((p) => !!p.id_producto);
+  const productosNoRegistrados = verCanje?.productos.filter((p) => !p.id_producto) ?? [];
+
+  if (!verCanje) return null;
+
   return (
     <Box sx={{ px: 2, pb: 2, mt: 3 }}>
       <Grid container spacing={3}>
@@ -138,12 +143,13 @@ const DetallesCanjeModal = ({
             variant="contained"
             startIcon={<IconBrandAuth0 stroke={2} />}
             disabled={
+              productosRegistrados?.length === 0 ||
               verCanje.estado_canje === "INACTIVE" ||
               verCanje.estado_validacion === "identidad_validada"
             }
-            onClick={(e: any) => {
-              validarIdentidadSinProveedor({ plataforma: plataforma, ...verCanje })
-            }}
+            onClick={() =>
+              validarIdentidadSinProveedor({ plataforma, ...verCanje, productos: productosRegistrados })
+            }
           >
             {procesandoIdentidadDirecto ? (
               <>
@@ -168,12 +174,13 @@ const DetallesCanjeModal = ({
             variant="contained"
             startIcon={<IconIdBadge2 stroke={2} />}
             disabled={
+              productosRegistrados?.length === 0 ||
               verCanje.estado_canje === "INACTIVE" ||
               verCanje.estado_validacion === "identidad_validada"
             }
-            onClick={(e: any) => {
-              validarIdentidad({ plataforma: plataforma, ...verCanje });
-            }}
+            onClick={() =>
+              validarIdentidad({ plataforma, ...verCanje, productos: productosRegistrados })
+            }
           >
             {procesandoIdentidad ? (
               <>
@@ -256,7 +263,12 @@ const DetallesCanjeModal = ({
               Productos del canje ({verCanje.productos.length})
             </Typography>
             <Divider sx={{ mb: 2 }} />
-            <ProductosCanje productos={verCanje.productos} porPagina={3} />
+            {productosNoRegistrados.length > 0 && (
+              <Alert severity="warning" sx={{ mb: 2, textAlign: "left" }}>
+                Hay inconsistencia en el sistema: algunos productos del canje no están registrados en el catálogo.
+              </Alert>
+            )}
+            <ProductosCanje productos={verCanje.productos} porPagina={10} marcarNoRegistrados />
             <Divider sx={{ my: 2 }} />
             <Typography variant="body2" fontWeight="medium">
               Total: {numericFormatter(String(verCanje.total_puntos), { thousandSeparator: "," })} puntos

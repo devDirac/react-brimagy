@@ -1,8 +1,5 @@
-import { Fragment, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
-import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import Footer from "examples/Footer";
-import Header from "components/Header";
 import MDBox from "components/MDBox";
 import {
   Grid,
@@ -18,7 +15,6 @@ import {
   Backdrop,
   CircularProgress,
   Chip,
-  Stack,
   Tooltip,
   IconButton,
   TablePagination,
@@ -27,16 +23,11 @@ import { useSelector } from "react-redux";
 import { StoreType } from "../types/genericTypes";
 import logo from "assets/images/profile_icon.png";
 import VerifiedIcon from "@mui/icons-material/Verified";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ErrorIcon from "@mui/icons-material/Error";
 import { green, red } from "@mui/material/colors";
 import ModalComponent from "components/Modal";
 import GppBadIcon from "@mui/icons-material/GppBad";
 import { numericFormatter } from "react-number-format";
-import AddIcon from "@mui/icons-material/Add";
-import HttpsIcon from "@mui/icons-material/Https";
 import { Spinner } from "react-bootstrap";
-import Forward10Icon from "@mui/icons-material/Forward10";
 import { useValidarOrdenCompra } from "./customHooksPages/useValidarOrdenCompra";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
@@ -45,15 +36,11 @@ import SendIcon from "@mui/icons-material/Send";
 import { MuiFileInput } from "mui-file-input";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { InputAdornment } from "@mui/material";
-import PDFOrdenCompra from "components/PDFViews/PDFOrdenCompra";
 import PDFViewerOrdenCompra from "components/PDFViews/PDFViewerOrdenCompra";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 
 function ValidarOrdenCompra(): JSX.Element {
-  const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
-  const userName = useSelector((state: StoreType) => state?.app?.user?.data?.name || false);
-  const fotoUser: any = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
 
   const {
     handleOpenPDFViewer,
@@ -88,7 +75,7 @@ function ValidarOrdenCompra(): JSX.Element {
 
   // Estados para la paginación
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(4);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Handlers para la paginación
   const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
@@ -178,6 +165,18 @@ function ValidarOrdenCompra(): JSX.Element {
   const productosPendientes = useMemo(() => {
     if (!ordenCompra?.productos) return 0;
     return ordenCompra.productos.filter((producto: any) => producto.estatus_proveedor === 0).length;
+  }, [ordenCompra]);
+
+  const piezas = useMemo(() => {
+    const sumarPorEstatus = (estatus: number) =>
+      (ordenCompra?.productos ?? [])
+        .filter((p: any) => Number(p.estatus_proveedor) === estatus)
+        .reduce((acc: number, p: any) => acc + Number(p.cantidad_producto || 0), 0);
+
+    return {
+      aceptadas: sumarPorEstatus(1),
+      rechazadas: sumarPorEstatus(2),
+    };
   }, [ordenCompra]);
 
   const cotizacion =
@@ -377,7 +376,9 @@ function ValidarOrdenCompra(): JSX.Element {
                             <Typography variant="caption" color="text.secondary">
                               Productos aceptados
                             </Typography>
-                            <Box>{ordenCompra?.estadisticas?.productos_aceptados}</Box>
+                            <Box>
+                              {piezas.aceptadas} producto{piezas.aceptadas !== 1 ? "s" : ""}
+                            </Box>
                           </Grid>
                           <Grid
                             item
@@ -391,7 +392,9 @@ function ValidarOrdenCompra(): JSX.Element {
                             <Typography variant="caption" color="text.secondary">
                               Productos rechazados
                             </Typography>
-                            <Box>{ordenCompra?.estadisticas?.productos_rechazados}</Box>
+                            <Box>
+                              {piezas.rechazadas} producto{piezas.rechazadas !== 1 ? "s" : ""}
+                            </Box>
                           </Grid>
                           <Grid
                             item
@@ -542,7 +545,7 @@ function ValidarOrdenCompra(): JSX.Element {
 
                       {productosPaginados.map((producto: any) => {
                         return (
-                          <Grid item xs={12} key={producto.id}>
+                          <Grid item xs={12} key={producto._llave}>
                             <Box
                               sx={{
                                 p: 2,
@@ -593,15 +596,6 @@ function ValidarOrdenCompra(): JSX.Element {
                                   </Typography>
                                 </Grid>
 
-                                {/*<Grid item xs={6} md={2}>
-                                  <Typography variant="body2" color="text.secondary">
-                                    Impuestos
-                                  </Typography>
-                                  <Typography variant="body2" fontWeight="medium">
-                                    IVA (16%)
-                                  </Typography>
-                                </Grid>*/}
-
                                 <Grid item xs={6} md={2}>
                                   <Typography variant="body2" color="text.secondary">
                                     Importe
@@ -626,7 +620,7 @@ function ValidarOrdenCompra(): JSX.Element {
                                           <IconButton
                                             disabled={procesandoCodigo || producto?.estatus_proveedor === 1}
                                             onClick={() =>
-                                              aceptarProductoOC(ordenCompra.orden_compra.id, producto.id)
+                                              aceptarProductoOC(ordenCompra.orden_compra.id, producto._llave)
                                             }
                                             sx={{ color: "#13e9bf", padding: "0" }}
                                           >
@@ -639,7 +633,7 @@ function ValidarOrdenCompra(): JSX.Element {
                                           <IconButton
                                             disabled={procesandoCodigo || producto?.estatus_proveedor === 2}
                                             onClick={() =>
-                                              rechazarProductoOC(ordenCompra.orden_compra.id, producto.id)
+                                              rechazarProductoOC(ordenCompra.orden_compra.id, producto._llave)
                                             }
                                             sx={{ color: "#f64e52", padding: "0" }}
                                           >
@@ -676,7 +670,7 @@ function ValidarOrdenCompra(): JSX.Element {
                         onPageChange={handleChangePage}
                         rowsPerPage={rowsPerPage}
                         onRowsPerPageChange={handleChangeRowsPerPage}
-                        rowsPerPageOptions={[4, 8, 10, 12]}
+                        rowsPerPageOptions={[10, 12, 15, 20]}
                         labelRowsPerPage="Productos por página:"
                         labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
                         sx={{

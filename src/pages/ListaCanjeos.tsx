@@ -95,7 +95,7 @@ function ListaCanjeos(): JSX.Element {
 
   // Estados para la paginación
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(12);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const {
     validarIdentidad,
@@ -406,6 +406,11 @@ function ListaCanjeos(): JSX.Element {
                             <MDTypography variant="caption" sx={{ color: green[900], fontSize: "0.7rem" }}>
                               {formatearFecha(p.creacion_canje ?? p.productos?.[0]?.creacion_canje)}
                             </MDTypography>
+                            {p.productos?.some((prod: any) => !prod.id_producto) && (
+                              <MDTypography variant="caption" sx={{ color: "#b45309", fontSize: "0.7rem", fontWeight: 600 }}>
+                                ⚠ Tiene productos sin registrar
+                              </MDTypography>
+                            )}
                           </Box>
                         </Box>
 
@@ -478,7 +483,7 @@ function ListaCanjeos(): JSX.Element {
                 onPageChange={handleChangePage}
                 rowsPerPage={rowsPerPage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
-                rowsPerPageOptions={[3, 6, 9, 12]}
+                rowsPerPageOptions={[10, 20, 30]}
                 labelRowsPerPage="Canjes por página:"
                 labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
                 sx={{

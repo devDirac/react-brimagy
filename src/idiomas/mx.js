@@ -329,7 +329,7 @@ const textosMx = {
   marcar_no_disponible: "Marcar no disponible",
   sin_encuestas_registradas: "Sin encuestas registradas",
   input_valor_factor: "Factor",
-  input_fecha_compra: "Fecha de compra",
+  input_fecha_compra: "Fecha de factura",
   input_costo_envio_real: "Costo de envío real",
   input_validation_numero_decimal: "Máximo 4 dígitos enteros y 4 decimales",
   input_validation_numero_decimal: "Máximo 8 dígitos enteros y 4 decimales",

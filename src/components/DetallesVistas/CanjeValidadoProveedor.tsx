@@ -11,23 +11,20 @@ import {
   Tooltip,
   IconButton,
   Alert,
+  createFilterOptions,
+  Autocomplete,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useIntl } from "react-intl";
-import ModalComponent from "components/Modal";
 import { useMemo, useState } from "react";
 import { Spinner } from "react-bootstrap";
-import { FormikProvider, useFormik } from "formik";
-import * as Yup from "yup";
 import { numericFormatter } from "react-number-format";
 
 import { useSelector } from "react-redux";
 import { StoreType } from "../../types/genericTypes";
-import PDFViewerCanje from "components/PDFViews/PDFViewerCanje";
 import MDBox from "components/MDBox";
 import { useMaterialUIController } from "context";
 import DoubleArrowIcon from "@mui/icons-material/DoubleArrow";
-import MobileFriendlyIcon from "@mui/icons-material/MobileFriendly";
 import ModalConfirm from "components/ModalConfirm/ModalConfirm";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import SendIcon from "@mui/icons-material/Send";
@@ -37,6 +34,8 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { InputAdornment } from "@mui/material";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
+import { Proveedor as ProveedorCatalogo } from "types/canjeTypes";
+import { IconAward, IconCreditCardFilled, IconLeafFilled } from "@tabler/icons-react";
 
 interface Producto {
   id: number;
@@ -85,6 +84,8 @@ interface Producto {
   subtotal: number;
   tipo_producto: string;
   categoria: string;
+  plataforma: string | null;
+  id_plataforma: number;
 }
 interface Proveedor {
   id: number;
@@ -160,6 +161,7 @@ interface DetalleCanjeProps {
   factura: File | null;
   setProductoSeleccionado: React.Dispatch<React.SetStateAction<any>>;
   handleChangeFactura: (newFile: File | null) => void;
+  proveedoresSelect: ProveedorCatalogo[];
 }
 
 const CanjeValidadoProveedorModal = ({
@@ -189,16 +191,28 @@ const CanjeValidadoProveedorModal = ({
   setProductoSeleccionado,
   factura,
   handleChangeFactura,
+  proveedoresSelect
 }: DetalleCanjeProps) => {
-  if (!verCanje) return null;
-  if (!verProveedor) return null;
   const intl = useIntl();
   const [controller] = useMaterialUIController();
   const { darkMode } = controller;
 
   // Estados para la paginación
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(4);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const [proveedoresPorProducto, setProveedoresPorProducto] = useState<Record<number, number[]>>({});
+
+  const setProveedoresProducto = (key: number, ids: number[]) =>
+    setProveedoresPorProducto((prev) => ({ ...prev, [key]: ids }));
+
+  const opcionesProveedores = useMemo<ProveedorCatalogo[]>(
+    () =>
+      [...(proveedoresSelect ?? [])].sort((a, b) =>
+        (a.nombre ?? "").localeCompare(b.nombre ?? "")
+      ),
+    [proveedoresSelect]
+  );
 
   // Handlers para la paginación
   const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
@@ -218,7 +232,6 @@ const CanjeValidadoProveedorModal = ({
     return verCanje?.productos.slice(startIndex, endIndex) || [];
   }, [verCanje, page, rowsPerPage]);
 
-  const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
   const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
@@ -226,17 +239,6 @@ const CanjeValidadoProveedorModal = ({
   const handleisAlertOpenCompraDigital = () => setIsAlertOpenCompraDigital(true);
   const handleisAlertCloseCompraDigital = () => setIsAlertOpenCompraDigital(false);
 
-  const getEstadoColorCanje = (estado_canje: string) => {
-    if (!estado_canje) return "default";
-    switch (estado_canje.toLowerCase()) {
-      case "inactive":
-        return "error";
-      case "active":
-        return "success";
-      default:
-        return "default";
-    }
-  };
   const getEstadoColorValidacion = (estado_validacion: string) => {
     if (!estado_validacion) return "default";
     switch (estado_validacion.toLowerCase()) {
@@ -259,11 +261,6 @@ const CanjeValidadoProveedorModal = ({
     }
   };
 
-  const estadosCanjeMap: { [key: string]: string } = {
-    ACTIVE: "ACTIVO",
-    INACTIVE: "INACTIVO",
-  };
-
   const estadosValidacionMap: { [key: string]: string } = {
     COTIZACION_ENVIADA_A_PROVEEDOR: "LA COTIZACIÓN FUE ENVIADA A PROVEEDOR",
     COTIZACION_VALIDADA_POR_PROVEEDOR: "LA COTIZACIÓN FUE VALIDADA POR EL PROVEEDOR",
@@ -274,44 +271,29 @@ const CanjeValidadoProveedorModal = ({
     FACTURA_SUBIDA_CORRECTAMENTE_PROVEEDOR: "ESPERANDO VALIDACIÓN DE ORDEN POR PROVEEDOR",
   };
 
-  const renderEstatusChip = (estatusProveedor: number, tipoProducto: string) => {
+  type EstatusVisual = { label: string; color: string };
+
+  const getEstatusVisual = (
+    estatusProveedor: number | null | undefined,
+    tipoProducto: string
+  ): EstatusVisual => {
     if (tipoProducto === "digital") {
-      return (
-        <Chip
-          label="Producto Digital"
-          sx={{
-            backgroundColor: "#ff9809",
-            color: "#fff",
-          }}
-          variant="filled"
-        />
-      );
+      return { label: "Producto digital", color: "#ff9809" };
     }
 
-    if (estatusProveedor === null || estatusProveedor === undefined) {
-      return <Chip label="Cotización pendiente" color="default" variant="outlined" />;
+    switch (estatusProveedor) {
+      case null:
+      case undefined:
+        return { label: "Cotización pendiente", color: "grey.500" };
+      case 0:
+        return { label: "Validación pendiente", color: "secondary.main" };
+      case 1:
+        return { label: "Aceptado", color: "success.main" };
+      case 2:
+        return { label: "Rechazado", color: "error.main" };
+      default:
+        return { label: "Sin estatus", color: "grey.400" };
     }
-
-    if (estatusProveedor === 0) {
-      return <Chip label="Validación pendiente" color="secondary" variant="outlined" />;
-    }
-
-    if (estatusProveedor === 2) {
-      return <Chip label="Rechazado" color="error" variant="outlined" />;
-    }
-
-    if (estatusProveedor === 1) {
-      return <Chip label="Aceptado" color="success" variant="outlined" />;
-    }
-
-    return null;
-  };
-
-  // Función helper para traducir estados
-  const traducirEstadoCanje = (estado: string | null): string => {
-    if (!estado) return "SIN ESTADO";
-    const estadoUpper = estado.toUpperCase();
-    return estadosCanjeMap[estadoUpper] || estadoUpper;
   };
 
   const traducirEstadoValidacion = (estado: string | null): string => {
@@ -342,6 +324,117 @@ const CanjeValidadoProveedorModal = ({
 
   const formatearFecha = (fecha?: string | null) =>
     fecha ? dayjs(fecha).locale("es").format("DD [de] MMMM [de] YYYY, HH:mm") : "Sin fecha";
+
+  const etiquetaProveedor = (p: ProveedorCatalogo): string =>
+    p.nombre || p.razon_social || `Proveedor #${p.id}`;
+
+  const filtrarProveedores = createFilterOptions<ProveedorCatalogo>({
+    stringify: (p) =>
+      `${p.nombre ?? ""} ${p.razon_social ?? ""} ${p.nombre_contacto ?? ""} ${p.correo ?? ""}`,
+    ignoreAccents: true,
+    ignoreCase: true,
+  });
+
+  const renderOpcion = (props: any, option: ProveedorCatalogo, selected: boolean) => (
+    <li
+      {...props}
+      key={option.id}
+      style={{
+        ...props.style,
+        borderLeft: selected ? "2px solid #084d6e" : "2px solid transparent",
+        fontWeight: selected ? 600 : 400,
+      }}
+    >
+      <Box sx={{ textAlign: "left" }}>
+        <Typography variant="body2" sx={{ fontSize: 14, fontWeight: selected ? 600 : 400 }}>
+          {etiquetaProveedor(option)}
+        </Typography>
+        <Typography variant="caption" color="text.secondary">
+          {option.razon_social}
+          {option.correo ? ` · ${option.correo}` : ""}
+        </Typography>
+      </Box>
+    </li>
+  );
+
+  const renderTags = (value: ProveedorCatalogo[], getTagProps: any) =>
+    value.map((o, index) => (
+      <Chip
+        {...getTagProps({ index })}
+        key={o.id}
+        label={etiquetaProveedor(o)}
+        size="small"
+        sx={{
+          backgroundColor: "#084d6e",
+          color: "#fff",
+          "& .MuiChip-deleteIcon": { color: "#fff" },
+        }}
+      />
+    ));
+
+  const renderSelectorProveedores = (
+    opciones: ProveedorCatalogo[],
+    idsSel: number[],
+    onChange: (ids: number[]) => void
+  ) => {
+    const valor = opciones.filter((o) => idsSel.includes(o.id));
+    return (
+      <Autocomplete
+        multiple
+        disableCloseOnSelect
+        fullWidth
+        sx={{
+          mt: 1.5,
+          "& .MuiOutlinedInput-root": { paddingTop: "8px", paddingBottom: "8px" },
+          "& .MuiAutocomplete-input": {
+            paddingTop: "4px !important",
+            paddingBottom: "4px !important",
+          },
+        }}
+        options={opciones}
+        filterOptions={filtrarProveedores}
+        getOptionLabel={etiquetaProveedor}
+        isOptionEqualToValue={(a, b) => a.id === b.id}
+        value={valor}
+        onChange={(_, nuevos) => onChange(nuevos.map((n) => n.id))}
+        renderOption={(props, option, { selected }) => renderOpcion(props, option, selected)}
+        renderTags={renderTags}
+        noOptionsText={intl.formatMessage({ id: "general_sin_registros" })}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Proveedores a cotizar"
+            placeholder={valor.length ? "" : "Buscar proveedor..."}
+          />
+        )}
+      />
+    );
+  };
+
+  const productosDigitales = useMemo(
+    () => (verCanje?.productos ?? []).filter((p) => p.tipo_producto === "digital"),
+    [verCanje]
+  );
+  const productosFisicos = useMemo(
+    () => (verCanje?.productos ?? []).filter((p) => p.tipo_producto === "fisico"),
+    [verCanje]
+  );
+  const tipoEnvioDigitales = verProveedor?.id ? "proveedor" : "directo";
+  const procesandoDigitales = procesandoValidacionFinal || procesandoEnviarProveedor;
+  const esDirecto = verProveedor?.id == null;
+
+  const procesandoFisicos = esDirecto ? procesandoValidacionFinal : procesandoEnviarProveedor;
+
+  const deshabilitarFisicos =
+    procesandoFisicos ||
+    hayProductoSinPrecioUnitario ||
+    productosFisicos.length === 0 ||
+    (esDirecto
+      ? !!verCanje?.orden_compra
+      : todosProductosValidados);
+
+  if (!verCanje) return null;
+  if (!verProveedor) return null;
 
   return (
     <Box sx={{ px: 2, pb: 2, mt: 3 }}>
@@ -439,12 +532,8 @@ const CanjeValidadoProveedorModal = ({
               canjesPaginados.map((canje) => {
                 const precioUnitario = canje.costo_sin_iva || 0;
                 const cantidad = canje.number_of_awards || 0;
-                const porcentajeDescuento = canje.fee_brimagy || 0;
-                // Subtotal sin descuento
                 const subtotalSinDescuento = precioUnitario * cantidad;
-                // IVA
                 const iva = subtotalSinDescuento * 0.16;
-                // Total
                 const importeTotal = subtotalSinDescuento + iva;
 
                 const estiloTexto =
@@ -453,12 +542,77 @@ const CanjeValidadoProveedorModal = ({
                     : canje.tipo_producto === "digital"
                       ? { color: "#ff9809" }
                       : {};
+                const estatus = getEstatusVisual(canje.estatus_proveedor, canje.tipo_producto);
+                const keyProducto = canje.id_validacion_producto ?? canje.id;
+                const idsSel = proveedoresPorProducto[keyProducto] ?? [];
 
                 return (
                   <Box
                     key={canje.id_validacion_producto ?? canje.id}
-                    sx={{ py: 2, borderBottom: "1px solid", borderColor: "divider" }}
+                    sx={{
+                      position: "relative",
+                      mt: 3,
+                      p: 2,
+                      pt: 2.5,
+                      border: "1px solid",
+                      borderLeftWidth: 5,
+                      borderColor: estatus.color,
+                      borderRadius: 2,
+                    }}
                   >
+                    <Chip
+                      label={estatus.label}
+                      size="small"
+                      sx={{
+                        position: "absolute",
+                        top: 0,
+                        right: 16,
+                        transform: "translateY(-50%)",
+                        bgcolor: estatus.color,
+                        color: "#fff",
+                        fontWeight: "bold",
+                        height: 22,
+                      }}
+                    />
+                    <Chip
+                      label={canje.folio ?? "Sin folio"}
+                      size="small"
+                      icon={<IconAward stroke={2} size={14} />}
+                      sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 16,
+                        transform: "translateY(-50%)",
+                        bgcolor: "#084d6e",
+                        color: "#fff",
+                        fontWeight: "bold",
+                        height: 22,
+                        "& .MuiChip-icon": {
+                          color: "#fff",
+                          ml: "6px",
+                        },
+                      }}
+                    />
+                    <Chip
+                      label={canje.plataforma ?? "Sin plataforma"}
+                      size="small"
+                      icon={<IconLeafFilled size={14} />}
+                      sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        bgcolor: "#44856b",
+                        color: "#fff",
+                        fontWeight: "bold",
+                        height: 22,
+                        textTransform: "uppercase",
+                        "& .MuiChip-icon": {
+                          color: "#fff",
+                          ml: "6px",
+                        },
+                      }}
+                    />
                     <Grid container spacing={2}>
                       <Grid item xs={6} md={!verCanje?.orden_compra ? 3 : 4}>
                         <Typography variant="body2" color="text.secondary">
@@ -521,28 +675,6 @@ const CanjeValidadoProveedorModal = ({
                         </Typography>
                       </Grid>
 
-                      <Grid item xs={6} md={1}>
-                        <Typography variant="body2" color="text.secondary">
-                          Impuestos
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          fontWeight="medium"
-                          sx={
-                            canje.estatus_proveedor === 2
-                              ? {
-                                textDecoration: "line-through",
-                                textDecorationColor: "red",
-                              }
-                              : canje.tipo_producto === "digital"
-                                ? { color: "#ff9809" }
-                                : {}
-                          }
-                        >
-                          IVA (16%)
-                        </Typography>
-                      </Grid>
-
                       <Grid item xs={6} md={2}>
                         <Typography variant="body2" color="text.secondary">
                           Importe
@@ -568,56 +700,33 @@ const CanjeValidadoProveedorModal = ({
                             prefix: "$",
                           })}
                         </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={
+                            canje.estatus_proveedor === 2
+                              ? {
+                                textDecoration: "line-through",
+                                textDecorationColor: "red",
+                              }
+                              : canje.tipo_producto === "digital"
+                                ? { color: "#ff9809" }
+                                : {}
+                          }
+                        >
+                          (IVA 16%)
+                        </Typography>
                       </Grid>
-                      {!verCanje?.orden_compra && canje.tipo_producto === "fisico" ? (
-                        <Grid item xs={6} md={1}>
-                          <Typography variant="body2" color="text.secondary">
-                            Acciones
+
+                      {canje.tipo_producto === "fisico" && !verCanje?.orden_compra && (
+                        <Grid item xs={12} md={3}>
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Cotizar con otros proveedores
                           </Typography>
-                          <Typography variant="body2" fontWeight="medium">
-                            {canje.id_proveedor !== null ? (
-                              <Tooltip
-                                title={intl.formatMessage({ id: "enviar_a_otro_proveedor" })}
-                              >
-                                <IconButton
-                                  onClick={() => {
-                                    const datos = {
-                                      nombre_producto: canje.nombre_premio,
-                                    };
-                                    setOrdenCompraActiva(canje?.id_validacion_producto);
-                                    getProductoNuevoProveedor(datos);
-                                    handleisAlertOpenOtroProveedor();
-                                  }}
-                                  sx={{ color: darkMode ? "#fff" : "#13e9bf", padding: "0" }}
-                                >
-                                  <DoubleArrowIcon />
-                                </IconButton>
-                              </Tooltip>
-                            ) : null}
-                            {canje.id_proveedor === null ? (
-                              <Tooltip title={intl.formatMessage({ id: "asignar_proveedor" })}>
-                                <IconButton
-                                  onClick={() => {
-                                    setProductoSeleccionado(canje);
-                                    handleisAlertOpenAsignarProveedor();
-                                  }}
-                                  sx={{ color: darkMode ? "#fff" : "#6fbf4c", padding: "0" }}
-                                >
-                                  <AddIcon />
-                                </IconButton>
-                              </Tooltip>
-                            ) : null}
-                          </Typography>
+                          {renderSelectorProveedores(opcionesProveedores, idsSel, (ids) =>
+                            setProveedoresProducto(keyProducto, ids)
+                          )}
                         </Grid>
-                      ) : null}
-                      <Grid item xs={6} md={2}>
-                        <Typography variant="body2" color="text.secondary">
-                          Estatus
-                        </Typography>
-                        <Typography variant="body2" fontWeight="medium">
-                          {renderEstatusChip(canje.estatus_proveedor, canje.tipo_producto)}
-                        </Typography>
-                      </Grid>
+                      )}
                     </Grid>
                   </Box>
                 );
@@ -973,224 +1082,96 @@ const CanjeValidadoProveedorModal = ({
                 intl.formatMessage({ id: "rechazar_cotizacion_proveedor" })
               )}
             </Button>
-            {verProveedor.id === null && !verCanje?.orden_compra ? (
-              <>
-                <Button
-                  sx={{
-                    color: "#fff",
-                    background: "#3ec972",
-                    fontSize: "0.75rem",
-                    padding: "6px 8px",
-                    margin: "5px 10px",
-                  }}
-                  variant="contained"
-                  endIcon={<SendIcon />}
-                  disabled={
-                    hayProductoSinPrecioUnitario ||
-                    procesandoValidacionFinal ||
-                    verCanje?.orden_compra?.estatus === "cotizacion_validada_por_proveedor" ||
-                    !verCanje.productos.some((p) => p.tipo_producto === "fisico")
-                  }
-                  onClick={(e: any) => {
-                    const datos = {
-                      id_usuario: idUsuario,
-                      id_proveedor: verProveedor.id,
-                      productos: verCanje.productos
-                        .filter((p) => p.tipo_producto === "fisico")
-                        .map((productos) => {
-                          return {
-                            id_canje: productos.id_canje,
-                            id_producto: productos.id,
-                            cantidad_producto: productos.number_of_awards,
-                            cantidad_almacen: productos.number_of_awards,
-                            estatus_almacen: 0,
-                            estatus_proveedor: 1,
-                          };
-                        }),
-                      plataforma: plataforma,
-                      tipo_envio: "directo",
-                    };
-                    enviarCotizacionProveedor(datos);
-                  }}
-                >
-                  {procesandoValidacionFinal ? (
-                    <>
-                      <Spinner
-                        as="span"
-                        animation="border"
-                        size="sm"
-                        role="status"
-                        aria-hidden="true"
-                      />
-                      Validando...{" "}
-                    </>
-                  ) : (
-                    intl.formatMessage({ id: "validar_sin_proveedor" })
-                  )}
-                </Button>
-                {verCanje.productos.some((p) => p.tipo_producto === "digital") && (
-                  <Button
-                    sx={{
-                      color: "#fff",
-                      background: "#ff9809",
-                      fontSize: "0.75rem",
-                      padding: "6px 8px",
-                      margin: "5px 10px",
-                    }}
-                    variant="contained"
-                    endIcon={<SendIcon />}
-                    disabled={
-                      procesandoValidacionFinal ||
-                      verCanje?.orden_compra?.estatus === "cotizacion_validada_por_proveedor"
-                    }
-                    onClick={(e: any) => {
-                      const datos = {
-                        id_usuario: idUsuario,
-                        id_proveedor: verProveedor.id,
-                        productos: verCanje.productos
-                          .filter((p) => p.tipo_producto === "digital")
-                          .map((productos) => {
-                            return {
-                              id_canje: productos.id_canje,
-                              id_producto: productos.id,
-                              cantidad_producto: productos.number_of_awards,
-                              cantidad_almacen: productos.number_of_awards,
-                              estatus_almacen: 0,
-                              estatus_proveedor: 1,
-                            };
-                          }),
-                        plataforma: plataforma,
-                        tipo_envio: "directo",
-                      };
-                      enviarCotizacionProveedor(datos);
-                    }}
-                  >
-                    {procesandoValidacionFinal ? (
-                      <>
-                        <Spinner
-                          as="span"
-                          animation="border"
-                          size="sm"
-                          role="status"
-                          aria-hidden="true"
-                        />
-                        Validando...{" "}
-                      </>
-                    ) : (
-                      intl.formatMessage({ id: "validar_productos_digitales" })
-                    )}
-                  </Button>
+
+            <Button
+              sx={{
+                color: "#fff",
+                background: "#3ec972",
+                fontSize: "0.75rem",
+                padding: "6px 8px",
+                margin: "5px 10px",
+              }}
+              variant="contained"
+              endIcon={<SendIcon />}
+              disabled={deshabilitarFisicos}
+              onClick={() =>
+                enviarCotizacionProveedor({
+                  id_usuario: idUsuario,
+                  id_proveedor: verProveedor.id,
+                  productos: productosFisicos.map((p) => ({
+                    id_validacion: p.id_validacion_producto,
+                    estatus_proveedor: esDirecto ? 1 : 0,
+                    estatus_almacen: 0,
+                  })),
+                  /*productos: productosFisicos.map((p) => ({
+                    id_canje: p.id_canje,
+                    id_producto: p.id,
+                    cantidad_producto: p.number_of_awards,
+                    cantidad_almacen: p.number_of_awards,
+                    estatus_almacen: 0,
+                    estatus_proveedor: esDirecto ? 1 : 0,
+                  })),*/
+                  plataforma,
+                  tipo_envio: esDirecto ? "directo" : "proveedor",
+                })
+              }
+            >
+              {procesandoFisicos ? (
+                <>
+                  <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                  {esDirecto ? "Validando..." : "Enviando..."}{" "}
+                </>
+              ) : (
+                intl.formatMessage({ id: esDirecto ? "validar_sin_proveedor" : "enviar_a_proveedor" })
+              )}
+            </Button>
+
+            {productosDigitales.length > 0 && (
+              <Button
+                sx={{
+                  color: "#fff",
+                  background: "#ff9809",
+                  fontSize: "0.75rem",
+                  padding: "6px 8px",
+                  margin: "5px 10px",
+                }}
+                variant="contained"
+                startIcon={<IconCreditCardFilled />}
+                disabled={
+                  procesandoDigitales ||
+                  verCanje?.orden_compra?.estatus === "cotizacion_validada_por_proveedor"
+                }
+                onClick={() =>
+                  enviarCotizacionProveedor({
+                    id_usuario: idUsuario,
+                    id_proveedor: verProveedor.id,
+                    /*productos: productosDigitales.map((p) => ({
+                      id_canje: p.id_canje,
+                      id_producto: p.id,
+                      cantidad_producto: p.number_of_awards,
+                      cantidad_almacen: p.number_of_awards,
+                      estatus_almacen: 0,
+                      estatus_proveedor: 1,
+                    })),*/
+                    productos: productosDigitales.map((p) => ({
+                      id_validacion: p.id_validacion_producto,
+                      estatus_proveedor: 1,
+                      estatus_almacen: 0,
+                    })),
+                    plataforma,
+                    tipo_envio: tipoEnvioDigitales,
+                  })
+                }
+              >
+                {procesandoDigitales ? (
+                  <>
+                    <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                    Validando...{" "}
+                  </>
+                ) : (
+                  intl.formatMessage({ id: "validar_productos_digitales" })
                 )}
-              </>
-            ) : (
-              <>
-                <Button
-                  sx={{
-                    color: "#fff",
-                    background: "#3ec972",
-                    fontSize: "0.75rem",
-                    padding: "6px 8px",
-                    margin: "5px 10px",
-                  }}
-                  variant="contained"
-                  endIcon={<SendIcon />}
-                  disabled={
-                    hayProductoSinPrecioUnitario ||
-                    procesandoEnviarProveedor ||
-                    canjesPaginados.length === 0 ||
-                    todosProductosValidados ||
-                    verProveedor.id == null
-                  }
-                  onClick={(e: any) => {
-                    const datos = {
-                      id_usuario: idUsuario,
-                      id_proveedor: verProveedor.id,
-                      productos: verCanje.productos
-                        .filter((p) => p.tipo_producto === "fisico")
-                        .map((p) => {
-                          return {
-                            id_canje: p.id_canje,
-                            id_producto: p.id,
-                            cantidad_producto: p.number_of_awards,
-                            cantidad_almacen: p.number_of_awards,
-                            estatus_almacen: 0,
-                            estatus_proveedor: 0,
-                          };
-                        }),
-                      plataforma: plataforma,
-                      tipo_envio: "proveedor",
-                    };
-                    enviarCotizacionProveedor(datos);
-                  }}
-                >
-                  {procesandoEnviarProveedor ? (
-                    <>
-                      <Spinner
-                        as="span"
-                        animation="border"
-                        size="sm"
-                        role="status"
-                        aria-hidden="true"
-                      />
-                      Enviando...{" "}
-                    </>
-                  ) : (
-                    intl.formatMessage({ id: "enviar_a_proveedor" })
-                  )}
-                </Button>
-                {verCanje.productos.some((p) => p.tipo_producto === "digital") && (
-                  <Button
-                    sx={{
-                      color: "#fff",
-                      background: "#ff9809",
-                      fontSize: "0.75rem",
-                      padding: "6px 8px",
-                      margin: "5px 10px",
-                    }}
-                    variant="contained"
-                    endIcon={<SendIcon />}
-                    disabled={
-                      procesandoValidacionFinal ||
-                      verCanje?.orden_compra?.estatus === "cotizacion_validada_por_proveedor"
-                    }
-                    onClick={(e: any) => {
-                      const datos = {
-                        id_usuario: idUsuario,
-                        id_proveedor: verProveedor.id,
-                        productos: verCanje.productos
-                          .filter((p) => p.tipo_producto === "digital")
-                          .map((productos) => {
-                            return {
-                              id_canje: productos.id_canje,
-                              id_producto: productos.id,
-                              cantidad_producto: productos.number_of_awards,
-                              cantidad_almacen: productos.number_of_awards,
-                              estatus_almacen: 0,
-                              estatus_proveedor: 1,
-                            };
-                          }),
-                        tipo_envio: "proveedor",
-                      };
-                      enviarCotizacionProveedor(datos);
-                    }}
-                  >
-                    {procesandoValidacionFinal ? (
-                      <>
-                        <Spinner
-                          as="span"
-                          animation="border"
-                          size="sm"
-                          role="status"
-                          aria-hidden="true"
-                        />
-                        Validando...{" "}
-                      </>
-                    ) : (
-                      intl.formatMessage({ id: "validar_productos_digitales" })
-                    )}
-                  </Button>
-                )}
-              </>
+              </Button>
             )}
 
             <Button

@@ -14,7 +14,8 @@ import {
 } from "actions/canjes";
 
 const CAMPOS_PRODUCTO = [
-  "id_producto", "id_proveedor", "nombre_premio", "sku", "sku_catalogo",
+  "id_producto", "id_proveedor", "award_id", "tipo_producto",
+  "nombre_premio", "sku", "sku_catalogo",
   "size", "color", "category", "number_of_awards", "costo_premio",
   "puntos_canjeados", "estado_validacion",
 ] as const;
@@ -36,10 +37,8 @@ export const agruparCanjes = (rows: any[]) => {
   const mapa = new Map<number, any>();
 
   rows.forEach((row) => {
-    if (row.id_producto == null) return;
-
     const producto: any = {};
-    CAMPOS_PRODUCTO.forEach((k) => (producto[k] = row[k]));
+    CAMPOS_PRODUCTO.forEach((k) => (producto[k] = row[k] ?? null));
 
     const existente = mapa.get(row.id);
     if (existente) {

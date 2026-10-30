@@ -34,20 +34,16 @@ import Footer from "examples/Footer";
 import { useSelector } from "react-redux";
 import { StoreType } from "../types/genericTypes";
 import {
+  Autocomplete,
   Backdrop,
   Box,
   Button,
   CardContent,
-  Checkbox,
-  Chip,
   CircularProgress,
-  Divider,
-  FormControlLabel,
-  FormGroup,
+  createFilterOptions,
   IconButton,
   InputAdornment,
   MenuItem,
-  Radio,
   Switch,
   TextField,
   ToggleButton,
@@ -61,7 +57,6 @@ import MDTypography from "components/MDTypography";
 import TablePagination from "@mui/material/TablePagination";
 import { green } from "@mui/material/colors";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import ModalConfirm from "components/ModalConfirm/ModalConfirm";
 import SearchIcon from "@mui/icons-material/Search";
 import Badge, { BadgeProps } from "@mui/material/Badge";
 import { useGenerarOrdenCompra } from "./customHooksPages/useGenerarOrdenCompra";
@@ -83,58 +78,6 @@ function GenerarOrdenCompra(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
   const userName = useSelector((state: StoreType) => state?.app?.user?.data?.name || false);
   const fotoUser: any = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
-
-  const MaterialUISwitch = styled(Switch)(({ theme }) => ({
-    width: 62,
-    height: 34,
-    padding: 7,
-    "& .MuiSwitch-switchBase": {
-      margin: 1,
-      padding: 0,
-      transform: "translateX(6px)",
-      "&.Mui-checked": {
-        color: "#fff",
-        transform: "translateX(22px)",
-        "& .MuiSwitch-thumb:before": {
-          backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 24 24"><path fill="${encodeURIComponent(
-            "#fff"
-          )}" d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>')`,
-        },
-        "& + .MuiSwitch-track": {
-          opacity: 1,
-          backgroundColor: "#aab4be",
-        },
-      },
-      // ← clave: apuntar al track desde el switchBase unchecked
-      "&:not(.Mui-checked) + .MuiSwitch-track": {
-        opacity: "1 !important",
-        backgroundColor: "#aab4be !important",
-      },
-    },
-    "& .MuiSwitch-thumb": {
-      backgroundColor: "#001e3c",
-      width: 32,
-      height: 32,
-      "&::before": {
-        content: "''",
-        position: "absolute",
-        width: "100%",
-        height: "100%",
-        left: 0,
-        top: 0,
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center",
-        backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 24 24"><path fill="${encodeURIComponent(
-          "#fff"
-        )}" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>')`,
-      },
-    },
-    "& .MuiSwitch-track": {
-      opacity: "1 !important",
-      backgroundColor: "#aab4be !important",
-      borderRadius: 20 / 2,
-    },
-  }));
 
   // Estados para la paginación
   const [page, setPage] = useState(0);
@@ -233,15 +176,6 @@ function GenerarOrdenCompra(): JSX.Element {
     plataforma,
   } = useGenerarOrdenCompra(tipoUsuario);
 
-  const independiente = () => {
-    return !proveedores?.length && !procesando ? (
-      <Grid container spacing={2}>
-        <Grid item xs={12} style={{ textAlign: "center" }}>
-          <h3>Sin registros</h3>
-        </Grid>
-      </Grid>
-    ) : null;
-  };
   const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
     "& .MuiBadge-badge": {
       right: 2,
@@ -629,6 +563,7 @@ function GenerarOrdenCompra(): JSX.Element {
                 validarOrdenCompraFinal={validarOrdenCompraFinal}
                 handleisAlertOpenAsignarProveedor={handleisAlertOpenAsignarProveedor}
                 setProductoSeleccionado={setProductoSeleccionado}
+                proveedoresSelect={proveedoresSelect}
               />
             </>
           ) : null}
@@ -670,32 +605,8 @@ function GenerarOrdenCompra(): JSX.Element {
                 <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
                   Asignar {productoSeleccionado?.nombre_premio} a un proveedor
                 </Typography>
-                {/*<Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                  Da clic y selecciona la accion que deseas tomar con el producto
-                </Typography>*/}
               </Grid>
 
-              {/*<Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <MaterialUISwitch
-                      sx={{ m: 1 }}
-                      defaultChecked
-                      checked={accionProducto}
-                      onChange={(e: any) => handleAccionProducto(e.target.checked)}
-                    />
-                  }
-                  label={accionProducto ? "Asignar proveedor" : "Registrar nuevo precio"}
-                  labelPlacement="bottom"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    margin: 0,
-                    gap: 0,
-                  }}
-                />
-              </Grid>*/}
               <Grid item xs={12} sm={accionProducto ? 6 : 4}>
                 <TextField
                   id="id_proveedor"

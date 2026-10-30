@@ -66,18 +66,16 @@ export const useValidarOrdenCompra = () => {
     }
   }, []);
 
-  const aceptarProductoOC = async (id_orden_compra: number, id_producto: number) => {
+  const aceptarProductoOC = async (id_orden_compra: number, llave: string) => {
     try {
       setProcesandoCodigo(true);
-      await aceptarProductoOCHttp({ id_orden_compra, id_producto });
+      await aceptarProductoOCHttp({ id_orden_compra, llave });
       setOrdenCompra((prevOrden: any) => {
         if (!prevOrden?.productos) return prevOrden;
         return {
           ...prevOrden,
           productos: prevOrden.productos.map((producto: any) =>
-            Number(producto.id) === Number(id_producto)
-              ? { ...producto, estatus_proveedor: 1 }
-              : producto
+            producto._llave === llave ? { ...producto, estatus_proveedor: 1 } : producto
           ),
         };
       });
@@ -92,21 +90,17 @@ export const useValidarOrdenCompra = () => {
     }
   };
 
-  const rechazarProductoOC = async (
-    id_orden_compra: number,
-    id_producto: number,
-    motivo?: string
-  ) => {
+  const rechazarProductoOC = async (id_orden_compra: number, llave: string, motivo?: string) => {
     try {
       setProcesandoCodigo(true);
-      await rechazarProductoOCHttp({ id_orden_compra, id_producto, motivo });
+      await rechazarProductoOCHttp({ id_orden_compra, llave, motivo });
       setOrdenCompra((prevOrden: any) => {
         if (!prevOrden?.productos) return prevOrden;
         return {
           ...prevOrden,
           productos: prevOrden.productos.map((producto: any) =>
-            Number(producto.id) === Number(id_producto)
-              ? { ...producto, estatus_proveedor: 2 }
+            producto._llave === llave
+              ? { ...producto, estatus_proveedor: 2, motivo_rechazo: motivo ?? "" }
               : producto
           ),
         };
@@ -121,6 +115,7 @@ export const useValidarOrdenCompra = () => {
       setProcesandoCodigo(false);
     }
   };
+  
   const enviarAprobacion = async (data: any) => {
     try {
       setProcesandoCodigo(true);

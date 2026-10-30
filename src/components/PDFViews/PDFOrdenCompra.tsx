@@ -376,6 +376,23 @@ const PDFOrdenCompra: React.FC<PDFOrdenCompraProps> = ({ ordenCompra }) => {
     //const subtotalConDescuento = subtotal - descuentoAplicado;
     return subtotal * 0.16;
   };
+  const productosAceptados = (ordenCompra?.productos ?? []).filter(
+    (p) => Number(p.estatus_proveedor) === 1
+  );
+
+  const totales = productosAceptados.reduce(
+    (acc, p) => {
+      const subtotal = Number(p.cantidad_producto || 0) * Number(p.precio_unitario || 0);
+      const iva = subtotal * 0.16;
+      return {
+        subtotal: acc.subtotal + subtotal,
+        iva: acc.iva + iva,
+        total: acc.total + subtotal + iva,
+      };
+    },
+    { subtotal: 0, iva: 0, total: 0 }
+  );
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -450,75 +467,64 @@ const PDFOrdenCompra: React.FC<PDFOrdenCompraProps> = ({ ordenCompra }) => {
             </View>
 
             {/* Filas de canjes */}
-            {ordenCompra?.productos
-              ?.filter((canje) => canje.estatus_proveedor === 1)
-              ?.map((canje, index) => {
-                const iva = calcularIVA(
-                  canje.cantidad_producto,
-                  canje.precio_unitario,
-                  //canje.porcentaje_descuento
-                );
+            {productosAceptados.map((canje: any, index) => {
+              const subtotal = Number(canje.cantidad_producto || 0) * Number(canje.precio_unitario || 0);
+              const iva = subtotal * 0.16;
 
-                return (
-                  <View
-                    key={canje.id}
-                    style={index % 2 === 0 ? styles.tableRow : styles.tableRowAlt}
-                  >
-                    <View style={styles.colProducto}>
-                      <Text style={styles.tableCellLeft}>{canje?.nombre_premio}</Text>
-                    </View>
-                    <View style={styles.colMarca}>
-                      <Text style={styles.tableCellLeft}>{canje?.marca}</Text>
-                    </View>
-                    <View style={styles.colColor}>
-                      <Text style={styles.tableCellLeft}>{canje?.color}</Text>
-                    </View>
-                    <View style={styles.colTalla}>
-                      <Text style={styles.tableCellLeft}>{canje?.talla}</Text>
-                    </View>
-                    <View style={styles.colSku}>
-                      <Text style={styles.tableCellLeft}>{canje?.sku}</Text>
-                    </View>
-                    <View style={styles.colCantidad}>
-                      <Text style={styles.tableCell}>{canje?.cantidad_producto}</Text>
-                    </View>
-                    <View style={styles.colPrecio}>
-                      <Text style={styles.tableCellRight}>
-                        {formatCurrency(canje?.precio_unitario)}
-                      </Text>
-                    </View>
-                    <View style={styles.colIVA}>
-                      <Text style={styles.tableCellRight}>{formatCurrency(iva)}</Text>
-                    </View>
-                    <View style={styles.colTotal}>
-                      <Text style={styles.tableCellRight}>
-                        {formatCurrency(canje?.importe_total)}
-                      </Text>
-                    </View>
+              return (
+                <View
+                  key={canje.id}
+                  style={index % 2 === 0 ? styles.tableRow : styles.tableRowAlt}
+                >
+                  <View style={styles.colProducto}>
+                    <Text style={styles.tableCellLeft}>{canje?.nombre_premio}</Text>
                   </View>
-                );
-              })}
+                  <View style={styles.colMarca}>
+                    <Text style={styles.tableCellLeft}>{canje?.marca}</Text>
+                  </View>
+                  <View style={styles.colColor}>
+                    <Text style={styles.tableCellLeft}>{canje?.color}</Text>
+                  </View>
+                  <View style={styles.colTalla}>
+                    <Text style={styles.tableCellLeft}>{canje?.talla}</Text>
+                  </View>
+                  <View style={styles.colSku}>
+                    <Text style={styles.tableCellLeft}>{canje?.sku}</Text>
+                  </View>
+                  <View style={styles.colCantidad}>
+                    <Text style={styles.tableCell}>{canje?.cantidad_producto}</Text>
+                  </View>
+                  <View style={styles.colPrecio}>
+                    <Text style={styles.tableCellRight}>
+                      {formatCurrency(canje?.precio_unitario)}
+                    </Text>
+                  </View>
+                  <View style={styles.colIVA}>
+                    <Text style={styles.tableCellRight}>{formatCurrency(iva)}</Text>
+                  </View>
+                  <View style={styles.colTotal}>
+                    <Text style={styles.tableCellRight}>
+                      {formatCurrency(canje?.importe_total)}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
           </View>
 
           {/* Totales */}
           <View style={styles.totalesContainer}>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Subtotal:</Text>
-              <Text style={styles.totalValue}>
-                {formatCurrency(ordenCompra?.totales?.subtotal || 0)}
-              </Text>
+              <Text style={styles.totalValue}>{formatCurrency(totales.subtotal)}</Text>
             </View>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>IVA (16%):</Text>
-              <Text style={styles.totalValue}>
-                {formatCurrency(ordenCompra?.totales?.iva || 0)}
-              </Text>
+              <Text style={styles.totalValue}>{formatCurrency(totales.iva)}</Text>
             </View>
             <View style={styles.totalFinalRow}>
               <Text style={styles.totalFinalLabel}>TOTAL:</Text>
-              <Text style={styles.totalFinalValue}>
-                {formatCurrency(ordenCompra?.totales?.total || 0)}
-              </Text>
+              <Text style={styles.totalFinalValue}>{formatCurrency(totales.total)}</Text>
             </View>
           </View>
         </View>

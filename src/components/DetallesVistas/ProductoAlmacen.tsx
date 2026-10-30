@@ -609,7 +609,7 @@ const ProductoAlmacenModal = ({
                     </Grid>
                     <Grid item xs={12} md={6}>
                       <Typography variant="body2" color="text.secondary">
-                        Fecha de compra
+                        Fecha de factura
                       </Typography>
                       <Typography variant="body2" fontWeight="medium">
                         {formatearFechaCorta(p?.fecha_compra)}

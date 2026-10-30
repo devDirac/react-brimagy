@@ -35,3 +35,19 @@ export interface Canje {
     total_puntos: number;
     total_premios: number;
 }
+
+export interface Proveedor {
+    id: number;
+    nombre: string;
+    razon_social?: string;
+    descripcion?: string;
+    nombre_contacto?: string;
+    telefono?: string;
+    correo?: string;
+    created_at?: Date;
+}
+
+export interface ProveedorOpcion extends Proveedor {
+    _id: number;
+    _sugerido: boolean;
+}
