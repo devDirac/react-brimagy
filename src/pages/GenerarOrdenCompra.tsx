@@ -174,6 +174,10 @@ function GenerarOrdenCompra(): JSX.Element {
     registrarNuevoPrecio,
     handleAccionProducto,
     plataforma,
+    //COTIZAR CON OTROS PROVEEDORES
+    cotizarConOtrosProveedores,
+    procesandoCotizarOtros,
+    modoCotizacion,
   } = useGenerarOrdenCompra(tipoUsuario);
 
   const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
@@ -564,6 +568,9 @@ function GenerarOrdenCompra(): JSX.Element {
                 handleisAlertOpenAsignarProveedor={handleisAlertOpenAsignarProveedor}
                 setProductoSeleccionado={setProductoSeleccionado}
                 proveedoresSelect={proveedoresSelect}
+                cotizarConOtrosProveedores={cotizarConOtrosProveedores}
+                procesandoCotizarOtros={procesandoCotizarOtros}
+                modoCotizacion={modoCotizacion}
               />
             </>
           ) : null}

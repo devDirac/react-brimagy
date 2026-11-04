@@ -82,8 +82,7 @@ export const getOCPorIdHttp = async (id_orden_compra: number) => {
 export const getOrdenCompraPorProveedorHttp = async (id_ordencompra: string) => {
   try {
     const response = await axios.get(
-      `${
-        process.env.REACT_APP_API_URL
+      `${process.env.REACT_APP_API_URL
       }${"/getOrdenCompraPorProveedor"}?id_ordencompra=${id_ordencompra}`
     );
     return response?.data || [];
@@ -183,6 +182,28 @@ export const rechazarCotizacionDeProveedorHttp = async (data: any) => {
       data
     );
     return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+export const cotizarConOtrosProveedoresHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.post(
+      `${env.API_URL}${"/cotizarConOtrosProveedores"}`,
+      data
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const getConfigCotizacionHttp = async () => {
+  try {
+    const response = await axios.get(`${env.API_URL}${"/getConfigCotizacion"}`);
+    return response?.data || {};
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));
     return promise;

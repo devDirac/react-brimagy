@@ -348,6 +348,11 @@ const textosMx = {
   editar_periodo: "Editar periodo",
   periodo_editado_correctamente: "Periodo editado correctamente",
   periodo_editado_error: "Error al editar el periodo",
+  cotizar_otros_acumulado_exito:
+    "Los productos se agregaron a los pendientes de los proveedores seleccionados.",
+  cotizar_otros_directo_exito:
+    "Las cotizaciones se enviaron correctamente a los proveedores seleccionados.",
+  cotizar_otros_error: "Ocurrió un error al asignar los productos a otros proveedores.",
 };
 
 export default textosMx;

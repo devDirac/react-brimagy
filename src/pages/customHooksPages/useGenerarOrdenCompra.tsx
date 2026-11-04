@@ -11,8 +11,10 @@ import { numericFormatter } from "react-number-format";
 import moment from "moment";
 import { enviarValidacionHttp, getCanjesHttp, getCanjesPorProveedorHttp } from "actions/canjes";
 import {
+  cotizarConOtrosProveedoresHttp,
   enviarCotizacionProveedorHttp,
   enviarOrdenCompraFileProveedorHttp,
+  getConfigCotizacionHttp,
   getOCPorIdHttp,
   getOCPorIdProveedorHttp,
   getProveedoresOCHttp,
@@ -118,6 +120,10 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
   const handleChangeFactura = (newFile: File | null) => {
     setFactura(newFile);
   };
+
+  //COTIZAR CON OTROS PROVEEDORES
+  const [procesandoCotizarOtros, setProcesandoCotizarOtros] = useState<boolean>(false);
+  const [modoCotizacion, setModoCotizacion] = useState<"acumular" | "directo">("acumular");
 
   useEffect(() => {
     setAuth(token);
@@ -390,9 +396,10 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
         : setProcesandoEnviarProveedor(false);
       const message = getErrorHttpMessage(error);
       setMensajeAlert(
-        message || datos?.tipo_envio == "directo"
+        message ||
+        (datos?.tipo_envio == "directo"
           ? intl.formatMessage({ id: "orden_compra_final_validada_error" })
-          : intl.formatMessage({ id: "error_enviar_cotizacion_proveedor" })
+          : intl.formatMessage({ id: "error_enviar_cotizacion_proveedor" }))
       );
       handleisAlertOpen();
     }
@@ -457,6 +464,48 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
         message || intl.formatMessage({ id: "error_enviar_producto_a_otro_proveedor" })
       );
       handleisAlertOpen();
+    }
+  };
+
+  const getConfigCotizacion = useCallback(async () => {
+    try {
+      const config: any = await getConfigCotizacionHttp();
+      if (config?.modo) setModoCotizacion(config.modo);
+    } catch (error) {
+      // Si falla se queda en "acumular"; no bloquea la pantalla
+    }
+  }, []);
+
+  const cotizarConOtrosProveedores = async (datos: any): Promise<boolean> => {
+    try {
+      setProcesandoCotizarOtros(true);
+      await cotizarConOtrosProveedoresHttp({ ...datos, plataforma });
+
+      // Refresca contadores y la lista del modal, sin cerrarlo
+      await getProveedoresOC(undefined, plataforma);
+      if (verCanje?.orden_compra?.id) {
+        await getOCPorId(verCanje.orden_compra.id);
+      } else {
+        await getCanjesPorProveedor(verProveedor?.id, plataforma);
+      }
+
+      setMensajeAlert(
+        intl.formatMessage({
+          id:
+            modoCotizacion === "directo"
+              ? "cotizar_otros_directo_exito"
+              : "cotizar_otros_acumulado_exito",
+        })
+      );
+      handleisAlertOpen();
+      setProcesandoCotizarOtros(false);
+      return true;
+    } catch (error) {
+      setProcesandoCotizarOtros(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "cotizar_otros_error" }));
+      handleisAlertOpen();
+      return false;
     }
   };
 
@@ -564,7 +613,8 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
   useEffect(() => {
     getProveedoresOC(undefined, plataforma);
     getProveedores();
-  }, [getProveedoresOC, getProveedores, plataforma]);
+    getConfigCotizacion();
+  }, [getProveedoresOC, getProveedores, getConfigCotizacion, plataforma]);
 
   return {
     formik,
@@ -657,5 +707,9 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     registrarNuevoPrecio,
     handleAccionProducto,
     plataforma,
+    //COTIZAR CON OTROS PROVEEDORES
+    cotizarConOtrosProveedores,
+    procesandoCotizarOtros,
+    modoCotizacion,
   };
 };
