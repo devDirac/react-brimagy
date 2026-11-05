@@ -51,6 +51,7 @@ interface DetalleColorProps {
   handleisAlertOpenEditarColor: () => void;
   desactivarColorProducto: (datos: any) => Promise<void>;
   activarColorProducto: (datos: any) => Promise<void>;
+  plataforma?: string;
 }
 
 const ColoresProductoModal = ({
@@ -62,6 +63,7 @@ const ColoresProductoModal = ({
   desactivarColorProducto,
   activarColorProducto,
   setEditarColor,
+  plataforma,
 }: DetalleColorProps) => {
   if (!verColor) return null;
   const intl = useIntl();
@@ -214,6 +216,7 @@ const ColoresProductoModal = ({
                       id_producto_dirac: datosProducto?.id,
                       id_producto_brimagy: datosProducto?.id_producto_brimagy,
                       color: color,
+                      plataforma: plataforma,
                     };
                     crearEditarColorProducto(datos);
                   }}
@@ -315,6 +318,7 @@ const ColoresProductoModal = ({
                               const datos = {
                                 id_color: c?.id,
                                 id_color_brimagy: c?.id_color_brimagy,
+                                plataforma: plataforma,
                               };
                               desactivarColorProducto(datos);
                             }}
@@ -332,6 +336,7 @@ const ColoresProductoModal = ({
                               const datos = {
                                 id_color: c?.id,
                                 id_color_brimagy: c?.id_color_brimagy,
+                                plataforma: plataforma,
                               };
                               activarColorProducto(datos);
                             }}

@@ -73,7 +73,7 @@ function Plataformas(): JSX.Element {
                   marginTop: "20px",
                 }}
               >
-                {intl.formatMessage({ id: "añadir_variables_globales" })}
+                {intl.formatMessage({ id: "añadir_plataforma" })}
               </Typography>
               <Typography
                 variant="caption"
@@ -85,7 +85,7 @@ function Plataformas(): JSX.Element {
                   marginBottom: "40px",
                 }}
               >
-                {intl.formatMessage({ id: "registra_variables_globales_de_producto" })}
+                {intl.formatMessage({ id: "registra_plataforma_info" })}
               </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>

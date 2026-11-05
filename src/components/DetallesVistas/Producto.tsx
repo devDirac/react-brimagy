@@ -38,6 +38,9 @@ interface Producto {
   total: number;
   puntos: number;
   factor: number;
+  valor_factor: number;
+  tyc: string;
+  vigencia: string;
 }
 
 interface DetalleProductoProps {
@@ -49,12 +52,6 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
   const intl = useIntl();
 
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
-  const isSuperAdmin = tipoUsuario === 6;
-  const isAdministracion = tipoUsuario === 5;
-  const isInventario = tipoUsuario === 4;
-  const isCompras = tipoUsuario === 3;
-  const isAuditor = tipoUsuario === 2;
-  const isInternauta = tipoUsuario === 1;
 
   return (
     <Box sx={{ px: 2, pb: 2, mt: 3 }}>
@@ -133,6 +130,22 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
               </Grid>
               <Grid item xs={12} md={6}>
                 <Typography variant="body2" color="text.secondary">
+                  Términos y condiciones
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {verProducto.tyc ?? "N/A"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="body2" color="text.secondary">
+                  Vigencia
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {verProducto.vigencia ?? "N/A"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Typography variant="body2" color="text.secondary">
                   Tipo de producto
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
@@ -176,7 +189,7 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
                     thousandSeparator: ",",
                     decimalScale: 2,
                     fixedDecimalScale: false,
-                    prefix: "",
+                    prefix: "$",
                   })}
                 </Typography>
               </Grid>
@@ -189,7 +202,7 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
                     thousandSeparator: ",",
                     decimalScale: 2,
                     fixedDecimalScale: false,
-                    prefix: "",
+                    prefix: "$",
                   })}
                 </Typography>
               </Grid>
@@ -202,7 +215,7 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
                     thousandSeparator: ",",
                     decimalScale: 2,
                     fixedDecimalScale: false,
-                    prefix: "",
+                    prefix: "$",
                   })}
                 </Typography>
               </Grid>
@@ -215,7 +228,7 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
                     thousandSeparator: ",",
                     decimalScale: 2,
                     fixedDecimalScale: false,
-                    prefix: "",
+                    prefix: "$",
                   })}
                 </Typography>
               </Grid>
@@ -336,20 +349,20 @@ const DetallesProductoModal = ({ verProducto }: DetalleProductoProps) => {
               </Grid>
               <Grid item xs={4} md={4}>
                 <Typography variant="body2" color="text.secondary">
-                  Puntos
+                  Factor
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
-                  {numericFormatter(verProducto.puntos + "", {
+                  {numericFormatter(verProducto.valor_factor + "", {
                     thousandSeparator: ",",
                     decimalScale: 2,
                     fixedDecimalScale: false,
-                    prefix: "",
+                    suffix: "%",
                   })}
                 </Typography>
               </Grid>
               <Grid item xs={4} md={4}>
                 <Typography variant="body2" color="text.secondary">
-                  Factor
+                  Puntos
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
                   {numericFormatter(verProducto.factor + "", {

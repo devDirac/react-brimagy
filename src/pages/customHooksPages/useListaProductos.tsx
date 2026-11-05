@@ -7,8 +7,6 @@ import { useIntl } from "react-intl";
 import { setAuth } from "../../actions/auth";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useFormik } from "formik";
-import * as Yup from "yup";
 import {
   activarColorProductoHttp,
   activarFotoMontoHttp,
@@ -30,6 +28,8 @@ import {
   eliminarProductoHttp,
   getBitacoraProductoPorIdHttp,
   getBusquedaInteligenteHttp,
+  getCatalogoClubBohnBrimagyHttp,
+  getCatalogoProductosDigitalesBrimagyHttp,
   getCatalogoProductosHttp,
   getFotoMontoPorIdHttp,
   getProductoColorPorIdHttp,
@@ -37,6 +37,8 @@ import {
   getProductoFotoPromoPorIdHttp,
   getProductoMontoPorIdHttp,
   getProductoTallaPorIdHttp,
+  marcarDisponibleHttp,
+  marcarNoDisponibleHttp,
   subirFotoMontoHttp,
   subirFotosProductoHttp,
   subirFotosPromoProductoHttp,
@@ -48,13 +50,23 @@ import moment from "moment";
 import { crearProveedorHttp, getProveedoresHttp } from "actions/proveedores";
 import { crearCategoriaHttp, getCategoriasHttp } from "actions/categorias";
 import ExcelJS from "exceljs";
-import { crearPlataformaHttp, getPlataformasHttp } from "actions/configuracion";
-import { C } from "@fullcalendar/core/internal-common";
-import env from "react-dotenv";
-import { C } from "@fullcalendar/core/internal-common";
+import {
+  crearPlataformaHttp,
+  getPlataformasHttp,
+  getVariablesGlobalesPorPlataformaHttp,
+} from "actions/configuracion";
 import env from "react-dotenv";
 
+type VariablesGlobales = {
+  fee_brimagy: number;
+  envio_base: number;
+  costo_caja: number;
+  envio_extra: number;
+  factor: number;
+} | null;
+
 export const useListaProductos = (tipoUsuario: number) => {
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
   const dispatch = useDispatch();
   const intl = useIntl();
   const navigate = useNavigate();
@@ -67,7 +79,7 @@ export const useListaProductos = (tipoUsuario: number) => {
   const handleisAlerClose = () => setIsAlertOpen(false);
   const [productos, setProductos] = useState<any[]>([]);
   const [tableKey, setTableKey] = useState(0);
-  const isSuperAdmin = tipoUsuario === 6;
+  const isSuperAdmin = tipoUsuario === 7;
 
   const handleisAlertOpenAsignar = () => setIsAlertOpenAsignar(true);
   const handleisAlerCloseAsignar = () => setIsAlertOpenAsignar(false);
@@ -92,28 +104,10 @@ export const useListaProductos = (tipoUsuario: number) => {
   const [marcaEditar, setMarcaEditar] = useState("");
   const [skuEditar, setSkuEditar] = useState("");
   const [colorEditar, setColorEditar] = useState("");
-  const [tallaEditar, setTallaEditar] = useState("");
-  const [idProveedorEditar, setIdProveedorEditar] = useState("");
-  const [idCatalogoEditar, setIdCatalogoEditar] = useState("");
-  const [costoConIvaEditar, setCostoConIvaEditar] = useState("");
-  const [costoSinIvaEditar, setCostoSinIvaEditar] = useState("");
-  const [costoPuntosConIvaEditar, setCostoPuntosConIvaEditar] = useState("");
-  const [costoPuntosSinIvaEditar, setCostoPuntosSinIvaEditar] = useState("");
-  const [feeBrimagyEditar, setFeeBrimagyEditar] = useState("");
-  const [subtotalEditar, setSubtotalEditar] = useState("");
-  const [envioBaseEditar, setEnvioBaseEditar] = useState("");
-  const [costoCajaEditar, setCostoCajaEditar] = useState("");
-  const [envioExtraEditar, setEnvioExtraEditar] = useState("");
-  const [totalEnvioEditar, setTotalEnvioEditar] = useState("");
-  const [totalEditar, setTotalEditar] = useState("");
-  const [puntosEditar, setPuntosEditar] = useState("");
-  const [factorEditar, setFactorEditar] = useState("");
-  const [fotoEditar, setFotoEditar] = useState("");
   const [fotoEditar, setFotoEditar] = useState("");
   const [tipoProductoEditar, setTipoProductoEditar] = useState("");
   const [tipoPlataformaEditar, setPlataformaEditar] = useState("");
   const [productoId, setProductoId] = useState("");
-  const [valueTab, setValueTab] = useState("one");
   const [valueTab, setValueTab] = useState("one");
 
   const [proveedores, setProveedores] = useState<any[]>([]);
@@ -232,6 +226,18 @@ export const useListaProductos = (tipoUsuario: number) => {
   const [editaPuntos, setEditaPuntos] = useState("");
   const [editaDescripcion, setEditaDescripcion] = useState("");
 
+  const [variablesGlobalesData, setVariablesGlobalesData] = useState<VariablesGlobales>(null);
+
+  const tallaArray = [
+    { id: 0, label: "XXS", value: "XXS" },
+    { id: 1, label: "XS", value: "XS" },
+    { id: 2, label: "S", value: "S" },
+    { id: 3, label: "M", value: "M" },
+    { id: 4, label: "L", value: "L" },
+    { id: 5, label: "XL", value: "XL" },
+    { id: 6, label: "XXL", value: "XXL" },
+  ];
+
   //foto monto
   const handleOpenVistaFotoMonto = (fotos_producto: any) => {
     setFotoMontoSeleccionada(fotos_producto);
@@ -269,6 +275,14 @@ export const useListaProductos = (tipoUsuario: number) => {
   const [fotoMontoFile, setFotoMontoFile] = useState<File | null>(null);
   const [previewFotoMonto, setPreviewFotoMonto] = useState<string | null>(null);
 
+  const normalizarNombre = (texto: string): string => {
+    return texto
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .replace(/\s+/g, "_");
+  };
+
   const handleChangeFotoMonto = (file: File | null) => {
     setFotoMontoFile(file);
 
@@ -301,9 +315,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     validationSchema: Yup.object({
       color: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
     }),
-    onSubmit: async (values) => {
-      //console.log("Formulario enviado:", values);
-    },
+    onSubmit: async (values) => { },
   });
 
   const formikTalla = useFormik({
@@ -313,9 +325,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     validationSchema: Yup.object({
       talla: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
     }),
-    onSubmit: async (values) => {
-      //console.log("Formulario enviado:", values);
-    },
+    onSubmit: async (values) => { },
   });
 
   const formikMonto = useFormik({
@@ -329,18 +339,75 @@ export const useListaProductos = (tipoUsuario: number) => {
       puntos: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
       descripcion: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
     }),
-    onSubmit: async (values) => {
-      //console.log("Formulario enviado:", values);
-    },
+    onSubmit: async (values) => { },
   });
 
-  // Convierte nombres de color (red, blue) a hex
+  const regexDecimal8_4 = /^\d{1,8}(\.\d{1,4})?$/; // hasta 8 enteros, 4 decimales
+  const regexValorFactor = /^\d{1,3}(\.\d{1,2})?$/; // hasta 3 enteros, 2 decimales
+
+  const formikEditarProducto = useFormik({
+    initialValues: {
+      nombre_producto: "",
+      descripcion: "",
+      marca: "",
+      sku: "",
+      color: "",
+      talla: "",
+      id_proveedor: "",
+      id_catalogo: "",
+      costo_con_iva: "",
+      costo_puntos_con_iva: "",
+      envio_base: "",
+      costo_caja: "",
+      envio_extra: "",
+      valor_factor: "",
+      tyc: "",
+      vigencia: "",
+    },
+    validationSchema: Yup.object({
+      nombre_producto: Yup.string(),
+      descripcion: Yup.string(),
+      marca: Yup.string(),
+      sku: Yup.string(),
+      color: Yup.string(),
+      talla: Yup.string(),
+      id_proveedor: Yup.string(),
+      id_catalogo: Yup.string(),
+      tyc: Yup.string(),
+      vigencia: Yup.string(),
+      costo_con_iva: Yup.string().matches(
+        regexDecimal8_4,
+        intl.formatMessage({ id: "input_validation_numero_decimal" })
+      ),
+      costo_puntos_con_iva: Yup.string().matches(
+        regexDecimal8_4,
+        intl.formatMessage({ id: "input_validation_numero_decimal" })
+      ),
+      envio_base: Yup.string().matches(
+        regexDecimal8_4,
+        intl.formatMessage({ id: "input_validation_numero_decimal" })
+      ),
+      costo_caja: Yup.string().matches(
+        regexDecimal8_4,
+        intl.formatMessage({ id: "input_validation_numero_decimal" })
+      ),
+      envio_extra: Yup.string().matches(
+        regexDecimal8_4,
+        intl.formatMessage({ id: "input_validation_numero_decimal" })
+      ),
+      valor_factor: Yup.string().matches(
+        regexValorFactor,
+        intl.formatMessage({ id: "input_validation_valor_factor" })
+      ),
+    }),
+    onSubmit: async (values) => { },
+  });
+
   const colorNameToHex = (color: string): string => {
     const ctx = document.createElement("canvas").getContext("2d");
     if (!ctx) return color;
     ctx.fillStyle = color;
     const computed = ctx.fillStyle;
-    // Si no pudo convertir, devuelve el valor original
     return computed.startsWith("#") ? computed : color;
   };
 
@@ -363,6 +430,10 @@ export const useListaProductos = (tipoUsuario: number) => {
   };
 
   const handleAccion = (accion: string, row: any) => {
+    const datos = {
+      id_producto: row?.id,
+      plataforma: plataforma,
+    };
     switch (accion) {
       case "vista_previa":
         setVerProducto(row);
@@ -376,12 +447,185 @@ export const useListaProductos = (tipoUsuario: number) => {
         setProductoId(row?.id);
         handleisAlertOpenEliminaProducto();
         break;
+      case "historial_cambios":
+        setVerProducto(row);
+        getBitacoraProductoPorId(datos);
+        handleisAlertOpenVerBitacoraProducto();
+        break;
+      case "marcar_disponible":
+        marcarDisponible(datos);
+        break;
+      case "marcar_no_disponible":
+        marcarNoDisponible(datos);
+        break;
       default:
         break;
     }
   };
 
-  //Categorías que no están registradas
+  function reconstruirCostosDesdeRequiredScore(
+    required_score: number,
+    plataforma: string,
+    variablesGlobales: VariablesGlobales,
+    debug: boolean = false
+  ) {
+    const redondeo = required_score / 15;
+    if (debug) console.log("required_score=", required_score);
+    if (debug) console.log("1) redondeo (required_score / 15):", redondeo);
+
+    const total = redondeo - 1;
+    if (debug) console.log("2) total estimado (redondeo - 1):", total);
+
+    let fee_brimagy: number,
+      envio_base: number,
+      costo_caja: number,
+      envio_extra: number,
+      factor: number;
+
+    const tieneVariablesValidas =
+      variablesGlobales &&
+      variablesGlobales.fee_brimagy != null &&
+      variablesGlobales.envio_base != null &&
+      variablesGlobales.costo_caja != null &&
+      variablesGlobales.factor != null;
+
+    if (tieneVariablesValidas) {
+      fee_brimagy = variablesGlobales.fee_brimagy;
+      envio_base = variablesGlobales.envio_base;
+      costo_caja = variablesGlobales.costo_caja;
+      envio_extra = variablesGlobales.envio_extra;
+      factor = variablesGlobales.factor;
+      if (debug) console.log("3) variables globales (desde API):", variablesGlobales);
+    } else {
+      envio_base = plataforma === "club bohn" ? 180 : 180;
+      costo_caja = plataforma === "club bohn" ? 19 : 19;
+      envio_extra = 0;
+      fee_brimagy = plataforma === "club bohn" ? 15 : 12;
+      factor = 0;
+      if (debug)
+        console.log("3) variables globales (defaults, no había datos):", {
+          fee_brimagy,
+          envio_base,
+          costo_caja,
+          envio_extra,
+          factor,
+        });
+    }
+
+    const total_envio = envio_base + costo_caja + envio_extra;
+    if (debug) console.log("4) total_envio:", total_envio);
+
+    const subtotal = total - total_envio;
+    if (debug) console.log("5) subtotal (total - total_envio):", subtotal);
+
+    const porcentaje = fee_brimagy / 100;
+    const costo_puntos_sin_iva = Math.round(subtotal / (1 + porcentaje));
+    if (debug)
+      console.log("6) costo_puntos_sin_iva (subtotal / (1+porcentaje)):", {
+        porcentaje,
+        costo_puntos_sin_iva,
+      });
+
+    const costo_puntos_con_iva = Math.round(costo_puntos_sin_iva * 1.16);
+    if (debug) console.log("7) costo_puntos_con_iva (sin_iva * 1.16):", costo_puntos_con_iva);
+
+    const resultado = {
+      redondeo,
+      total,
+      total_envio,
+      subtotal,
+      costo_puntos_sin_iva,
+      costo_puntos_con_iva,
+    };
+
+    if (debug) console.log("Resultado final:", resultado);
+
+    return resultado;
+  }
+
+  function calcularPuntosEsperados(
+    costoConIva: number,
+    costoPuntosConIva: number,
+    envioExtra: number,
+    valorFactor: number,
+    variablesGlobales: VariablesGlobales,
+    plataforma: string
+  ) {
+    if (!costoPuntosConIva || isNaN(costoPuntosConIva)) {
+      return null;
+    }
+
+    const costo_puntos_sin_iva = Math.round(costoPuntosConIva / 1.16);
+
+    let fee_brimagy: number,
+      envio_base: number,
+      costo_caja: number,
+      envio_extra: number,
+      valor_factor: number;
+
+    const tieneVariablesValidas =
+      variablesGlobales &&
+      variablesGlobales.fee_brimagy != null &&
+      variablesGlobales.envio_base != null &&
+      variablesGlobales.costo_caja != null &&
+      variablesGlobales.factor != null;
+
+    if (tieneVariablesValidas) {
+      fee_brimagy = Number(variablesGlobales.fee_brimagy);
+      envio_base = Number(variablesGlobales.envio_base);
+      costo_caja = Number(variablesGlobales.costo_caja);
+      valor_factor = Number(variablesGlobales.factor);
+    } else {
+      envio_base = plataforma === "club bohn" ? 180 : 180;
+      costo_caja = plataforma === "club bohn" ? 19 : 19;
+      fee_brimagy = plataforma === "club bohn" ? 15 : 12;
+      valor_factor = 0;
+    }
+
+    const factorManualNum = Number(valorFactor);
+    if (valorFactor !== undefined && !isNaN(factorManualNum)) {
+      valor_factor = factorManualNum;
+    }
+
+    const envio_extra_num = Number(envioExtra) || 0;
+
+    const porcentaje = fee_brimagy / 100;
+    const valor_con_fee = costo_puntos_sin_iva * porcentaje;
+    const subtotal = costo_puntos_sin_iva + valor_con_fee;
+    const total_envio = envio_base + costo_caja + envio_extra_num;
+    const total = subtotal + total_envio;
+    const redondeo = total % 2 !== 0 ? total + 2 : total + 1; // puntos en BD
+    //const factor = Math.round(redondeo * 15);
+    const factor = valor_factor == 0 ? Math.round(total) : Math.round(total * valor_factor); // factor en BD
+
+    return {
+      costo_puntos_sin_iva,
+      total_envio,
+      subtotal,
+      total,
+      puntos: redondeo,
+      factor,
+    };
+  }
+
+  const getVariablesGlobales = useCallback(async (data?: any) => {
+    try {
+      setProcesando(true);
+      const response: any = await getVariablesGlobalesPorPlataformaHttp(data);
+      setVariablesGlobalesData(response);
+      setProcesando(false);
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+      handleisAlertOpen();
+    }
+  }, []);
+
+  useEffect(() => {
+    getVariablesGlobales({ plataforma: plataforma });
+  }, [plataforma]);
+
   const obtenerCategoriasFaltantes = useCallback(() => {
     const categoriasFaltantes = Array.from(
       new Set(excelData.filter((p) => !p.categoria_valida).map((p) => p.catalogo))
@@ -389,7 +633,6 @@ export const useListaProductos = (tipoUsuario: number) => {
     return categoriasFaltantes.filter(Boolean);
   }, [excelData]);
 
-  //Obtiene los proveedores únicos que no están registrados
   const obtenerProveedoresFaltantes = useCallback(() => {
     const proveedoresFaltantes = Array.from(
       new Set(
@@ -431,6 +674,9 @@ export const useListaProductos = (tipoUsuario: number) => {
         try {
           await crearCategoriaHttp({
             nombre: nombreCategoria,
+            envio: "excel",
+            file_path: normalizarNombre(nombreCategoria),
+            plataforma: plataforma,
           });
           categoriasCreadas++;
         } catch (error) {
@@ -474,7 +720,7 @@ export const useListaProductos = (tipoUsuario: number) => {
       // Recargar proveedores y categorías desde el servidor
       const [nuevosProveedores, nuevasCategorias, nuevasPlataformas] = await Promise.all([
         getProveedoresHttp(),
-        getCategoriasHttp(),
+        getCategoriasHttp(plataforma),
         getPlataformasHttp(),
       ]);
 
@@ -499,7 +745,7 @@ export const useListaProductos = (tipoUsuario: number) => {
           ...producto,
           id_proveedor: proveedorObj?.id || producto.id_proveedor,
           id_catalogo: categoriaObj?.id || producto.id_catalogo,
-          proveedor_valido: !!proveedorObj,
+          proveedor_valido: producto.proveedor_vacio ? true : !!proveedorObj,
           categoria_valida: !!categoriaObj,
           plataforma_valida: !!plataformaObj,
         };
@@ -562,37 +808,29 @@ export const useListaProductos = (tipoUsuario: number) => {
     if (productoEditar && proveedores && categorias && plataformas) {
       const proveedorEncontrado = proveedores.find((p) => p.nombre === productoEditar.proveedor);
       const categoriaEncontrada = categorias.find((p) => p.desc === productoEditar.catalogo);
-      setNombreProductoEditar(productoEditar.nombre_producto || "");
-      setDescripcionEditar(productoEditar.descripcion || "");
-      setMarcaEditar(productoEditar.marca || "");
-      setSkuEditar(productoEditar.sku || "");
-      setColorEditar(productoEditar.color || "");
-      setTallaEditar(productoEditar.talla || "");
-      setIdProveedorEditar(proveedorEncontrado?.id || "");
-      setIdCatalogoEditar(categoriaEncontrada?.id || "");
-      setCostoConIvaEditar(productoEditar.costo_con_iva || "");
-      setCostoSinIvaEditar(productoEditar.costo_sin_iva || "");
-      setCostoPuntosConIvaEditar(productoEditar.costo_puntos_con_iva || "");
-      setCostoPuntosSinIvaEditar(productoEditar.costo_puntos_sin_iva || "");
-      setFeeBrimagyEditar(productoEditar.fee_brimagy || "");
-      setSubtotalEditar(productoEditar.subtotal || "");
-      setEnvioBaseEditar(productoEditar.envio_base || "");
-      setCostoCajaEditar(productoEditar.costo_caja || "");
-      setEnvioExtraEditar(productoEditar.envio_extra || "");
-      setTotalEnvioEditar(productoEditar.total_envio || "");
-      setTotalEditar(productoEditar.total || "");
-      setPuntosEditar(productoEditar.puntos || "");
-      setFactorEditar(productoEditar.factor || "");
-      setTipoProductoEditar(productoEditar.tipo_producto || "");
-      setPlataformaEditar(productoEditar.id_plataforma || "");
+
+      formikEditarProducto.setValues({
+        nombre_producto: productoEditar.nombre_producto || "",
+        descripcion: productoEditar.descripcion || "",
+        marca: productoEditar.marca || "",
+        sku: productoEditar.sku || "",
+        color: productoEditar.color || "",
+        talla: productoEditar.talla || "",
+        id_proveedor: proveedorEncontrado?.id || "",
+        id_catalogo: categoriaEncontrada?.id || "",
+        costo_con_iva: productoEditar.costo_con_iva || "",
+        costo_puntos_con_iva: productoEditar.costo_puntos_con_iva || "",
+        envio_base: productoEditar.envio_base || "",
+        costo_caja: productoEditar.costo_caja || "",
+        envio_extra: productoEditar.envio_extra || "",
+        valor_factor: productoEditar.valor_factor || "",
+        tyc: productoEditar.tyc || "",
+        vigencia: productoEditar.vigencia || "",
+      });
+
       setFotoEditar(
         productoEditar.foto_producto
-          ? `${env.API_URL_ASSETS}fotos_producto/${productoEditar?.id}/${productoEditar.foto_producto}`
-          : ""
-      );
-      setFotoEditar(
-        productoEditar.foto_producto
-          ? `${env.API_URL_ASSETS}fotos_producto/${productoEditar?.id}/${productoEditar.foto_producto}`
+          ? `${env.API_URL_ASSETS}fotos_producto/${productoEditar.foto_producto}`
           : ""
       );
     }
@@ -612,15 +850,18 @@ export const useListaProductos = (tipoUsuario: number) => {
   };
 
   const getProductosCatalogo = useCallback(
-    async (params?: { search?: string; fecha1?: string; fecha2?: string }) => {
+    async (params?: { search?: string; fecha1?: string; fecha2?: string; plataforma?: string }) => {
       try {
+        //getCatalogoProductosDigitalesBrimagyHttp //puntotes
+        //getCatalogoProductosHttp //MAIN
+        //getCatalogoClubBohnBrimagyHttp //club bohn
         setProcesando(true);
         const productosData = await getCatalogoProductosHttp(
           esDigital ? "digital" : esFisico ? "fisico" : "todos",
-          esDigital ? "digital" : esFisico ? "fisico" : "todos",
           params?.search,
           params?.fecha1 ? new Date(params.fecha1) : undefined,
-          params?.fecha2 ? new Date(params.fecha2) : undefined
+          params?.fecha2 ? new Date(params.fecha2) : undefined,
+          params?.plataforma ?? plataforma
         );
         setProductos(productosData);
         setTableKey((prev) => prev + 1);
@@ -632,8 +873,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         handleisAlertOpen();
       }
     },
-    [esDigital, esFisico]
-    [esDigital, esFisico]
+    [esDigital, esFisico, plataforma]
   );
 
   const getBitacoraProductoPorId = async (datos: any) => {
@@ -683,6 +923,44 @@ export const useListaProductos = (tipoUsuario: number) => {
     }
   };
 
+  const marcarNoDisponible = async (datos?: any) => {
+    try {
+      setProcesando(true);
+      const productosData = await marcarNoDisponibleHttp(datos);
+      //await getProductosCatalogo();
+      setProductos((prevProductos) =>
+        prevProductos.map((p) => (p.id === datos?.id_producto ? { ...p, stock: 0 } : p))
+      );
+      setProcesando(false);
+      setMensajeAlert(intl.formatMessage({ id: "producto_no_disponible_correctamente" }));
+      handleisAlertOpen();
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "producto_no_disponible_error" }));
+      handleisAlertOpen();
+    }
+  };
+
+  const marcarDisponible = async (datos?: any) => {
+    try {
+      setProcesando(true);
+      const productosData = await marcarDisponibleHttp(datos);
+      //await getProductosCatalogo();
+      setProductos((prevProductos) =>
+        prevProductos.map((p) => (p.id === datos?.id_producto ? { ...p, stock: 1000000 } : p))
+      );
+      setProcesando(false);
+      setMensajeAlert(intl.formatMessage({ id: "producto_disponible_correctamente" }));
+      handleisAlertOpen();
+    } catch (error) {
+      setProcesando(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "producto_disponible_error" }));
+      handleisAlertOpen();
+    }
+  };
+
   const getProveedores = useCallback(async () => {
     try {
       setProcesando(true);
@@ -697,10 +975,10 @@ export const useListaProductos = (tipoUsuario: number) => {
     }
   }, []);
 
-  const getCategoriasProducto = useCallback(async () => {
+  const getCategoriasProducto = useCallback(async (plataforma?: string) => {
     try {
       setProcesando(true);
-      const categorias = await getCategoriasHttp();
+      const categorias = await getCategoriasHttp(plataforma);
       setCategorias(categorias);
       setProcesando(false);
     } catch (error) {
@@ -726,11 +1004,11 @@ export const useListaProductos = (tipoUsuario: number) => {
   }, []);
 
   useEffect(() => {
-    getCategoriasProducto();
+    getCategoriasProducto(plataforma);
     getProveedores();
     getProductosCatalogo();
     getPlataformas();
-  }, [getProductosCatalogo, getCategoriasProducto, getProveedores]);
+  }, [getProductosCatalogo, getCategoriasProducto, getProveedores, plataforma]);
 
   // Función para procesar el Excel con ExcelJS
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -870,9 +1148,9 @@ export const useListaProductos = (tipoUsuario: number) => {
 
         const categoria = String(
           getValueByHeader(row, "categoría") ||
-            getValueByHeader(row, "categoria") ||
-            getValueByHeader(row, "catalogo") ||
-            ""
+          getValueByHeader(row, "categoria") ||
+          getValueByHeader(row, "catalogo") ||
+          ""
         ).trim();
 
         const nombre_producto = limpiarTextoConCaracteres(getValueByHeader(row, "nombre"));
@@ -884,7 +1162,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         const skuVacio = !sku || sku.trim() === "" || sku === "N/A";
         const color = limpiarTexto(getValueByHeader(row, "color"));
         const talla = getValueByHeader(row, "talla");
-        const id_producto_brimagy = getValueByHeader(row, "id producto");
+        const id_producto_brimagy = getValueByHeader(row, "id producto brimagy");
         const idBrimagyVacio = !id_producto_brimagy;
 
         // Validaciones de campos de texto
@@ -922,6 +1200,7 @@ export const useListaProductos = (tipoUsuario: number) => {
         const costoCajaRaw = getValueByHeader(row, "costo caja");
         const envioExtraRaw =
           getValueByHeader(row, "envío extra") || getValueByHeader(row, "envio extra");
+        const valorFactorRaw = getValueByHeader(row, "valor_factor");
         const totalEnvioRaw =
           getValueByHeader(row, "total envío") || getValueByHeader(row, "total envio");
         const totalRaw = getValueByHeader(row, "total");
@@ -940,6 +1219,7 @@ export const useListaProductos = (tipoUsuario: number) => {
           { nombre: "Subtotal", valor: subtotalRaw },
           { nombre: "Envío base", valor: envioBaseRaw },
           { nombre: "Costo caja", valor: costoCajaRaw },
+          { nombre: "Factor", valor: valorFactorRaw },
           { nombre: "Envío extra", valor: envioExtraRaw },
           { nombre: "Total envío", valor: totalEnvioRaw },
           { nombre: "Total", valor: totalRaw },
@@ -986,13 +1266,13 @@ export const useListaProductos = (tipoUsuario: number) => {
           subtotal: Math.round(limpiarNumero(subtotalRaw)),
           envio_base: Math.round(limpiarNumero(envioBaseRaw)),
           costo_caja: Math.round(limpiarNumero(costoCajaRaw)),
+          valor_factor: Math.round(limpiarNumero(valorFactorRaw)),
           envio_extra: Math.round(limpiarNumero(envioExtraRaw)),
           total_envio: Math.round(limpiarNumero(totalEnvioRaw)),
           total: Math.round(limpiarNumero(totalRaw)),
           puntos: Math.round(limpiarNumero(puntosRaw)),
           factor: Math.round(limpiarNumero(factorRaw)),
           tipo_producto: tipoProductoRaw,
-          //proveedor_valido: !!proveedorObj,
           proveedor_valido: proveedorVacio ? true : !!proveedorObj,
           proveedor_vacio: proveedorVacio,
           categoria_valida: !!categoriaObj,
@@ -1014,10 +1294,8 @@ export const useListaProductos = (tipoUsuario: number) => {
       if (erroresValidacion.length > 0) {
         setProcesando(false);
         setMensajeAlert(
-          `Se encontraron ${
-            erroresValidacion.length
-          } error(es) de validación:\n\n${erroresValidacion.slice(0, 5).join("\n")}${
-            erroresValidacion.length > 5 ? `\n... y ${erroresValidacion.length - 5} más` : ""
+          `Se encontraron ${erroresValidacion.length
+          } error(es) de validación:\n\n${erroresValidacion.slice(0, 5).join("\n")}${erroresValidacion.length > 5 ? `\n... y ${erroresValidacion.length - 5} más` : ""
           }`
         );
         handleisAlertOpen();
@@ -1026,15 +1304,30 @@ export const useListaProductos = (tipoUsuario: number) => {
       }
 
       const skus = datosFormateados.map((p) => p.sku).filter(Boolean);
-      const ids = datosFormateados.map((p) => p.id_producto_brimagy).filter(Boolean);
+      const ids = datosFormateados
+        .map((p) => p.id_producto_brimagy)
+        .filter(Boolean)
+        .map((id) => String(id));
 
       if (ids.length > 0) {
         try {
           const idsExistentesResponse = await verificarIdProductoBrimagyHttp(ids);
-          const idsExistentes = idsExistentesResponse?.ids_existentes || [];
+          //const idsExistentes = idsExistentesResponse?.ids_existentes || [];
+          const idsExistentes: string[] = (idsExistentesResponse?.ids_existentes || []).map(
+            (id: any) => String(id)
+          );
 
-          datosFormateados.forEach((producto) => {
+          const idsExistentesSet = new Set(idsExistentes);
+          /*datosFormateados.forEach((producto) => {
             if (idsExistentes.includes(producto.id_producto_brimagy)) {
+              producto.id_producto_brimagy_duplicado = true;
+            }
+          });*/
+          datosFormateados.forEach((producto) => {
+            if (
+              producto.id_producto_brimagy &&
+              idsExistentesSet.has(String(producto.id_producto_brimagy))
+            ) {
               producto.id_producto_brimagy_duplicado = true;
             }
           });
@@ -1084,18 +1377,9 @@ export const useListaProductos = (tipoUsuario: number) => {
         { header: "Color", key: "color", width: 15 },
         { header: "Talla", key: "talla", width: 15 },
         { header: "Costo con IVA", key: "costo_con_iva", width: 15 },
-        //{ header: "Costo sin IVA", key: "costo_sin_iva", width: 15 },
         { header: "Costo Puntos con IVA", key: "costo_puntos_con_iva", width: 20 },
-        /*{ header: "Costo Puntos sin IVA", key: "costo_puntos_sin_iva", width: 20 },
-        { header: "Fee Brimagy", key: "fee_brimagy", width: 15 },
-        { header: "Subtotal", key: "subtotal", width: 15 },
-        { header: "Envío Base", key: "envio_base", width: 15 },
-        { header: "Costo Caja", key: "costo_caja", width: 15 },*/
+        { header: "Factor", key: "valor_factor", width: 15 },
         { header: "Envío Extra", key: "envio_extra", width: 15 },
-        /*{ header: "Total Envío", key: "total_envio", width: 15 },
-        { header: "Total", key: "total", width: 15 },
-        { header: "Puntos", key: "puntos", width: 15 },
-        { header: "Factor", key: "factor", width: 15 },*/
         { header: "Tipo Producto", key: "tipo_producto", width: 15 },
         { header: "Plataforma", key: "plataforma", width: 15 },
       ];
@@ -1120,18 +1404,9 @@ export const useListaProductos = (tipoUsuario: number) => {
         color: "Rojo",
         talla: "",
         costo_con_iva: 100,
-        //costo_sin_iva: 86,
         costo_puntos_con_iva: 100,
-        /*costo_puntos_sin_iva: 86,
-        fee_brimagy: 10,
-        subtotal: 90,
-        envio_base: 50,
-        costo_caja: 20,*/
+        valor_factor: 10,
         envio_extra: 10,
-        /*total_envio: 60,
-        total: 150,
-        puntos: 150,
-        factor: 15,*/
         tipo_producto: "fisico",
         plataforma: "ejemplo1",
       });
@@ -1153,7 +1428,7 @@ export const useListaProductos = (tipoUsuario: number) => {
     }
   };
 
-  const descargarProductosExcel = async () => {
+  const descargarProductosExcel = async (nombreFiltro?: string) => {
     try {
       setProcesando(true);
 
@@ -1171,18 +1446,10 @@ export const useListaProductos = (tipoUsuario: number) => {
         { header: "Color", key: "color", width: 15 },
         { header: "Talla", key: "talla", width: 15 },
         { header: "Costo con IVA", key: "costo_con_iva", width: 15 },
-        //{ header: "Costo sin IVA", key: "costo_sin_iva", width: 15 },
         { header: "Costo Puntos con IVA", key: "costo_puntos_con_iva", width: 20 },
-        /*{ header: "Costo Puntos sin IVA", key: "costo_puntos_sin_iva", width: 20 },
-        { header: "Fee Brimagy", key: "fee_brimagy", width: 15 },
-        { header: "Subtotal", key: "subtotal", width: 15 },
-        { header: "Envío Base", key: "envio_base", width: 15 },
-        { header: "Costo Caja", key: "costo_caja", width: 15 },*/
         { header: "Envío Extra", key: "envio_extra", width: 15 },
-        /*{ header: "Total Envío", key: "total_envio", width: 15 },
-        { header: "Total", key: "total", width: 15 },
-        { header: "Puntos", key: "puntos", width: 15 },
-        { header: "Factor", key: "factor", width: 15 },*/
+        { header: "Factor", key: "valor_factor", width: 15 },
+        { header: "Id producto brimagy", key: "id_producto_brimagy", width: 15 },
         { header: "Tipo Producto", key: "tipo_producto", width: 15 },
         { header: "Plataforma", key: "plataforma", width: 15 },
       ];
@@ -1196,10 +1463,28 @@ export const useListaProductos = (tipoUsuario: number) => {
       };
       worksheet.getRow(1).alignment = { vertical: "middle", horizontal: "center" };
 
-      productos.forEach((p) => {
+      // Si se pasa un nombreFiltro, solo procesamos ese producto; si no, todos.
+      const productosAProcesar = nombreFiltro
+        ? productos.filter(
+          (p) => p.nombre_producto?.trim().toLowerCase() === nombreFiltro.trim().toLowerCase()
+        )
+        : productos;
+
+      if (nombreFiltro && productosAProcesar.length === 0) {
+        console.warn(`No se encontró ningún producto con nombre "${nombreFiltro}"`);
+        setProcesando(false);
+        return;
+      }
+
+      productosAProcesar.forEach((p) => {
+        const { costo_puntos_con_iva } = reconstruirCostosDesdeRequiredScore(
+          p.required_score,
+          p.plataforma || "puntotes",
+          variablesGlobalesData,
+          true
+        );
         const row = worksheet.addRow({
-          id_producto: p.id_producto_brimagy || "",
-          id_producto: p.id_producto_brimagy || "",
+          id_producto: p.id ?? 0,
           categoria: p.catalogo || "",
           nombre_producto: p.nombre_producto || "",
           descripcion: p.descripcion || "",
@@ -1209,20 +1494,15 @@ export const useListaProductos = (tipoUsuario: number) => {
           color: p.color || "",
           talla: p.talla || "",
           costo_con_iva: p.costo_con_iva ?? 0,
-          //costo_sin_iva: p.costo_sin_iva ?? 0,
-          costo_puntos_con_iva: p.costo_puntos_con_iva ?? 0,
-          /*costo_puntos_sin_iva: p.costo_puntos_sin_iva ?? 0,
-          fee_brimagy: p.fee_brimagy ?? 0,
-          subtotal: p.subtotal ?? 0,
-          envio_base: p.envio_base ?? 0,
-          costo_caja: p.costo_caja ?? 0,*/
+          costo_puntos_con_iva: p.costo_puntos_con_iva ?? costo_puntos_con_iva ?? 0,
           envio_extra: p.envio_extra ?? 0,
-          /*total_envio: p.total_envio ?? 0,
-          total: p.total ?? 0,
-          puntos: p.puntos ?? 0,
-          factor: p.factor ?? 0,*/
-          tipo_producto: p.tipo_producto || "",
-          plataforma: p.nombre_plataforma || "",
+          valor_factor: p.valor_factor ?? 0,
+          id_producto_brimagy: p.id_producto_brimagy ?? 0,
+          tipo_producto:
+            p.catalogo.toLowerCase() === "gifs" || p.catalogo.toLowerCase() === "bohn cardssss"
+              ? "digital"
+              : "fisico",
+          plataforma: p.plataforma || "puntotes", //p.plataforma || ""
         });
 
         const columnasNumericas = [10, 11, 12];
@@ -1239,7 +1519,9 @@ export const useListaProductos = (tipoUsuario: number) => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `productos_${moment().format("DDMMYYYY_HHmm")}.xlsx`;
+      link.download = nombreFiltro
+        ? `producto_${nombreFiltro.replace(/\s+/g, "_")}_${moment().format("DDMMYYYY_HHmm")}.xlsx`
+        : `productos_${moment().format("DDMMYYYY_HHmm")}.xlsx`;
       link.click();
       window.URL.revokeObjectURL(url);
 
@@ -1291,6 +1573,7 @@ export const useListaProductos = (tipoUsuario: number) => {
           formData.append("total_envio", producto.total_envio);
           formData.append("total", producto.total);
           formData.append("puntos", producto.puntos);
+          formData.append("valor_factor", producto.valor_factor);
           formData.append("factor", producto.factor);
           formData.append("id_producto_brimagy", producto.id_producto_brimagy);
           formData.append("tipo_producto", producto.tipo_producto);
@@ -1337,109 +1620,115 @@ export const useListaProductos = (tipoUsuario: number) => {
   };
 
   //Búsqueda inteligente
-  const busquedaInteligenteBrimagy = useCallback(async (datos?: any) => {
-    try {
-      setProcesandoBusquedaMagica(true);
-      const busqueda = await getBusquedaInteligenteHttp(datos);
-      // Formatear los datos igual que en getProductosCatalogo
-      const datosFormateados = busqueda.map((e: any) => {
-        return {
-          ...e,
-          ...{
-            costo_con_iva_format: numericFormatter(e?.costo_con_iva + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            costo_sin_iva_format: numericFormatter(e?.costo_sin_iva + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            costo_puntos_con_iva_format: numericFormatter(e?.costo_puntos_con_iva + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            costo_puntos_sin_iva_format: numericFormatter(e?.costo_puntos_sin_iva + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            subtotal_format: numericFormatter(e?.subtotal + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            envio_base_format: numericFormatter(e?.envio_base + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            costo_caja_format: numericFormatter(e?.costo_caja + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            envio_extra_format: numericFormatter(e?.envio_extra + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            total_envio_format: numericFormatter(e?.total_envio + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            total_format: numericFormatter(e?.total + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            fee_brimagy_format: numericFormatter(e?.fee_brimagy + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "$",
-            }),
-            puntos_format: numericFormatter(e?.puntos + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "",
-            }),
-            factor_format: numericFormatter(e?.factor + "", {
-              thousandSeparator: ",",
-              decimalScale: 2,
-              fixedDecimalScale: true,
-              prefix: "",
-            }),
-            fecha_creacion: moment(e?.fecha_ejecucion).format("DD-MM-YYYY"),
-          },
+  const busquedaInteligenteBrimagy = useCallback(
+    async (datos?: any) => {
+      try {
+        setProcesandoBusquedaMagica(true);
+        const datosConTipo = {
+          ...datos,
+          tipo_producto: esDigital ? "digital" : esFisico ? "fisico" : "todos",
         };
-      });
-      setProductos(datosFormateados);
-      setProcesandoBusquedaMagica(false);
-      handleisAlertCloseBI();
-      setMensajeAlert(`Se encontraron ${datosFormateados.length} productos relacionados`);
-      handleisAlertOpen();
-    } catch (error) {
-      setProcesandoBusquedaMagica(false);
-      const message = getErrorHttpMessage(error);
-      setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
-      handleisAlertOpen();
-    }
-  }, []);
+        const busqueda = await getBusquedaInteligenteHttp(datosConTipo);
+        const datosFormateados = busqueda.map((e: any) => {
+          return {
+            ...e,
+            ...{
+              costo_con_iva_format: numericFormatter(e?.costo_con_iva + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              costo_sin_iva_format: numericFormatter(e?.costo_sin_iva + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              costo_puntos_con_iva_format: numericFormatter(e?.costo_puntos_con_iva + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              costo_puntos_sin_iva_format: numericFormatter(e?.costo_puntos_sin_iva + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              subtotal_format: numericFormatter(e?.subtotal + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              envio_base_format: numericFormatter(e?.envio_base + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              costo_caja_format: numericFormatter(e?.costo_caja + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              envio_extra_format: numericFormatter(e?.envio_extra + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              total_envio_format: numericFormatter(e?.total_envio + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              total_format: numericFormatter(e?.total + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              fee_brimagy_format: numericFormatter(e?.fee_brimagy + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "$",
+              }),
+              puntos_format: numericFormatter(e?.puntos + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "",
+              }),
+              factor_format: numericFormatter(e?.factor + "", {
+                thousandSeparator: ",",
+                decimalScale: 2,
+                fixedDecimalScale: true,
+                prefix: "",
+              }),
+              fecha_creacion: moment(e?.fecha_ejecucion).format("DD-MM-YYYY"),
+            },
+          };
+        });
+        setProductos(datosFormateados);
+        setProcesandoBusquedaMagica(false);
+        handleisAlertCloseBI();
+        setMensajeAlert(`Se encontraron ${datosFormateados.length} productos relacionados`);
+        handleisAlertOpen();
+      } catch (error) {
+        setProcesandoBusquedaMagica(false);
+        const message = getErrorHttpMessage(error);
+        setMensajeAlert(message || intl.formatMessage({ id: "get_elementos_error" }));
+        handleisAlertOpen();
+      }
+    },
+    [esDigital, esFisico]
+  );
 
   //colores
   const getProductoColorPorId = useCallback(async (datos: any) => {
@@ -1498,8 +1787,8 @@ export const useListaProductos = (tipoUsuario: number) => {
         message
           ? message
           : !!datos?.id_color
-          ? intl.formatMessage({ id: "error_editar_color" })
-          : intl.formatMessage({ id: "error_crear_color" })
+            ? intl.formatMessage({ id: "error_editar_color" })
+            : intl.formatMessage({ id: "error_crear_color" })
       );
       handleisAlertOpen();
     }
@@ -1613,8 +1902,8 @@ export const useListaProductos = (tipoUsuario: number) => {
         message
           ? message
           : !!datos?.id_tall
-          ? intl.formatMessage({ id: "error_editar_talla" })
-          : intl.formatMessage({ id: "error_crear_talla" })
+            ? intl.formatMessage({ id: "error_editar_talla" })
+            : intl.formatMessage({ id: "error_crear_talla" })
       );
       handleisAlertOpen();
     }
@@ -1860,12 +2149,12 @@ export const useListaProductos = (tipoUsuario: number) => {
           prevMontos.map((t) =>
             t.id === montoData?.id
               ? {
-                  ...t,
-                  monto: montoData?.monto,
-                  puntos: montoData?.puntos,
-                  descripcion: montoData?.descripcion,
-                  status: montoData?.status,
-                }
+                ...t,
+                monto: montoData?.monto,
+                puntos: montoData?.puntos,
+                descripcion: montoData?.descripcion,
+                status: montoData?.status,
+              }
               : t
           )
         );
@@ -1894,8 +2183,8 @@ export const useListaProductos = (tipoUsuario: number) => {
         message
           ? message
           : !!datos?.id_monto
-          ? intl.formatMessage({ id: "error_editar_monto" })
-          : intl.formatMessage({ id: "error_crear_monto" })
+            ? intl.formatMessage({ id: "error_editar_monto" })
+            : intl.formatMessage({ id: "error_crear_monto" })
       );
       handleisAlertOpen();
     }
@@ -2062,21 +2351,11 @@ export const useListaProductos = (tipoUsuario: number) => {
     isSuperAdmin,
     handleBuscadorChange,
     buscador,
-    setBuscador,
-    navigate,
-    productosSeleccionados,
-    setProductosSeleccionados,
-    asignarPdfDatos,
-    isAlertOpenAsignar,
-    handleisAlerCloseAsignar,
-    handleisAlertOpenAsignar,
     procesando,
     isAlertOpen,
     handleisAlerClose,
     mensajeAlert,
     intl,
-    errorLogin,
-    setProcesando,
     setProductoId,
     productoId,
     eliminarProducto,
@@ -2085,50 +2364,6 @@ export const useListaProductos = (tipoUsuario: number) => {
     handleisAlertOpenEliminaProducto,
     categorias,
     proveedores,
-    nombreProductoEditar,
-    setNombreProductoEditar,
-    descripcionEditar,
-    setDescripcionEditar,
-    marcaEditar,
-    setMarcaEditar,
-    skuEditar,
-    setSkuEditar,
-    colorEditar,
-    setColorEditar,
-    tallaEditar,
-    setTallaEditar,
-    tallaEditar,
-    setTallaEditar,
-    idProveedorEditar,
-    setIdProveedorEditar,
-    idCatalogoEditar,
-    setIdCatalogoEditar,
-    costoConIvaEditar,
-    setCostoConIvaEditar,
-    costoSinIvaEditar,
-    setCostoSinIvaEditar,
-    costoPuntosConIvaEditar,
-    setCostoPuntosConIvaEditar,
-    costoPuntosSinIvaEditar,
-    setCostoPuntosSinIvaEditar,
-    feeBrimagyEditar,
-    setFeeBrimagyEditar,
-    subtotalEditar,
-    setSubtotalEditar,
-    envioBaseEditar,
-    setEnvioBaseEditar,
-    costoCajaEditar,
-    setCostoCajaEditar,
-    envioExtraEditar,
-    setEnvioExtraEditar,
-    totalEnvioEditar,
-    setTotalEnvioEditar,
-    totalEditar,
-    setTotalEditar,
-    puntosEditar,
-    setPuntosEditar,
-    factorEditar,
-    setFactorEditar,
     procesandoEditar,
     tableKey,
     productoEditar,
@@ -2179,13 +2414,11 @@ export const useListaProductos = (tipoUsuario: number) => {
     getProductosCatalogo,
     //ver bitacora del producto
     verBitacoraProducto,
-    setVerBitacoraProducto,
     isAlertOpenVerBitacoraProducto,
     handleisAlertOpenVerBitacoraProducto,
     handleisAlertCloseVerBitacoraProducto,
     getBitacoraProductoPorId,
     //color picker
-    colorNameToHex,
     esColorValido,
     anchorEl,
     setAnchorEl,
@@ -2197,7 +2430,6 @@ export const useListaProductos = (tipoUsuario: number) => {
     //colores
     crearEditarColorProducto,
     getProductoColorPorId,
-    formikColor,
     colores,
     setVerEditarColor,
     verEditarColor,
@@ -2228,9 +2460,6 @@ export const useListaProductos = (tipoUsuario: number) => {
     procesandoFotosProducto,
     fotosProductoFiles,
     setFotosProductoFiles,
-    isModalFotosProducto,
-    handleOpenFotosProducto,
-    handleCloseFotosProducto,
     isModalVistaFotosProducto,
     fotosProductoSeleccionada,
     handleOpenVistaFotosProducto,
@@ -2244,9 +2473,6 @@ export const useListaProductos = (tipoUsuario: number) => {
     procesandoFotosPromoProducto,
     fotosPromoProductoFiles,
     setFotosPromoProductoFiles,
-    isModalFotosPromoProducto,
-    handleOpenFotosPromoProducto,
-    handleCloseFotosPromoProducto,
     isModalVistaFotosPromoProducto,
     fotosPromoProductoSeleccionada,
     handleOpenVistaFotosPromoProducto,
@@ -2266,7 +2492,6 @@ export const useListaProductos = (tipoUsuario: number) => {
     //montos digital
     crearEditarMontoProducto,
     getProductoMontoPorId,
-    formikMonto,
     montos,
     setVerEditarMonto,
     verEditarMonto,
@@ -2286,17 +2511,18 @@ export const useListaProductos = (tipoUsuario: number) => {
     procesandoFotoMonto,
     fotoMontoFiles,
     setFotoMontoFiles,
-    isModalFotoMonto,
-    handleOpenFotoMonto,
-    handleCloseFotoMonto,
-    isModalVistaFotoMonto,
-    fotoMontoSeleccionada,
     handleOpenVistaFotoMonto,
-    handleCloseVistaFotoMonto,
     subirFotoMonto,
     getFotoMontoPorId,
     fotoMonto,
     desactivarFotoMonto,
     activarFotoMonto,
+    marcarNoDisponible,
+    marcarDisponible,
+    plataforma,
+    variablesGlobalesData,
+    calcularPuntosEsperados,
+    tallaArray,
+    formikEditarProducto,
   };
 };

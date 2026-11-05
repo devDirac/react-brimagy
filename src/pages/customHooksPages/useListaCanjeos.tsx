@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getErrorHttpMessage } from "../../utils";
@@ -12,6 +12,57 @@ import {
   enviarValidacionSinProveedorHttp,
   getCanjesHttp,
 } from "actions/canjes";
+
+const CAMPOS_PRODUCTO = [
+  "id_producto", "id_proveedor", "award_id", "tipo_producto",
+  "nombre_premio", "sku", "sku_catalogo",
+  "size", "color", "category", "number_of_awards", "costo_premio",
+  "puntos_canjeados", "estado_validacion",
+] as const;
+
+const ORDEN_ESTADOS = ["notificacion_enviada", "solicitud_enviada", "identidad_validada"];
+
+const calcularEstadoGrupo = (productos: any[]): string | null => {
+  const unicos = Array.from(
+    new Set(productos.map((p) => p.estado_validacion?.toLowerCase() ?? null))
+  );
+  if (unicos.length === 1) return unicos[0];
+
+  if (unicos.includes("identidad_validada")) return "validacion_parcial";
+
+  return ORDEN_ESTADOS.find((e) => unicos.includes(e)) ?? null;
+};
+
+export const agruparCanjes = (rows: any[]) => {
+  const mapa = new Map<number, any>();
+
+  rows.forEach((row) => {
+    const producto: any = {};
+    CAMPOS_PRODUCTO.forEach((k) => (producto[k] = row[k] ?? null));
+
+    const existente = mapa.get(row.id);
+    if (existente) {
+      existente.productos.push(producto);
+    } else {
+      const canje: any = { ...row };
+      CAMPOS_PRODUCTO.forEach((k) => delete canje[k]);
+      mapa.set(row.id, { ...canje, productos: [producto] });
+    }
+  });
+
+  return Array.from(mapa.values()).map((c) => ({
+    ...c,
+    estado_validacion: calcularEstadoGrupo(c.productos),
+    total_puntos: c.productos.reduce(
+      (acc: number, p: any) => acc + Number(p.puntos_canjeados || 0),
+      0
+    ),
+    total_premios: c.productos.reduce(
+      (acc: number, p: any) => acc + Number(p.number_of_awards || 0),
+      0
+    ),
+  }));
+};
 
 export const useListaCanjeos = (tipoUsuario: number) => {
   const dispatch = useDispatch();
@@ -31,6 +82,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
 
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
   const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const [canjeId, setCanjeId] = useState("");
 
@@ -49,6 +101,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
   const handleisAlertCloseFechas = () => setIsAlertOpenFechas(false);
 
   const [procesandoIdentidad, setProcesandoIdentidad] = useState<boolean>(false);
+  const [procesandoIdentidadDirecto, setProcesandoIdentidadDirecto] = useState<boolean>(false);
   //Generación PDF
   const [isPDFViewerOpen, setIsPDFViewerOpen] = useState(false);
   const handleOpenPDFViewer = () => setIsPDFViewerOpen(true);
@@ -64,6 +117,16 @@ export const useListaCanjeos = (tipoUsuario: number) => {
 
   const esDigital = location.pathname.includes("canjes-digitales");
 
+  const canjesAgrupados = useMemo(
+    () =>
+      agruparCanjes(canjes).sort((a, b) => {
+        const aValidado = a.estado_validacion === "identidad_validada" ? 1 : 0;
+        const bValidado = b.estado_validacion === "identidad_validada" ? 1 : 0;
+        return aValidado - bValidado;
+      }),
+    [canjes]
+  );
+
   const handleVisualizacion = (
     event: React.MouseEvent<HTMLElement>,
     nuevaVisualizacion: string | null
@@ -74,7 +137,9 @@ export const useListaCanjeos = (tipoUsuario: number) => {
   const handleAccion = (accion: string, row: any) => {
     switch (accion) {
       case "vista_previa":
-        setVerCanje(row);
+        const canje = canjesAgrupados.find((c) => c.id === row.id);
+        if (!canje) break;
+        setVerCanje(canje);
         handleisAlertOpenVerCanje();
         break;
       case "editar":
@@ -110,6 +175,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
       search?: string;
       fecha1?: string;
       fecha2?: string;
+      plataforma?: string;
     }) => {
       try {
         setProcesando(true);
@@ -117,7 +183,8 @@ export const useListaCanjeos = (tipoUsuario: number) => {
           esDigital ? "digital" : "fisico",
           params?.search,
           params?.fecha1 ? new Date(params.fecha1) : undefined,
-          params?.fecha2 ? new Date(params.fecha2) : undefined
+          params?.fecha2 ? new Date(params.fecha2) : undefined,
+          params?.plataforma ?? plataforma
         );
 
         const datosFormateados = productosData.map((e: any) => {
@@ -143,7 +210,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
         handleisAlertOpen();
       }
     },
-    [esDigital]
+    [esDigital, plataforma]
   );
 
   const validarIdentidad = async (data: any) => {
@@ -172,7 +239,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
 
   const validarIdentidadSinProveedor = async (data: any) => {
     try {
-      setProcesandoIdentidad(true);
+      setProcesandoIdentidadDirecto(true);
       await enviarValidacionSinProveedorHttp(data);
       setVerCanje((prevCanje: any) => ({
         ...prevCanje,
@@ -185,9 +252,9 @@ export const useListaCanjeos = (tipoUsuario: number) => {
       );
       setMensajeAlert(intl.formatMessage({ id: "canje_validado_correctamente" }));
       handleisAlertOpen();
-      setProcesandoIdentidad(false);
+      setProcesandoIdentidadDirecto(false);
     } catch (error) {
-      setProcesandoIdentidad(false);
+      setProcesandoIdentidadDirecto(false);
       const message = getErrorHttpMessage(error);
       setMensajeAlert(message || intl.formatMessage({ id: "canje_validado_error" }));
       handleisAlertOpen();
@@ -195,8 +262,8 @@ export const useListaCanjeos = (tipoUsuario: number) => {
   };
 
   useEffect(() => {
-    getCanjes();
-  }, [getCanjes]);
+    getCanjes({ plataforma });
+  }, [getCanjes, plataforma]);
 
   return {
     validarIdentidad,
@@ -239,5 +306,8 @@ export const useListaCanjeos = (tipoUsuario: number) => {
     fecha2,
     setFecha2,
     getCanjes,
+    plataforma,
+    procesandoIdentidadDirecto,
+    canjesAgrupados,
   };
 };

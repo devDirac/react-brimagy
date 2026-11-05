@@ -8,9 +8,16 @@ import {
   getEncuestaPorTipoHttp,
   getRespuestasEncuestaPorCanjeHttp,
 } from "actions/encuestas";
+import { useSelector } from "react-redux";
+import { StoreType } from "types/genericTypes";
 
 export const useEncuestaUsuario = () => {
-  const { tipo_encuesta, id_canje } = useParams<{ tipo_encuesta: string; id_canje: string }>();
+  //const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
+  const { tipo_encuesta, id_canje, plataforma } = useParams<{
+    tipo_encuesta: string;
+    id_canje: string;
+    plataforma: string;
+  }>();
   const navigate = useNavigate();
   const intl = useIntl();
 
@@ -140,5 +147,6 @@ export const useEncuestaUsuario = () => {
     setRespuestasUsuario,
     handleRespuestaChange,
     todasRespuestasCompletas,
+    plataforma,
   };
 };

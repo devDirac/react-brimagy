@@ -53,6 +53,7 @@ interface DetalleTallaProps {
   handleisAlertOpenEditarTalla: () => void;
   desactivarTallaProducto: (datos: any) => Promise<void>;
   activarTallaProducto: (datos: any) => Promise<void>;
+  plataforma?: string;
 }
 
 const TallasProductoModal = ({
@@ -64,6 +65,7 @@ const TallasProductoModal = ({
   desactivarTallaProducto,
   activarTallaProducto,
   setEditarTalla,
+  plataforma,
 }: DetalleTallaProps) => {
   if (!verTalla) return null;
   const intl = useIntl();
@@ -77,7 +79,7 @@ const TallasProductoModal = ({
   const isInternauta = tipoUsuario === 1;
 
   const tallaArray = [
-    { id: 0, label: "XXS", value: "XS" },
+    { id: 0, label: "XXS", value: "XXS" },
     { id: 1, label: "XS", value: "XS" },
     { id: 2, label: "S", value: "S" },
     { id: 3, label: "M", value: "M" },
@@ -162,6 +164,7 @@ const TallasProductoModal = ({
                       id_producto_dirac: datosProducto?.id,
                       id_producto_brimagy: datosProducto?.id_producto_brimagy,
                       talla: talla,
+                      plataforma: plataforma,
                     };
                     crearEditarTallaProducto(datos);
                   }}
@@ -257,6 +260,7 @@ const TallasProductoModal = ({
                               const datos = {
                                 id_talla: c?.id,
                                 id_talla_brimagy: c?.id_talla_brimagy,
+                                plataforma: plataforma,
                               };
                               desactivarTallaProducto(datos);
                             }}
@@ -274,6 +278,7 @@ const TallasProductoModal = ({
                               const datos = {
                                 id_talla: c?.id,
                                 id_talla_brimagy: c?.id_talla_brimagy,
+                                plataforma: plataforma,
                               };
                               activarTallaProducto(datos);
                             }}

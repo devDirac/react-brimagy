@@ -1,4 +1,4 @@
-import { Grid, Typography, Divider, Box, Chip, Paper, Button, TextField } from "@mui/material";
+import { Grid, Typography, Divider, Box, Chip, Paper, Button, TextField, Alert } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useIntl } from "react-intl";
 import ModalComponent from "components/Modal";
@@ -11,36 +11,11 @@ import { numericFormatter } from "react-number-format";
 import { useSelector } from "react-redux";
 import { StoreType } from "../../types/genericTypes";
 import PDFViewerCanje from "components/PDFViews/PDFViewerCanje";
-
-interface Canje {
-  id: number;
-  folio: string;
-  nombre_usuario: string;
-  email: string;
-  phone: number;
-  number_of_awards: string;
-  size: string;
-  color: string;
-  category: string;
-  puntos_canjeados: string;
-  nombre_premio: string;
-  costo_premio: string;
-  sku: string;
-  calle: string;
-  numero_calle: string;
-  colonia: string;
-  codigo_postal: number;
-  municipio: string;
-  numero_interior: string;
-  between_1: string;
-  between_2: string;
-  referencia_adicional: string;
-  creacion_canje: string;
-  estado_canje: string;
-  estado_validacion: string;
-  id_producto: number;
-  id_proveedor: number;
-}
+import { IconBrandAuth0, IconIdBadge2 } from "@tabler/icons-react";
+import { ProductosCanje } from "./ProductosCanje";
+import { Canje } from "../../types/canjeTypes";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
 
 interface DetalleCanjeProps {
   verCanje?: Canje | null;
@@ -50,6 +25,7 @@ interface DetalleCanjeProps {
   validarIdentidadSinProveedor: (data: any) => Promise<void>;
   validarIdentidad: (data: any) => Promise<void>;
   procesandoIdentidad: boolean;
+  procesandoIdentidadDirecto: boolean;
 }
 
 const DetallesCanjeModal = ({
@@ -60,17 +36,13 @@ const DetallesCanjeModal = ({
   validarIdentidad,
   verCanje,
   procesandoIdentidad,
+  procesandoIdentidadDirecto
 }: DetalleCanjeProps) => {
-  if (!verCanje) return null;
+
   const intl = useIntl();
 
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
-  const isSuperAdmin = tipoUsuario === 6;
-  const isAdministracion = tipoUsuario === 5;
-  const isInventario = tipoUsuario === 4;
-  const isCompras = tipoUsuario === 3;
-  const isAuditor = tipoUsuario === 2;
-  const isInternauta = tipoUsuario === 1;
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const getEstadoColorCanje = (estado_canje: string) => {
     if (!estado_canje) return "default";
@@ -83,7 +55,7 @@ const DetallesCanjeModal = ({
         return "default";
     }
   };
-  const getEstadoColorValidacion = (estado_validacion: string) => {
+  const getEstadoColorValidacion = (estado_validacion?: string | null) => {
     if (!estado_validacion) return "default";
     switch (estado_validacion.toLowerCase()) {
       case "notificacion_enviada":
@@ -92,6 +64,8 @@ const DetallesCanjeModal = ({
         return "error";
       case "identidad_validada":
         return "success";
+      case "validacion_parcial":
+        return "warning"
       default:
         return "default";
     }
@@ -106,6 +80,7 @@ const DetallesCanjeModal = ({
     NOTIFICACION_ENVIADA: "NOTIFICACIÓN ENVIADA",
     SOLICITUD_ENVIADA: "SOLICITUD ENVIADA",
     IDENTIDAD_VALIDADA: "IDENTIDAD VALIDADA",
+    VALIDACION_PARCIAL: "VALIDACIÓN PARCIAL"
   };
 
   // Función helper para traducir estados
@@ -115,11 +90,20 @@ const DetallesCanjeModal = ({
     return estadosCanjeMap[estadoUpper] || estadoUpper;
   };
 
-  const traducirEstadoValidacion = (estado: string | null): string => {
+  const traducirEstadoValidacion = (estado?: string | null): string => {
     if (!estado) return "SIN VALIDAR";
     const estadoUpper = estado.toUpperCase();
     return estadosValidacionMap[estadoUpper] || estadoUpper;
   };
+
+  const formatearFecha = (fecha?: string | null) =>
+    fecha ? dayjs(fecha).locale("es").format("DD [de] MMMM [de] YYYY, HH:mm") : "Sin fecha";
+
+  const productosRegistrados = verCanje?.productos.filter((p) => !!p.id_producto);
+  const productosNoRegistrados = verCanje?.productos.filter((p) => !p.id_producto) ?? [];
+
+  if (!verCanje) return null;
+
   return (
     <Box sx={{ px: 2, pb: 2, mt: 3 }}>
       <Grid container spacing={3}>
@@ -144,37 +128,78 @@ const DetallesCanjeModal = ({
             {intl.formatMessage({ id: "generar_pdf_input" })}
           </Button>
           <Button
-            sx={{ color: "#fff", background: "#3ec972", fontSize: "0.75rem", padding: "6px 8px" }}
+            sx={{
+              color: "#fff",
+              background: "#2a9954",
+              fontSize: "0.75rem",
+              padding: "6px 8px",
+              "&:hover": {
+                background: "#19753b"
+              },
+              "&:focus": {
+                background: "#19753b"
+              }
+            }}
             variant="contained"
-            endIcon={<AddIcon />}
+            startIcon={<IconBrandAuth0 stroke={2} />}
             disabled={
-              isInventario ||
-              isCompras ||
-              isAuditor ||
-              isInternauta ||
+              productosRegistrados?.length === 0 ||
               verCanje.estado_canje === "INACTIVE" ||
               verCanje.estado_validacion === "identidad_validada"
             }
-            onClick={(e: any) => {
-              verCanje?.id_proveedor == null
-                ? validarIdentidadSinProveedor(verCanje)
-                : validarIdentidad(verCanje);
+            onClick={() =>
+              validarIdentidadSinProveedor({ plataforma, ...verCanje, productos: productosRegistrados })
+            }
+          >
+            {procesandoIdentidadDirecto ? (
+              <>
+                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                Validando...{" "}
+              </>
+            ) : intl.formatMessage({ id: "validar_identidad_directa" })}
+          </Button>
+          <Button
+            sx={{
+              color: "#000",
+              background: "#ffc800",
+              fontSize: "0.75rem",
+              padding: "6px 8px",
+              "&:hover": {
+                background: "#cfa300"
+              },
+              "&:focus": {
+                background: "#cfa300"
+              }
             }}
+            variant="contained"
+            startIcon={<IconIdBadge2 stroke={2} />}
+            disabled={
+              productosRegistrados?.length === 0 ||
+              verCanje.estado_canje === "INACTIVE" ||
+              verCanje.estado_validacion === "identidad_validada"
+            }
+            onClick={() =>
+              validarIdentidad({ plataforma, ...verCanje, productos: productosRegistrados })
+            }
           >
             {procesandoIdentidad ? (
               <>
                 <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
                 Enviando validación...{" "}
               </>
-            ) : verCanje?.id_proveedor == null ? (
-              intl.formatMessage({ id: "validar_identidad_directa" })
-            ) : (
-              intl.formatMessage({ id: "validar_identidad_input" })
-            )}
+            ) : intl.formatMessage({ id: "validar_identidad_input" })}
           </Button>
         </Grid>
 
-        <Grid item xs={6}>
+        <Grid item xs={12} md={4}>
+          <Typography variant="body2" color="text.secondary">
+            Fecha del canje
+          </Typography>
+          <Typography variant="body2" fontWeight="medium" sx={{ mt: 0.5, fontSize: 14 }}>
+            {formatearFecha(verCanje.creacion_canje)}
+          </Typography>
+        </Grid>
+        <Grid item xs={12} md={4}>
           <Typography variant="body2" color="text.secondary">
             Estatus del Canje
           </Typography>
@@ -184,7 +209,7 @@ const DetallesCanjeModal = ({
             sx={{ fontWeight: "bold" }}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={12} md={4}>
           <Typography variant="body2" color="text.secondary">
             Estatus de Validación
           </Typography>
@@ -235,83 +260,19 @@ const DetallesCanjeModal = ({
         <Grid item xs={12}>
           <Paper elevation={2} sx={{ p: 2 }}>
             <Typography variant="h6" color="primary" gutterBottom>
-              Información del Premio
+              Productos del canje ({verCanje.productos.length})
             </Typography>
             <Divider sx={{ mb: 2 }} />
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={12}>
-                <Typography variant="body2" color="text.secondary">
-                  Nombre del premio
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {verCanje.nombre_premio}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Tamaño
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {verCanje.size}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Color
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {verCanje.color}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Categoría
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {verCanje.category}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={12}>
-                <Typography variant="body2" color="text.secondary">
-                  SKU
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {verCanje.sku}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Costo
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {numericFormatter(verCanje.costo_premio + "", {
-                    thousandSeparator: ",",
-                    fixedDecimalScale: false,
-                    prefix: "",
-                  })}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Premios solicitados
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {verCanje.number_of_awards}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="body2" color="text.secondary">
-                  Puntos canjeados
-                </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {numericFormatter(verCanje.puntos_canjeados + "", {
-                    thousandSeparator: ",",
-                    fixedDecimalScale: false,
-                    prefix: "",
-                  })}
-                </Typography>
-              </Grid>
-            </Grid>
+            {productosNoRegistrados.length > 0 && (
+              <Alert severity="warning" sx={{ mb: 2, textAlign: "left" }}>
+                Hay inconsistencia en el sistema: algunos productos del canje no están registrados en el catálogo.
+              </Alert>
+            )}
+            <ProductosCanje productos={verCanje.productos} porPagina={10} marcarNoRegistrados />
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="body2" fontWeight="medium">
+              Total: {numericFormatter(String(verCanje.total_puntos), { thousandSeparator: "," })} puntos
+            </Typography>
           </Paper>
         </Grid>
 

@@ -229,23 +229,6 @@ function ListaProductosFisicos(): JSX.Element {
     getBitacoraProductoPorId,
   } = useListaProductosFisicos(tipoUsuario);
 
-  const independiente = () => {
-    return !productos?.length && !procesando ? (
-      <Grid container spacing={2}>
-        <Grid item xs={12} style={{ textAlign: "center" }}>
-          <h3>Sin registros</h3>
-        </Grid>
-      </Grid>
-    ) : null;
-  };
-  const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
-    "& .MuiBadge-badge": {
-      right: 0,
-      top: 5,
-      padding: "0",
-      fontSize: "10px",
-    },
-  }));
   // Handlers para la paginación
   const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
@@ -1275,10 +1258,8 @@ function ListaProductosFisicos(): JSX.Element {
                     Registrando proveedores y categorías...
                   </>
                 ) : (
-                  `Registrar ${obtenerProveedoresFaltantes().length} proveedor(es) | ${
-                    obtenerCategoriasFaltantes().length
-                  } Categoría(s) faltantes  | ${
-                    obtenerPlataformasFaltantes().length
+                  `Registrar ${obtenerProveedoresFaltantes().length} proveedor(es) | ${obtenerCategoriasFaltantes().length
+                  } Categoría(s) faltantes  | ${obtenerPlataformasFaltantes().length
                   } Plataforma(s) faltantes`
                 )}
               </Button>
@@ -1319,8 +1300,8 @@ function ListaProductosFisicos(): JSX.Element {
                   sku_status: p.sku_vacio
                     ? "⚠️ SKU VACÍO"
                     : p.sku_duplicado
-                    ? "🔄 " + p.sku + " (Existente)"
-                    : p.sku,
+                      ? "🔄 " + p.sku + " (Existente)"
+                      : p.sku,
                 }))}
                 columnsToShow={[
                   "nombre_producto",
@@ -1368,10 +1349,9 @@ function ListaProductosFisicos(): JSX.Element {
                   Guardando productos...
                 </>
               ) : (
-                `Guardar ${
-                  excelData?.filter(
-                    (p) => p?.proveedor_valido && p?.categoria_valida && !p?.sku_vacio
-                  ).length || 0
+                `Guardar ${excelData?.filter(
+                  (p) => p?.proveedor_valido && p?.categoria_valida && !p?.sku_vacio
+                ).length || 0
                 } productos válidos`
               )}
             </Button>

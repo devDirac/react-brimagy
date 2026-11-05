@@ -11,8 +11,10 @@ import { numericFormatter } from "react-number-format";
 import moment from "moment";
 import { enviarValidacionHttp, getCanjesHttp, getCanjesPorProveedorHttp } from "actions/canjes";
 import {
+  cotizarConOtrosProveedoresHttp,
   enviarCotizacionProveedorHttp,
   enviarOrdenCompraFileProveedorHttp,
+  getConfigCotizacionHttp,
   getOCPorIdHttp,
   getOCPorIdProveedorHttp,
   getProveedoresOCHttp,
@@ -50,6 +52,7 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
 
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
   const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const [canjeId, setCanjeId] = useState("");
 
@@ -118,6 +121,10 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     setFactura(newFile);
   };
 
+  //COTIZAR CON OTROS PROVEEDORES
+  const [procesandoCotizarOtros, setProcesandoCotizarOtros] = useState<boolean>(false);
+  const [modoCotizacion, setModoCotizacion] = useState<"acumular" | "directo">("acumular");
+
   useEffect(() => {
     setAuth(token);
   }, [token]);
@@ -128,7 +135,7 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
         id_proveedor: accionProducto
           ? Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" }))
           : Yup.string().notRequired(),
-        costo_sin_iva: !accionProducto
+        costo_con_iva: !accionProducto
           ? Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" }))
           : Yup.string().notRequired(),
       }),
@@ -140,7 +147,7 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     formikAsignar.resetForm({
       values: {
         id_proveedor: "",
-        costo_sin_iva: "",
+        costo_con_iva: "",
       },
     });
   };
@@ -148,11 +155,11 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
   const formikAsignar = useFormik({
     initialValues: {
       id_proveedor: "",
-      costo_sin_iva: "",
+      costo_con_iva: "",
     },
     validationSchema: validationSchemaAsignar,
     enableReinitialize: true,
-    onSubmit: async (values) => {},
+    onSubmit: async (values) => { },
   });
 
   const formik = useFormik({
@@ -205,12 +212,12 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     switch (accion) {
       case "crear_orden_compra":
         setVerProveedor(row);
-        getCanjesPorProveedor(row.id);
+        getCanjesPorProveedor(row.id, plataforma);
         handleisAlertOpenVerCanje();
         break;
       case "vista_previa":
         setVerProveedor(row);
-        getOCPorIdProveedor(row.id);
+        getOCPorIdProveedor(row.id, plataforma);
         handleisAlertOpenVerOC();
         break;
       case "eliminar":
@@ -231,7 +238,7 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
       clearTimeout(debounceTimeout);
     }
     const timeout = setTimeout(() => {
-      getProveedoresOC(value);
+      getProveedoresOC(value, plataforma);
     }, 500);
     setDebounceTimeout(timeout);
   };
@@ -273,7 +280,7 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     try {
       setProcesandoProveedor(true);
       const proveedorData: any = await asignarProveedorHttp(datos);
-      await getProveedoresOC();
+      await getProveedoresOC(undefined, plataforma);
       formikAsignar.resetForm();
       setProcesandoProveedor(false);
       setMensajeAlert(intl.formatMessage({ id: "proveedor_asignado_correctamente" }));
@@ -293,7 +300,7 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     try {
       setProcesandoProveedor(true);
       const proveedorData: any = await registrarNuevoPrecioHttp(datos);
-      await getProveedoresOC();
+      await getProveedoresOC(undefined, plataforma);
       formikAsignar.resetForm();
       setProcesandoProveedor(false);
       setMensajeAlert(intl.formatMessage({ id: "nuevo_precio_registrado_correctamente" }));
@@ -309,10 +316,10 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     }
   };
 
-  const getProveedoresOC = useCallback(async (search?: string) => {
+  const getProveedoresOC = useCallback(async (search?: string, plataforma?: string) => {
     try {
       setProcesando(true);
-      const proveedoresData = await getProveedoresOCHttp(search);
+      const proveedoresData = await getProveedoresOCHttp(search, plataforma);
       setProveedores(proveedoresData);
       setProcesando(false);
     } catch (error) {
@@ -323,10 +330,10 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     }
   }, []);
 
-  const getOCPorIdProveedor = useCallback(async (id_proveedor: number) => {
+  const getOCPorIdProveedor = useCallback(async (id_proveedor?: number, plataforma?: string) => {
     try {
       setProcesando(true);
-      const ocData = await getOCPorIdProveedorHttp(id_proveedor);
+      const ocData = await getOCPorIdProveedorHttp(id_proveedor, plataforma);
       setOrdenesCompra(ocData);
       setProcesando(false);
     } catch (error) {
@@ -351,10 +358,10 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     }
   }, []);
 
-  const getCanjesPorProveedor = useCallback(async (id_proveedor: number) => {
+  const getCanjesPorProveedor = useCallback(async (id_proveedor?: number, plataforma?: string) => {
     try {
       setProcesando(true);
-      const proveedorData = await getCanjesPorProveedorHttp(id_proveedor);
+      const proveedorData = await getCanjesPorProveedorHttp(id_proveedor, plataforma);
       setVerCanje(proveedorData);
       setProcesando(false);
     } catch (error) {
@@ -371,19 +378,8 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
         ? setProcesandoValidacionFinal(true)
         : setProcesandoEnviarProveedor(true);
       await enviarCotizacionProveedorHttp(datos);
-      await getProveedoresOC();
-      /*setVerCanje((prevCanje: any) => {
-        if (!prevCanje?.productos) return prevCanje;
+      await getProveedoresOC(undefined, plataforma);
 
-        return {
-          ...prevCanje,
-          productos: prevCanje.productos.map((canje: any) =>
-            canje.id_canje === datos.productos.id_canje
-              ? { ...canje, estatus_proveedor: datos?.tipo_envio === "directo" ? 1 : 0 }
-              : canje
-          ),
-        };
-      });*/
       handleisAlertCloseVerCanje();
       setMensajeAlert(
         datos?.tipo_envio == "directo"
@@ -400,9 +396,10 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
         : setProcesandoEnviarProveedor(false);
       const message = getErrorHttpMessage(error);
       setMensajeAlert(
-        message || datos?.tipo_envio == "directo"
+        message ||
+        (datos?.tipo_envio == "directo"
           ? intl.formatMessage({ id: "orden_compra_final_validada_error" })
-          : intl.formatMessage({ id: "error_enviar_cotizacion_proveedor" })
+          : intl.formatMessage({ id: "error_enviar_cotizacion_proveedor" }))
       );
       handleisAlertOpen();
     }
@@ -455,7 +452,7 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     try {
       setProcesandoNuevoProveedor(true);
       await enviarANuevoProveedorHttp(datos);
-      await getProveedoresOC();
+      await getProveedoresOC(undefined, plataforma);
       handleisAlertCloseOtroProveedor();
       setMensajeAlert(intl.formatMessage({ id: "exito_enviar_producto_a_otro_proveedor" }));
       handleisAlertOpen();
@@ -467,6 +464,48 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
         message || intl.formatMessage({ id: "error_enviar_producto_a_otro_proveedor" })
       );
       handleisAlertOpen();
+    }
+  };
+
+  const getConfigCotizacion = useCallback(async () => {
+    try {
+      const config: any = await getConfigCotizacionHttp();
+      if (config?.modo) setModoCotizacion(config.modo);
+    } catch (error) {
+      // Si falla se queda en "acumular"; no bloquea la pantalla
+    }
+  }, []);
+
+  const cotizarConOtrosProveedores = async (datos: any): Promise<boolean> => {
+    try {
+      setProcesandoCotizarOtros(true);
+      await cotizarConOtrosProveedoresHttp({ ...datos, plataforma });
+
+      // Refresca contadores y la lista del modal, sin cerrarlo
+      await getProveedoresOC(undefined, plataforma);
+      if (verCanje?.orden_compra?.id) {
+        await getOCPorId(verCanje.orden_compra.id);
+      } else {
+        await getCanjesPorProveedor(verProveedor?.id, plataforma);
+      }
+
+      setMensajeAlert(
+        intl.formatMessage({
+          id:
+            modoCotizacion === "directo"
+              ? "cotizar_otros_directo_exito"
+              : "cotizar_otros_acumulado_exito",
+        })
+      );
+      handleisAlertOpen();
+      setProcesandoCotizarOtros(false);
+      return true;
+    } catch (error) {
+      setProcesandoCotizarOtros(false);
+      const message = getErrorHttpMessage(error);
+      setMensajeAlert(message || intl.formatMessage({ id: "cotizar_otros_error" }));
+      handleisAlertOpen();
+      return false;
     }
   };
 
@@ -572,9 +611,10 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
   };
 
   useEffect(() => {
-    getProveedoresOC();
+    getProveedoresOC(undefined, plataforma);
     getProveedores();
-  }, [getProveedoresOC, getProveedores]);
+    getConfigCotizacion();
+  }, [getProveedoresOC, getProveedores, getConfigCotizacion, plataforma]);
 
   return {
     formik,
@@ -666,5 +706,10 @@ export const useGenerarOrdenCompra = (tipoUsuario: number) => {
     accionProducto,
     registrarNuevoPrecio,
     handleAccionProducto,
+    plataforma,
+    //COTIZAR CON OTROS PROVEEDORES
+    cotizarConOtrosProveedores,
+    procesandoCotizarOtros,
+    modoCotizacion,
   };
 };

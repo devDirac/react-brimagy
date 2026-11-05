@@ -29,6 +29,7 @@ export const useListaUsuarios = (tipoUsuario: number) => {
 
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
   const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const [isAlertOpenEditarUsuario, setIsAlertOpenEditarUsuario] = useState(false);
   const handleisAlertOpenEditarUsuario = () => setIsAlertOpenEditarUsuario(true);
@@ -46,10 +47,10 @@ export const useListaUsuarios = (tipoUsuario: number) => {
     setAuth(token);
   }, [token]);
 
-  const getUsuarios = useCallback(async () => {
+  const getUsuarios = useCallback(async (plataforma?: string) => {
     try {
       setProcesando(true);
-      const usuariosData = await getUsuariosHttp();
+      const usuariosData = await getUsuariosHttp(plataforma);
       setUsuarios(usuariosData);
       setProcesando(false);
     } catch (error) {
@@ -112,8 +113,8 @@ export const useListaUsuarios = (tipoUsuario: number) => {
   };
 
   useEffect(() => {
-    getUsuarios();
-  }, [getUsuarios]);
+    getUsuarios(plataforma);
+  }, [plataforma]);
 
   return {
     procesandoEditar,
@@ -147,5 +148,6 @@ export const useListaUsuarios = (tipoUsuario: number) => {
     desactivaUsuario,
     reactivaUsuario,
     editaUsuario,
+    plataforma,
   };
 };

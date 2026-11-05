@@ -29,6 +29,7 @@ export interface DinamicTableProps {
   esListaRespuestas?: boolean;
   esListaCanjes?: boolean;
   esListaOrdenesCompra?: boolean;
+  esListaUsuariosPlataforma?: boolean;
   onImageClick?: (imageUrl: string) => void;
 }
 interface DataRow {
@@ -46,6 +47,7 @@ interface DataRow {
   estado?: string;
   status?: string;
   visible?: number;
+  stock?: number;
 }
 export interface AccionesTableProps {
   enAccion: (accion: any) => void;
@@ -60,4 +62,5 @@ export interface AccionesTableProps {
   esListaRespuestas?: boolean;
   esListaCanjes?: boolean;
   esListaOrdenesCompra?: boolean;
+  esListaUsuariosPlataforma?: boolean;
 }

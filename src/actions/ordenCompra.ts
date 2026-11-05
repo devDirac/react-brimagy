@@ -2,7 +2,7 @@ import { GeneralHttpResponse } from "../types/genericTypes";
 import axios from "axios";
 import env from "react-dotenv";
 
-export const getProveedoresOCHttp = async (search?: string) => {
+/*export const getProveedoresOCHttp = async (search?: string) => {
   try {
     let url = `${env.API_URL}/getProveedoresOC`;
 
@@ -11,6 +11,20 @@ export const getProveedoresOCHttp = async (search?: string) => {
     }
 
     const response = await axios.get(url);
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};*/
+export const getProveedoresOCHttp = async (search?: string, plataforma?: string) => {
+  try {
+    const url = new URL(`${env.API_URL}/getProveedoresOC`);
+
+    if (search) url.searchParams.append("search", search);
+    if (plataforma) url.searchParams.append("plataforma", plataforma);
+
+    const response = await axios.get(url.toString());
     return response?.data || [];
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));
@@ -29,11 +43,25 @@ export const enviarCotizacionProveedorHttp = async (data: any) => {
     return promise;
   }
 };
-export const getOCPorIdProveedorHttp = async (id_proveedor: number) => {
+/*export const getOCPorIdProveedorHttp = async (id_proveedor: number) => {
   try {
     const response = await axios.get(
       `${env.API_URL}${"/getOCPorIdProveedor"}?id_proveedor=${id_proveedor}`
     );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};*/
+export const getOCPorIdProveedorHttp = async (id_proveedor?: number, plataforma?: string) => {
+  try {
+    const url = new URL(`${env.API_URL}/getOCPorIdProveedor`);
+
+    if (id_proveedor) url.searchParams.append("id_proveedor", id_proveedor.toString());
+    if (plataforma) url.searchParams.append("plataforma", plataforma);
+
+    const response = await axios.get(url.toString());
     return response?.data || [];
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));
@@ -54,8 +82,7 @@ export const getOCPorIdHttp = async (id_orden_compra: number) => {
 export const getOrdenCompraPorProveedorHttp = async (id_ordencompra: string) => {
   try {
     const response = await axios.get(
-      `${
-        process.env.REACT_APP_API_URL
+      `${process.env.REACT_APP_API_URL
       }${"/getOrdenCompraPorProveedor"}?id_ordencompra=${id_ordencompra}`
     );
     return response?.data || [];
@@ -155,6 +182,28 @@ export const rechazarCotizacionDeProveedorHttp = async (data: any) => {
       data
     );
     return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+export const cotizarConOtrosProveedoresHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.post(
+      `${env.API_URL}${"/cotizarConOtrosProveedores"}`,
+      data
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const getConfigCotizacionHttp = async () => {
+  try {
+    const response = await axios.get(`${env.API_URL}${"/getConfigCotizacion"}`);
+    return response?.data || {};
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));
     return promise;

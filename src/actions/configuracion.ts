@@ -1,6 +1,12 @@
 import { GeneralHttpResponse } from "../types/genericTypes";
 import axios from "axios";
 import env from "react-dotenv";
+export const SET_PLATAFORMA = "SET_PLATAFORMA";
+
+export const setPlataforma = (value: string) => ({
+  type: SET_PLATAFORMA,
+  value,
+});
 
 export const crearVariablesGlobalesHttp = async (data: any) => {
   try {
@@ -28,10 +34,11 @@ export const crearPlataformaHttp = async (data: any) => {
   }
 };
 
-export const sincronizarVariablesEnProductosHttp = async () => {
+export const sincronizarVariablesEnProductosHttp = async (data?: any) => {
   try {
     const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/sincronizarVariablesEnProductos"}`
+      `${env.API_URL}/sincronizarVariablesEnProductos`,
+      data
     );
     return response?.data || [];
   } catch (error) {
@@ -60,9 +67,71 @@ export const getPlataformasHttp = async () => {
   }
 };
 
-export const getProductosSincronizadosHttp = async () => {
+
+export const getProductosSincronizadosHttp = async (data?: any) => {
   try {
-    const response = await axios.get(`${env.API_URL}/getProductosSincronizados`);
+    const response: GeneralHttpResponse = await axios.get(
+      `${env.API_URL}${"/getProductosSincronizados"}`,
+      {
+        params: data,
+      }
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const getVariablesGlobalesPorPlataformaHttp = async (data?: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.get(
+      `${env.API_URL}${"/getVariablesGlobalesPorPlataforma"}`,
+      {
+        params: data,
+      }
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const crearPeriodoHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.post(
+      `${env.API_URL}${"/crearPeriodo"}`,
+      data
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const editarPeriodoHttp = async (data: any) => {
+  try {
+    const response: GeneralHttpResponse = await axios.put(
+      `${env.API_URL}${"/editarPeriodo"}`,
+      data
+    );
+    return response?.data || [];
+  } catch (error) {
+    const promise = new Promise((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+export const getPeriodosHttp = async (plataforma: string) => {
+  try {
+    const response: GeneralHttpResponse = await axios.get(
+      `${env.API_URL}${"/getPeriodos"}`,
+      {
+        params: { plataforma },
+      }
+    );
     return response?.data || [];
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));

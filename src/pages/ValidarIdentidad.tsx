@@ -1,8 +1,4 @@
 import { useRef, useState } from "react";
-import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
-import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import Footer from "examples/Footer";
-import Header from "components/Header";
 import MDBox from "components/MDBox";
 import {
   Grid,
@@ -11,31 +7,21 @@ import {
   TextField,
   Button,
   Typography,
-  Alert,
   Box,
   Divider,
   Paper,
   Backdrop,
   CircularProgress,
-  Chip,
   Stack,
-  Tooltip,
 } from "@mui/material";
 import { useSelector } from "react-redux";
 import { StoreType } from "../types/genericTypes";
 import logo from "assets/images/logo_puntotes_2026.png";
 import { useValidarIdentidad } from "./customHooksPages/useValidarIdentidad";
-import VerifiedIcon from "@mui/icons-material/Verified";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ErrorIcon from "@mui/icons-material/Error";
-import { green, red } from "@mui/material/colors";
 import ModalComponent from "components/Modal";
-import GppBadIcon from "@mui/icons-material/GppBad";
-import { numericFormatter } from "react-number-format";
-import AddIcon from "@mui/icons-material/Add";
-import HttpsIcon from "@mui/icons-material/Https";
 import { Spinner } from "react-bootstrap";
 import Forward10Icon from "@mui/icons-material/Forward10";
+import { ProductosCanje } from "components/DetallesVistas/ProductosCanje";
 
 function ValidarIdentidad(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -56,6 +42,8 @@ function ValidarIdentidad(): JSX.Element {
     canje,
     procesando,
     intl,
+    codigo,
+    plataforma,
   } = useValidarIdentidad();
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -258,7 +246,8 @@ function ValidarIdentidad(): JSX.Element {
                               }}
                               variant="contained"
                               onClick={(e: any) => {
-                                solicitarCodigoValidacion(canje);
+                                //console.log({ plataforma, ...canje });
+                                solicitarCodigoValidacion({ plataforma, ...canje });
                               }}
                             >
                               {procesandoCodigo ? (
@@ -359,7 +348,8 @@ function ValidarIdentidad(): JSX.Element {
                                   endIcon={<Forward10Icon />}
                                   onClick={(e: any) => {
                                     setOtp(["", "", "", "", "", ""]);
-                                    solicitarCodigoValidacion(canje);
+                                    //console.log({ plataforma, ...canje });
+                                    solicitarCodigoValidacion({ plataforma, ...canje });
                                   }}
                                 >
                                   {procesandoCodigo ? (
@@ -427,6 +417,111 @@ function ValidarIdentidad(): JSX.Element {
                               fontSize="14px"
                               sx={{ color: "#000" }}
                             >
+                              Dirección de entrega
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              fontSize="14px"
+                              sx={{ color: "#00506E" }}
+                            >
+                              {direccion_completa}
+                            </Typography>
+                          </Grid>
+                          <Grid
+                            item
+                            xs={12}
+                            md={6}
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            flexDirection="column"
+                          >
+                            <Typography
+                              variant="caption"
+                              fontWeight="bold"
+                              fontSize="14px"
+                              sx={{ color: "#000" }}
+                            >
+                              Nombre
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              fontSize="14px"
+                              sx={{ color: "#00506E" }}
+                            >
+                              {canje.nombre_usuario}
+                            </Typography>
+                          </Grid>
+                          <Grid
+                            item
+                            xs={6}
+                            md={6}
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            flexDirection="column"
+                          >
+                            <Typography
+                              variant="caption"
+                              fontWeight="bold"
+                              fontSize="14px"
+                              sx={{ color: "#000" }}
+                            >
+                              Correo
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              fontSize="14px"
+                              sx={{ color: "#00506E" }}
+                            >
+                              {canje.email}
+                            </Typography>
+                          </Grid>
+                          <Grid
+                            item
+                            xs={6}
+                            md={6}
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            flexDirection="column"
+                          >
+                            <Typography
+                              variant="caption"
+                              fontWeight="bold"
+                              fontSize="14px"
+                              sx={{ color: "#000" }}
+                            >
+                              Teléfono
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              fontWeight="bold"
+                              fontSize="14px"
+                              sx={{ color: "#00506E" }}
+                            >
+                              {canje.phone}
+                            </Typography>
+                          </Grid>
+                          <Grid
+                            item
+                            xs={6}
+                            md={6}
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            flexDirection="column"
+                          >
+
+                            <Typography
+                              variant="caption"
+                              fontWeight="bold"
+                              fontSize="14px"
+                              sx={{ color: "#000" }}
+                            >
                               Folio Canje
                             </Typography>
                             <Typography
@@ -438,6 +533,7 @@ function ValidarIdentidad(): JSX.Element {
                               {canje.folio}
                             </Typography>
                           </Grid>
+
                           <Grid
                             item
                             xs={12}
@@ -447,47 +543,23 @@ function ValidarIdentidad(): JSX.Element {
                             alignItems="center"
                             flexDirection="column"
                           >
-                            <Typography
-                              variant="caption"
-                              fontWeight="bold"
-                              fontSize="14px"
-                              sx={{ color: "#000" }}
-                            >
-                              Premio seleccionado
+                            <Typography variant="caption" fontWeight="bold" fontSize="14px" sx={{ color: "#000" }}>
+                              {canje.productos?.length > 1
+                                ? `Premios seleccionados (${canje.productos.length})`
+                                : "Premio seleccionado"}
                             </Typography>
-                            <Typography
-                              variant="body2"
-                              fontWeight="bold"
-                              fontSize="14px"
-                              sx={{ color: "#00506E" }}
-                            >
-                              {canje.nombre_premio}
-                            </Typography>
-                          </Grid>
-                          <Grid
-                            item
-                            xs={12}
-                            md={12}
-                            display="flex"
-                            justifyContent="center"
-                            alignItems="center"
-                            flexDirection="column"
-                          >
-                            <Typography
-                              variant="caption"
-                              fontWeight="bold"
-                              fontSize="14px"
-                              sx={{ color: "#000" }}
-                            >
-                              Dirección de entrega
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              fontWeight="bold"
-                              fontSize="14px"
-                              sx={{ color: "#00506E" }}
-                            >
-                              {direccion_completa}
+
+                            {canje.productos?.length ? (
+                              <Box sx={{ width: "100%", maxWidth: 420, textAlign: "center", color: "#00506E" }}>
+                                <ProductosCanje productos={canje.productos} porPagina={3} />
+                              </Box>
+                            ) : (
+                              <Typography variant="body2" fontWeight="bold" fontSize="14px" sx={{ color: "#00506E" }}>
+                                {canje.nombre_premio}
+                              </Typography>
+                            )}
+                            <Typography variant="body2" fontWeight="bold" fontSize="14px" sx={{ color: "#00506E", mt: 1 }}>
+                              Total: {Number(canje.total_puntos).toLocaleString("es-MX")} puntos
                             </Typography>
                           </Grid>
                           {/* Información de la dirección de envío */}
@@ -523,7 +595,7 @@ function ValidarIdentidad(): JSX.Element {
                       </Grid>
                       <Grid item xs={12} md={12} lg={12}>
                         <Typography variant="body2" sx={{ textAlign: "center", fontSize: "14px" }}>
-                          © TODOS LOS DERECHOS RESERVADOS Controladora Mabe SA de CV Pase de las
+                          © TODOS LOS DERECHOS RESERVADOS Controladora Mabe SA de CV Paseo de las
                           palmas 100, Col. Lomas de Chapultepec, Ciudad de México Código Postal
                           11000
                         </Typography>

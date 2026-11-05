@@ -51,6 +51,8 @@ import {
   Tooltip,
   Typography,
   Switch,
+  ToggleButtonGroup,
+  ToggleButton,
 } from "@mui/material";
 import ModalComponent from "components/Modal";
 import Header from "components/Header";
@@ -85,6 +87,16 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import { TextFieldValidado } from "components/TextFieldValidado/TextFieldValidado";
+
+const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
+  "& .MuiBadge-badge": {
+    right: 2,
+    top: 7,
+    background: `#eb2fa5`,
+    padding: "0 4px",
+    fontSize: "10px",
+  },
+}));
 
 function GestionAlmacen(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
@@ -157,6 +169,8 @@ function GestionAlmacen(): JSX.Element {
     procesandoRecepcionProducto,
     setGuiaProducto,
     guiaProducto,
+    tipoEnvio,
+    setTipoEnvio,
     isAlertOpenGuia,
     handleisAlertOpenGuia,
     handleisAlertCloseGuia,
@@ -255,30 +269,21 @@ function GestionAlmacen(): JSX.Element {
     getFieldColorCantidad,
     handleAccionProducto,
     accionProducto,
+    plataforma,
+    setFechaCompra,
+    fechaCompra,
+    costoEnvioReal,
+    setCostoEnvioReal,
+    isAlertOpenCostoEnvioReal,
+    handleisAlertOpenCostoEnvioReal,
+    handleisAlertCloseCostoEnvioReal,
+    procesandoCostoEnvioReal
   } = useGestionAlmacen(tipoUsuario);
 
   const handleChangeEvidencias = (newFiles: File[] | null) => {
     setEvidenciasFiles(newFiles || []);
   };
 
-  const independiente = () => {
-    return !productos?.length && !procesando ? (
-      <Grid container spacing={2}>
-        <Grid item xs={12} style={{ textAlign: "center" }}>
-          <h3>Sin registros</h3>
-        </Grid>
-      </Grid>
-    ) : null;
-  };
-  const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
-    "& .MuiBadge-badge": {
-      right: 2,
-      top: 7,
-      background: `#eb2fa5`,
-      padding: "0 4px",
-      fontSize: "10px",
-    },
-  }));
   // Handlers para la paginación
   const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
@@ -301,16 +306,16 @@ function GestionAlmacen(): JSX.Element {
     SATISFACCION_COMPRA: "SATISFACCIÓN DE COMPRA",
     SATISFACCION_PLATAFORMA: "SATISFACCIÓN DE PLATAFORMA",
   };
+
+  const plataformaEstilos: Record<string, { label: string; bg: string }> = {
+    puntotes: { label: "Puntotes", bg: "#02999e" },
+    club_bohn: { label: "Club Bohn", bg: "#eb2fa5" },
+  };
+
   const traducirTipoEncuesta = (tipo_encuesta: string | null): string => {
     if (!tipo_encuesta) return "ENCUESTA NORMAL";
     const estadoUpper = tipo_encuesta.toUpperCase();
     return tipoEncuestaMap[estadoUpper] || estadoUpper;
-  };
-
-  const traducirEstadoValidacion = (estado: string | null): string => {
-    if (!estado) return "SIN ESTADO";
-    const estadoUpper = estado.toUpperCase();
-    return estadosValidacionMap[estadoUpper] || estadoUpper;
   };
 
   const productosPaginados = useMemo(() => {
@@ -417,6 +422,29 @@ function GestionAlmacen(): JSX.Element {
                             {p.marca}
                           </MDTypography>
                         </Box>
+                        <Box sx={{ display: "flex", alignItems: "center", pr: 1 }}>
+                          <Chip
+                            size="small"
+                            label={p.folio_canje ?? "Sin folio"}
+                            sx={{
+                              bgcolor: "#f97316",
+                              color: "#fff",
+                              fontWeight: 600,
+                              fontSize: "0.7rem",
+                              mr: 0.5
+                            }}
+                          />
+                          <Chip
+                            size="small"
+                            label={plataformaEstilos[p.plataforma]?.label ?? p.plataforma_nombre ?? "Sin plataforma"}
+                            sx={{
+                              bgcolor: plataformaEstilos[p.plataforma]?.bg ?? "#607d8b",
+                              color: "#fff",
+                              fontWeight: 600,
+                              fontSize: "0.7rem",
+                            }}
+                          />
+                        </Box>
                       </Box>
 
                       {/* Fila inferior - Iconos a la izquierda, Info a la derecha */}
@@ -441,16 +469,16 @@ function GestionAlmacen(): JSX.Element {
                             borderColor: "grey.200",
                           }}
                         >
-                          <Tooltip title="Ver Producto">
+                          <Tooltip title="Ver Producto" disableFocusListener>
                             <StyledBadge badgeContent={p.cantidad_almacen} color="secondary">
                               <IconButton
                                 aria-label="ver"
                                 size="small"
                                 color="default"
                                 onClick={() => {
-                                  console.log(p);
                                   const datos = {
                                     id_orden_compra: p.id_orden_compra,
+                                    id_canje: p.id_canje,
                                     id_producto_almacen: p.id,
                                   };
                                   getProductoAlmacenPorId(datos);
@@ -461,8 +489,8 @@ function GestionAlmacen(): JSX.Element {
                               </IconButton>
                             </StyledBadge>
                           </Tooltip>
-                          {p.tiene_factura && (
-                            <Tooltip title="Ver factura">
+                          {Number(p.tiene_factura) > 0 && (
+                            <Tooltip title="Ver factura" disableFocusListener>
                               <StyledBadge badgeContent={0} color="secondary">
                                 <IconButton
                                   aria-label="ver"
@@ -472,6 +500,7 @@ function GestionAlmacen(): JSX.Element {
                                     const datos = {
                                       no_orden: p.no_orden,
                                       id_producto_almacen: p.id,
+                                      id_orden_compra: p.id_orden_compra,
                                     };
                                     const factura = {
                                       url_factura: p.url_factura,
@@ -498,7 +527,7 @@ function GestionAlmacen(): JSX.Element {
                             overflow: "hidden",
                           }}
                         >
-                          <Tooltip title={p.nombre_producto}>
+                          <Tooltip title={p.nombre_producto} disableFocusListener>
                             <Typography
                               variant="button"
                               gutterBottom
@@ -509,6 +538,9 @@ function GestionAlmacen(): JSX.Element {
                             </Typography>
                           </Tooltip>
                           <Box sx={{ mt: "auto" }}>
+                            <MDTypography variant="caption" display="block" color="text" noWrap>
+                              <strong>Usuario:</strong> {p.nombre_usuario ?? "N/A"}
+                            </MDTypography>
                             <MDTypography variant="caption" display="block" color="text" noWrap>
                               <strong>Proveedor:</strong> {p.nombre_proveedor ?? "N/A"}
                             </MDTypography>
@@ -599,6 +631,7 @@ function GestionAlmacen(): JSX.Element {
                 setProductoSeleccionado={setProductoSeleccionado}
                 handleisAlertOpenNuevoPrecio={handleisAlertOpenNuevoPrecio}
                 handleisAlertOpenProductosTecnologicos={handleisAlertOpenProductosTecnologicos}
+                handleisAlertOpenCostoEnvioReal={handleisAlertOpenCostoEnvioReal}
               />
             </>
           ) : null}
@@ -631,27 +664,6 @@ function GestionAlmacen(): JSX.Element {
                   {verProducto.cantidad_almacen || 0} | Pendiente: {cantidadMaximaPermitida}
                 </Typography>
               </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <MaterialUISwitch
-                      sx={{ m: 1 }}
-                      defaultChecked
-                      checked={accionProducto}
-                      onChange={(e: any) => handleAccionProducto(e.target.checked)}
-                    />
-                  }
-                  label={accionProducto ? "Registro normal" : "Registrar nuevo precio"}
-                  labelPlacement="bottom"
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    margin: 0,
-                    gap: 0,
-                  }}
-                />
-              </Grid>
               <Grid item xs={12} sm={4}>
                 <TextField
                   id="cantidadProducto"
@@ -664,7 +676,7 @@ function GestionAlmacen(): JSX.Element {
                   disabled={!proveedoresSelect || proveedoresSelect.length === 0}
                   helperText={
                     formikCantidad.touched.cantidadProducto &&
-                    formikCantidad.errors.cantidadProducto
+                      formikCantidad.errors.cantidadProducto
                       ? formikCantidad.errors.cantidadProducto
                       : `Máximo: ${cantidadMaximaPermitida} unidades`
                   }
@@ -695,172 +707,209 @@ function GestionAlmacen(): JSX.Element {
                   }}
                 ></TextField>
               </Grid>
-              {(!accionProducto || (accionProducto && !verProducto?.nombre_proveedor)) && (
-                <Grid item xs={12} sm={4}>
-                  <TextField
-                    id="id_proveedor"
-                    select
-                    fullWidth
-                    label={`${intl.formatMessage({ id: "select_proveedores" })} *`}
-                    variant="standard"
-                    name="id_proveedor"
-                    value={formikCantidad.values.id_proveedor || ""}
-                    disabled={!proveedoresSelect || proveedoresSelect.length === 0}
-                    helperText={
-                      !proveedoresSelect || proveedoresSelect.length === 0
-                        ? intl.formatMessage({ id: "sin_proveedores_registrados" })
-                        : formikCantidad.touched.id_proveedor && formikCantidad.errors.id_proveedor
-                    }
-                    error={
-                      formikCantidad.touched.id_proveedor &&
-                      Boolean(formikCantidad.errors.id_proveedor)
-                    }
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      formikCantidad.setFieldValue("id_proveedor", value);
-                    }}
-                    InputProps={{
-                      style: { padding: "5px" },
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <Tooltip title="Agregar proveedor">
-                            <IconButton
-                              size="medium"
-                              color="primary"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleisAlertOpenNuevoProveedor();
-                              }}
-                            >
-                              <AddBoxIcon fontSize="medium" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      ),
-                    }}
-                    onBlur={formikCantidad.handleBlur}
-                    sx={{
-                      "& .MuiInputLabel-root": {
-                        color: getFieldColorCantidad("id_proveedor"),
-                      },
-                      "& .MuiInput-underline:after": {
-                        borderBottomColor: getFieldColorCantidad("id_proveedor"),
-                      },
-                      "& .MuiInput-underline:before": {
-                        borderBottomColor: getFieldColorCantidad("id_proveedor"),
-                      },
-                      "& .MuiInputBase-input": {
-                        color: getFieldColorCantidad("id_proveedor"),
-                      },
-                    }}
-                  >
-                    {proveedoresSelect?.map((option) => (
-                      <MenuItem key={option.id} value={option.id}>
-                        {option.nombre}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-              )}
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  id="id_proveedor"
+                  select
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "select_proveedores" })} *`}
+                  variant="standard"
+                  name="id_proveedor"
+                  value={formikCantidad.values.id_proveedor || ""}
+                  disabled={!proveedoresSelect || proveedoresSelect.length === 0}
+                  helperText={
+                    !proveedoresSelect || proveedoresSelect.length === 0
+                      ? intl.formatMessage({ id: "sin_proveedores_registrados" })
+                      : formikCantidad.touched.id_proveedor && formikCantidad.errors.id_proveedor
+                  }
+                  error={
+                    formikCantidad.touched.id_proveedor &&
+                    Boolean(formikCantidad.errors.id_proveedor)
+                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    formikCantidad.setFieldValue("id_proveedor", value);
+                  }}
+                  InputProps={{
+                    style: { padding: "5px" },
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Tooltip title="Agregar proveedor" disableFocusListener>
+                          <IconButton
+                            size="medium"
+                            color="primary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleisAlertOpenNuevoProveedor();
+                            }}
+                          >
+                            <AddBoxIcon fontSize="medium" />
+                          </IconButton>
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                  }}
+                  onBlur={formikCantidad.handleBlur}
+                  sx={{
+                    "& .MuiInputLabel-root": {
+                      color: getFieldColorCantidad("id_proveedor"),
+                    },
+                    "& .MuiInput-underline:after": {
+                      borderBottomColor: getFieldColorCantidad("id_proveedor"),
+                    },
+                    "& .MuiInput-underline:before": {
+                      borderBottomColor: getFieldColorCantidad("id_proveedor"),
+                    },
+                    "& .MuiInputBase-input": {
+                      color: getFieldColorCantidad("id_proveedor"),
+                    },
+                  }}
+                >
+                  {proveedoresSelect?.map((option) => (
+                    <MenuItem key={option.id} value={option.id}>
+                      {option.nombre}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
 
-              {!accionProducto && (
-                <>
-                  <Grid item xs={12} sm={accionProducto ? 6 : 4}>
-                    <TextField
-                      id="precio_compra"
-                      fullWidth
-                      label={`${intl.formatMessage({ id: "input_precio_compra" })} *`}
-                      variant="standard"
-                      name="precio_compra"
-                      value={formikCantidad.values.precio_compra || ""}
-                      disabled={!proveedoresSelect || proveedoresSelect.length === 0}
-                      helperText={
-                        formikCantidad.touched.precio_compra && formikCantidad.errors.precio_compra
-                      }
-                      error={
-                        formikCantidad.touched.precio_compra &&
-                        Boolean(formikCantidad.errors.precio_compra)
-                      }
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        formikCantidad.setFieldValue("precio_compra", value);
-                      }}
-                      onBlur={formikCantidad.handleBlur}
-                      sx={{
-                        "& .MuiInputLabel-root": {
-                          color: getFieldColor("precio_compra"),
-                        },
-                        "& .MuiInput-underline:after": {
-                          borderBottomColor: getFieldColor("precio_compra"),
-                        },
-                        "& .MuiInput-underline:before": {
-                          borderBottomColor: getFieldColor("precio_compra"),
-                        },
-                        "& .MuiInputBase-input": {
-                          color: getFieldColor("precio_compra"),
-                        },
-                      }}
-                    ></TextField>
-                  </Grid>
-                </>
-              )}
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  id="precio_compra"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_precio_compra" })}`}
+                  variant="standard"
+                  name="precio_compra"
+                  value={formikCantidad.values.precio_compra || ""}
+                  disabled={!proveedoresSelect || proveedoresSelect.length === 0}
+                  helperText={
+                    formikCantidad.touched.precio_compra && formikCantidad.errors.precio_compra
+                  }
+                  error={
+                    formikCantidad.touched.precio_compra &&
+                    Boolean(formikCantidad.errors.precio_compra)
+                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    formikCantidad.setFieldValue("precio_compra", value);
+                  }}
+                  onBlur={formikCantidad.handleBlur}
+                  sx={{
+                    "& .MuiInputLabel-root": {
+                      color: getFieldColor("precio_compra"),
+                    },
+                    "& .MuiInput-underline:after": {
+                      borderBottomColor: getFieldColor("precio_compra"),
+                    },
+                    "& .MuiInput-underline:before": {
+                      borderBottomColor: getFieldColor("precio_compra"),
+                    },
+                    "& .MuiInputBase-input": {
+                      color: getFieldColor("precio_compra"),
+                    },
+                  }}
+                ></TextField>
+              </Grid>
 
-              {(!accionProducto || (accionProducto && !verProducto.imei)) && (
-                <Grid item xs={12} sm={4}>
-                  <TextField
-                    id="imei"
-                    fullWidth
-                    label={`${intl.formatMessage({ id: "input_imei" })}`}
-                    variant="standard"
-                    name="imei"
-                    value={formikCantidad.values.imei || ""}
-                    disabled={!proveedoresSelect || proveedoresSelect.length === 0}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      formikCantidad.setFieldValue("imei", value);
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  id="imei"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_imei" })}`}
+                  variant="standard"
+                  name="imei"
+                  value={formikCantidad.values.imei || ""}
+                  disabled={!proveedoresSelect || proveedoresSelect.length === 0}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    formikCantidad.setFieldValue("imei", value);
+                  }}
+                ></TextField>
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  id="no_serie"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_no_serie" })}`}
+                  variant="standard"
+                  name="no_serie"
+                  value={formikCantidad.values.no_serie || ""}
+                  disabled={!proveedoresSelect || proveedoresSelect.length === 0}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    formikCantidad.setFieldValue("no_serie", value);
+                  }}
+                ></TextField>
+              </Grid>
+
+              <Grid item xs={6} sm={4}>
+                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+                  <DatePicker
+                    label={intl.formatMessage({ id: "input_fecha_compra" })}
+                    openTo="year"
+                    format="YYYY/MM/DD"
+                    views={["year", "month", "day"]}
+                    value={
+                      formikCantidad.values.fecha_compra
+                        ? dayjs(formikCantidad.values.fecha_compra)
+                        : null
+                    }
+                    onChange={(newValue) => {
+                      formikCantidad.setFieldValue(
+                        "fecha_compra",
+                        newValue ? dayjs(newValue).format("YYYY-MM-DD") : ""
+                      );
                     }}
-                  ></TextField>
-                </Grid>
-              )}
-              {(!accionProducto || (accionProducto && !verProducto.no_serie)) && (
-                <Grid item xs={12} sm={4}>
-                  <TextField
-                    id="no_serie"
-                    fullWidth
-                    label={`${intl.formatMessage({ id: "input_no_serie" })}`}
-                    variant="standard"
-                    name="no_serie"
-                    value={formikCantidad.values.no_serie || ""}
-                    disabled={!proveedoresSelect || proveedoresSelect.length === 0}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      formikCantidad.setFieldValue("no_serie", value);
+                    slotProps={{
+                      textField: {
+                        error:
+                          formikCantidad.touched.fecha_compra &&
+                          Boolean(formikCantidad.errors.fecha_compra),
+                        onBlur: formikCantidad.handleBlur,
+                        name: "fecha_compra",
+                        variant: "standard",
+                      },
                     }}
-                  ></TextField>
-                </Grid>
-              )}
-              {(!accionProducto || (accionProducto && !verProducto.comentarios)) && (
-                <Grid item xs={12} sm={4}>
-                  <TextField
-                    id="comentarios"
-                    fullWidth
-                    label={`${intl.formatMessage({ id: "input_comentarios" })}`}
-                    variant="standard"
-                    name="comentarios"
-                    value={formikCantidad.values.comentarios || ""}
-                    disabled={!proveedoresSelect || proveedoresSelect.length === 0}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      formikCantidad.setFieldValue("comentarios", value);
-                    }}
-                  ></TextField>
-                </Grid>
-              )}
+                    sx={{ width: "100%" }}
+                  />
+                </LocalizationProvider>
+              </Grid>
+              <Grid item xs={12} sm={3}>
+                <TextField
+                  id="folio_factura"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_folio_factura" })}`}
+                  variant="standard"
+                  name="folio_factura"
+                  value={formikCantidad.values.folio_factura || ""}
+                  disabled={!proveedoresSelect || proveedoresSelect.length === 0}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    formikCantidad.setFieldValue("folio_factura", value);
+                  }}
+                ></TextField>
+              </Grid>
+              <Grid item xs={12} sm={5}>
+                <TextField
+                  id="comentarios"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_comentarios" })}`}
+                  variant="standard"
+                  name="comentarios"
+                  value={formikCantidad.values.comentarios || ""}
+                  disabled={!proveedoresSelect || proveedoresSelect.length === 0}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    formikCantidad.setFieldValue("comentarios", value);
+                  }}
+                ></TextField>
+              </Grid>
 
               <Grid
                 item
                 xs={12}
-                sm={accionProducto ? 4 : 12}
+                sm={4}
                 display="flex"
                 alignContent="center"
                 justifyContent="center"
@@ -885,9 +934,11 @@ function GestionAlmacen(): JSX.Element {
                       precio_compra: formikCantidad.values.precio_compra,
                       imei: formikCantidad.values.imei,
                       no_serie: formikCantidad.values.no_serie,
+                      folio_factura: formikCantidad.values.folio_factura,
                       comentarios: formikCantidad.values.comentarios,
+                      fecha_compra: formikCantidad.values.fecha_compra,
                       id_producto: verProducto?.id_producto,
-                      tipo_registro: accionProducto ? "normal" : "nuevo_precio",
+                      plataforma: verProducto?.plataforma ?? plataforma,
                     };
                     addProductoAlmacen(datos);
                   }}
@@ -924,7 +975,34 @@ function GestionAlmacen(): JSX.Element {
                 Añadir guía de envío
               </Typography>
             </Grid>
-            <Grid item xs={6} sm={6}>
+
+            <Grid item xs={12}>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Tipo de envío *
+              </Typography>
+              <ToggleButtonGroup
+                exclusive
+                value={tipoEnvio}
+                onChange={(_, valor: 1 | 2 | null) => {
+                  if (valor !== null) setTipoEnvio(valor);
+                }}
+                size="small"
+                disabled={procesandoGuiaProducto}
+                sx={{
+                  "& .MuiToggleButton-root": { px: 2, textTransform: "none", fontWeight: 600 },
+                  "& .MuiToggleButton-root.Mui-selected": {
+                    background: "#a5eb2f",
+                    color: "#2f2f2f",
+                    "&:hover": { background: "#8fd41f" },
+                  },
+                }}
+              >
+                <ToggleButton value={1}>Envío por proveedor</ToggleButton>
+                <ToggleButton value={2}>Envío por Brimagy</ToggleButton>
+              </ToggleButtonGroup>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
               <TextField
                 id="guiaProducto"
                 fullWidth
@@ -932,9 +1010,64 @@ function GestionAlmacen(): JSX.Element {
                 variant="standard"
                 name="guiaProducto"
                 value={guiaProducto || ""}
+                disabled={procesandoGuiaProducto}
+                onChange={(e) => setGuiaProducto(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} display="flex" alignItems="center" justifyContent="center">
+              <Button
+                sx={{ color: "#fff", background: "#084d6e" }}
+                variant="contained"
+                endIcon={<AddCircleIcon />}
+                disabled={procesandoGuiaProducto || !guiaProducto.trim() || !tipoEnvio}
+                onClick={() => {
+                  const datos = {
+                    id_producto_almacen: verProducto?.id_producto_almacen,
+                    id_canje: verProducto?.id_canje,
+                    guia_producto: guiaProducto,
+                    tipo_envio: tipoEnvio,
+                  };
+                  //console.log(datos);
+                  addGuiaProductoAlmacen(datos);
+                }}
+              >
+                {procesandoGuiaProducto ? (
+                  <>
+                    <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                    {intl.formatMessage({ id: "general_añadiendo" })}...{" "}
+                  </>
+                ) : (
+                  intl.formatMessage({ id: "set_añadir_guia_producto_almacen" })
+                )}
+              </Button>
+            </Grid>
+          </Grid>
+        ) : null}
+      </ModalComponent>
+      {/* MODAL PARA REGISTRAR COSTO DE ENVIO REAL AL RECIBIR EL PRODUCTO */}
+      <ModalComponent
+        handleClose={handleisAlertCloseCostoEnvioReal}
+        isOpen={isAlertOpenCostoEnvioReal}
+        key={"alertaCostoEnvioReal"}
+      >
+        {verProducto ? (
+          <Grid container spacing={2} style={{ textAlign: "center" }}>
+            <Grid item xs={12}>
+              <Typography variant="h6" color="primary" gutterBottom>
+                Añadir costo de envío real
+              </Typography>
+            </Grid>
+            <Grid item xs={6} sm={6}>
+              <TextField
+                id="costoEnvioReal"
+                fullWidth
+                label={`${intl.formatMessage({ id: "input_costo_envio_real" })} *`}
+                variant="standard"
+                name="costoEnvioReal"
+                value={costoEnvioReal || ""}
                 onChange={(e) => {
                   const value = e.target.value;
-                  setGuiaProducto(value);
+                  setCostoEnvioReal(value);
                 }}
               />
             </Grid>
@@ -946,13 +1079,14 @@ function GestionAlmacen(): JSX.Element {
                 disabled={procesandoGuiaProducto}
                 onClick={(e: any) => {
                   const datos = {
-                    id_orden_compra: verProducto?.id_orden_compra,
-                    guia_producto: guiaProducto,
+                    id_producto_almacen: verProducto?.id_producto_almacen,
+                    id_canje: verProducto?.id_canje,
+                    costo_envio_real: costoEnvioReal,
                   };
-                  addGuiaProductoAlmacen(datos);
+                  confirmarRecepcionProductoAlmacen(datos);
                 }}
               >
-                {procesandoGuiaProducto ? (
+                {procesandoRecepcionProducto ? (
                   <>
                     <Spinner
                       as="span"
@@ -961,10 +1095,10 @@ function GestionAlmacen(): JSX.Element {
                       role="status"
                       aria-hidden="true"
                     />
-                    {intl.formatMessage({ id: "general_añadiendo" })}...{" "}
+                    {intl.formatMessage({ id: "general_recibiendo" })}...{" "}
                   </>
                 ) : (
-                  intl.formatMessage({ id: "set_añadir_guia_producto_almacen" })
+                  intl.formatMessage({ id: "recepcion_producto_almacen" })
                 )}
               </Button>
             </Grid>
@@ -1097,7 +1231,7 @@ function GestionAlmacen(): JSX.Element {
       <ModalComponent
         handleClose={handleCloseVistaFactura}
         isOpen={isModalVistaFactura}
-        key="vista-evidencia-individual"
+        key="vista-factura"
       >
         {facturaSeleccionada ? (
           <Grid container spacing={2}>
@@ -1244,7 +1378,12 @@ function GestionAlmacen(): JSX.Element {
                 variant="standard"
                 name="tipo_encuesta"
                 value={tipoEncuesta || ""}
-                disabled={procesando}
+                disabled={procesando || encuestas.length === 0}
+                helperText={
+                  !encuestas || encuestas.length === 0
+                    ? intl.formatMessage({ id: "sin_encuestas_registradas" })
+                    : ""
+                }
                 onChange={(e) => {
                   const value = e.target.value;
                   setTipoEncuesta(value);
@@ -1270,8 +1409,8 @@ function GestionAlmacen(): JSX.Element {
                   const datos = {
                     id_canje: datosEncuestaEnviar?.id_canje,
                     tipo_encuesta: tipoEncuesta,
+                    plataforma: verProducto?.plataforma ?? plataforma,
                   };
-                  //console.log(datos);
                   enviarEncuesta(datos);
                 }}
               >

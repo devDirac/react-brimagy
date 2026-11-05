@@ -22,6 +22,9 @@ import {
   Grid,
   Backdrop,
   CircularProgress,
+  Switch,
+  styled,
+  FormControlLabel,
 } from "@mui/material";
 import { useIntl } from "react-intl";
 import { useAppSelector, useAppDispatch } from "hocs/useRedux";
@@ -40,6 +43,7 @@ import MDBox from "components/MDBox";
 import MDBadge from "components/MDBadge";
 import Breadcrumbs from "examples/Breadcrumbs";
 import ModalComponent from "../../../components/Modal";
+import { setPlataforma } from "actions/configuracion";
 
 // Material Dashboard 2 PRO React context
 import {
@@ -68,6 +72,10 @@ import { setAuth } from "actions/auth";
 import env from "react-dotenv";
 import { StoreType } from "../../../types/genericTypes";
 import { useSelector } from "react-redux";
+import StorefrontIcon from "@mui/icons-material/Storefront";
+import LocalMallIcon from "@mui/icons-material/LocalMall";
+import AcUnitIcon from "@mui/icons-material/AcUnit";
+import KitchenIcon from "@mui/icons-material/Kitchen";
 
 interface Props {
   absolute?: boolean;
@@ -81,6 +89,7 @@ function DashboardNavbar({ absolute, light, isMini }: Props): JSX.Element {
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
   const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
   const notificaciones = useAppSelector((state) => state?.app?.notificaciones || []);
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const [navbarType, setNavbarType] = useState<
     "fixed" | "absolute" | "relative" | "static" | "sticky"
@@ -118,6 +127,50 @@ function DashboardNavbar({ absolute, light, isMini }: Props): JSX.Element {
 
     return () => window.removeEventListener("scroll", handleTransparentNavbar);
   }, [dispatch, fixedNavbar]);
+
+  const handleCambiarPlataforma = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const nuevaPlataforma = e.target.checked ? "club_bohn" : "puntotes";
+    dispatch_(setPlataforma(nuevaPlataforma));
+  };
+
+  const MaterialUISwitch = styled(Switch)(({ theme }) => ({
+    width: 62,
+    height: 34,
+    padding: 7,
+    "& .MuiSwitch-switchBase": {
+      margin: 1,
+      padding: 0,
+      transform: "translateX(6px)",
+      "&.Mui-checked": {
+        color: "#fff",
+        transform: "translateX(22px)",
+        "& + .MuiSwitch-track": {
+          opacity: 1,
+          backgroundColor: "#aab4be",
+          ...theme.applyStyles("dark", {
+            backgroundColor: "#8796A5",
+          }),
+        },
+      },
+    },
+    "& .MuiSwitch-thumb": {
+      backgroundColor: "#001e3c",
+      width: 32,
+      height: 32,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      ...theme.applyStyles("dark", {
+        backgroundColor: "#003892",
+      }),
+    },
+    "& .MuiSwitch-track": {
+      opacity: "1 !important",
+      backgroundColor: "#aab4be !important",
+      borderRadius: 20 / 2,
+      ...theme.applyStyles("dark", { backgroundColor: "#8796A5 !important" }),
+    },
+  }));
 
   const handleMiniSidenav = () => setMiniSidenav(dispatch, !miniSidenav);
   const handleConfiguratorOpen = () => setOpenConfigurator(dispatch, !openConfigurator);
@@ -408,6 +461,22 @@ function DashboardNavbar({ absolute, light, isMini }: Props): JSX.Element {
     },
   });
 
+  const ThumbIcon = ({ children }: { children: React.ReactNode }) => (
+    <span
+      style={{
+        width: 24,
+        height: 24,
+        borderRadius: "50%",
+        backgroundColor: "#001e3c",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {children}
+    </span>
+  );
+
   return (
     <>
       <AppBar
@@ -432,6 +501,28 @@ function DashboardNavbar({ absolute, light, isMini }: Props): JSX.Element {
           {isMini ? null : (
             <MDBox sx={(theme) => navbarRow(theme, { isMini })}>
               <MDBox color={light ? "white" : "inherit"}>
+                <Box display="inline-flex" alignItems="center">
+                  <FormControlLabel
+                    control={
+                      <MaterialUISwitch
+                        sx={{ m: 1 }}
+                        checked={plataforma === "club_bohn"}
+                        onChange={handleCambiarPlataforma}
+                        icon={
+                          <ThumbIcon>
+                            <KitchenIcon sx={{ fontSize: 20, color: "#fff" }} />
+                          </ThumbIcon>
+                        }
+                        checkedIcon={
+                          <ThumbIcon>
+                            <AcUnitIcon sx={{ fontSize: 20, color: "#fff" }} />
+                          </ThumbIcon>
+                        }
+                      />
+                    }
+                    label={plataforma === "club_bohn" ? "Club Bohn" : "Puntotes"}
+                  />
+                </Box>
                 <IconButton
                   size="small"
                   style={{ cursor: "pointer" }}

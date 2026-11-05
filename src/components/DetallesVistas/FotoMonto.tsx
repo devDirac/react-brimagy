@@ -56,6 +56,7 @@ interface DetalleFotoMontoProps {
   handleOpenVistaFotoMonto: (fotos_producto: any) => void;
   desactivarFotoMonto: (datos: any) => Promise<void>;
   activarFotoMonto: (datos: any) => Promise<void>;
+  plataforma: string;
 }
 
 const FotoMontoModal = ({
@@ -68,6 +69,7 @@ const FotoMontoModal = ({
   handleOpenVistaFotoMonto,
   desactivarFotoMonto,
   activarFotoMonto,
+  plataforma,
 }: DetalleFotoMontoProps) => {
   if (!verFotoMonto) return null;
   const intl = useIntl();
@@ -140,6 +142,7 @@ const FotoMontoModal = ({
                   onClick={(e: any) => {
                     const formData = new FormData();
                     formData.append("id_producto", datosProducto?.id);
+                    formData.append("plataforma", plataforma);
                     fotoMontoFiles.forEach((file) => {
                       formData.append("foto_monto", file);
                     });
@@ -254,6 +257,7 @@ const FotoMontoModal = ({
                               onClick={() => {
                                 const datos = {
                                   id_foto_monto: f?.id,
+                                  plataforma: plataforma,
                                 };
                                 desactivarFotoMonto(datos);
                               }}
@@ -270,6 +274,7 @@ const FotoMontoModal = ({
                               onClick={() => {
                                 const datos = {
                                   id_foto_monto: f?.id,
+                                  plataforma: plataforma,
                                 };
                                 activarFotoMonto(datos);
                               }}

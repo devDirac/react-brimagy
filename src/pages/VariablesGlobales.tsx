@@ -56,6 +56,7 @@ function VariablesGlobales(): JSX.Element {
     getFieldColor,
     alertEditar,
     handleisAlertCloseEditar,
+    plataforma,
   } = useVariablesGlobales();
 
   return (
@@ -223,6 +224,38 @@ function VariablesGlobales(): JSX.Element {
                     </Grid>
                     <Grid item xs={12} sm={4}>
                       <TextField
+                        id="factor"
+                        fullWidth
+                        label={`${intl.formatMessage({ id: "input_factor" })} *`}
+                        variant="standard"
+                        name="factor"
+                        type="number"
+                        value={formik.values.factor || ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          formik.setFieldValue("factor", value);
+                        }}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.factor && Boolean(formik.errors.factor)}
+                        helperText={formik.touched.factor && formik.errors.factor}
+                        sx={{
+                          "& .MuiInputLabel-root": {
+                            color: getFieldColor("factor"),
+                          },
+                          "& .MuiInput-underline:after": {
+                            borderBottomColor: getFieldColor("factor"),
+                          },
+                          "& .MuiInput-underline:before": {
+                            borderBottomColor: getFieldColor("factor"),
+                          },
+                          "& .MuiInputBase-input": {
+                            color: getFieldColor("factor"),
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <TextField
                         id="id_plataforma"
                         select
                         fullWidth
@@ -282,11 +315,12 @@ function VariablesGlobales(): JSX.Element {
                         disabled={procesando || !formik.dirty || !formik.isValid}
                         onClick={(e: any) => {
                           const datos = {
-                            fee_brimagy: formik.values.fee_brimagy,
-                            envio_base: formik.values.envio_base,
-                            costo_caja: formik.values.costo_caja,
-                            envio_extra: formik.values.envio_extra,
-                            id_plataforma: formik.values.id_plataforma,
+                            fee_brimagy: Number(formik.values.fee_brimagy),
+                            envio_base: Number(formik.values.envio_base),
+                            costo_caja: Number(formik.values.costo_caja),
+                            envio_extra: Number(formik.values.envio_extra),
+                            factor: Number(formik.values.factor),
+                            id_plataforma: Number(formik.values.id_plataforma),
                             tipo: "insertar",
                           };
                           setVariablesGlobales(datos);
@@ -308,19 +342,21 @@ function VariablesGlobales(): JSX.Element {
                         )}
                       </Button>
                     </Grid>
-                    {productosSincronizados?.plataformas_desincronizadas !== 0 && !procesando && (
+                    {productosSincronizados?.productos_desincronizados !== 0 && !procesando && (
                       <Grid item xs={12} sm={12} mt={2}>
                         <Alert severity="warning">
-                          Hay {productosSincronizados?.plataformas_desincronizadas} plataformas
-                          desincronizadas con {productosSincronizados?.productos_desincronizados}{" "}
-                          productos desincronizados.{" "}
+                          {plataforma === "club_bohn" ? "Club bohn" : plataforma} tiene{" "}
+                          {productosSincronizados?.productos_desincronizados} productos
+                          desincronizados.{" "}
                           <Button
                             sx={{ color: "#fff", background: "#084d6e" }}
                             variant="contained"
                             endIcon={<SyncIcon />}
                             disabled={procesando || sincronizandoVariables}
                             onClick={(e: any) => {
-                              sincronizarVariablesEnProductos();
+                              if (plataforma) {
+                                sincronizarVariablesEnProductos({ plataforma: plataforma });
+                              }
                             }}
                           >
                             {sincronizandoVariables ? (
@@ -362,6 +398,7 @@ function VariablesGlobales(): JSX.Element {
                         "envio_base",
                         "costo_caja",
                         "envio_extra",
+                        "factor",
                         "fecha_creacion",
                       ]}
                     />
@@ -528,6 +565,38 @@ function VariablesGlobales(): JSX.Element {
               </Grid>
               <Grid item xs={12} sm={4}>
                 <TextField
+                  id="factor"
+                  fullWidth
+                  label={`${intl.formatMessage({ id: "input_factor" })} *`}
+                  variant="standard"
+                  name="factor"
+                  type="number"
+                  value={formik.values.factor || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    formik.setFieldValue("factor", value);
+                  }}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.factor && Boolean(formik.errors.factor)}
+                  helperText={formik.touched.factor && formik.errors.factor}
+                  sx={{
+                    "& .MuiInputLabel-root": {
+                      color: getFieldColor("factor"),
+                    },
+                    "& .MuiInput-underline:after": {
+                      borderBottomColor: getFieldColor("factor"),
+                    },
+                    "& .MuiInput-underline:before": {
+                      borderBottomColor: getFieldColor("factor"),
+                    },
+                    "& .MuiInputBase-input": {
+                      color: getFieldColor("factor"),
+                    },
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
                   id="id_plataforma"
                   select
                   fullWidth
@@ -587,11 +656,12 @@ function VariablesGlobales(): JSX.Element {
                   disabled={procesando || !formik.dirty || !formik.isValid}
                   onClick={(e: any) => {
                     const datos = {
-                      fee_brimagy: formik.values.fee_brimagy,
-                      envio_base: formik.values.envio_base,
-                      costo_caja: formik.values.costo_caja,
-                      envio_extra: formik.values.envio_extra,
-                      id_plataforma: formik.values.id_plataforma,
+                      fee_brimagy: Number(formik.values.fee_brimagy),
+                      envio_base: Number(formik.values.envio_base),
+                      costo_caja: Number(formik.values.costo_caja),
+                      envio_extra: Number(formik.values.envio_extra),
+                      factor: Number(formik.values.factor),
+                      id_plataforma: Number(formik.values.id_plataforma),
                       id: variableGlobalEditar?.id,
                       tipo: "actualizar",
                     };

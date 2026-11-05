@@ -82,41 +82,48 @@ const useDinamicTable = (props: DinamicTableProps) => {
   const tipoUsuarios = [
     {
       id: 1,
-      tipo: "Internauta",
+      tipo: "Empleado Mabe",
       variant: "outlined" as const,
       colorChip: "#C22B1D" as const,
       colorTexto: "#fff" as const,
     },
     {
       id: 2,
-      tipo: "Auditor",
+      tipo: "Institucional",
       variant: "outlined" as const,
       colorChip: "#279FD6" as const,
       colorTexto: "#00" as const,
     },
     {
       id: 3,
-      tipo: "Compras",
+      tipo: "Operario",
       variant: "filled" as const,
       colorChip: "#D67927" as const,
       colorTexto: "#000" as const,
     },
     {
       id: 4,
-      tipo: "Inventario",
+      tipo: "Oso Polar",
       variant: "filled" as const,
       colorChip: "#6CA11F" as const,
       colorTexto: "#fff" as const,
     },
     {
       id: 5,
-      tipo: "Administración",
+      tipo: "Leon Marino",
       variant: "filled" as const,
       colorChip: "#9245BA" as const,
       colorTexto: "#fff" as const,
     },
     {
       id: 6,
+      tipo: "Pingüino",
+      variant: "filled" as const,
+      colorChip: "#9225BA" as const,
+      colorTexto: "#fff" as const,
+    },
+    {
+      id: 7,
       tipo: "Super Admin",
       variant: "filled" as const,
       colorChip: "#BA256A" as const,
@@ -502,6 +509,7 @@ const useDinamicTable = (props: DinamicTableProps) => {
         esListaCategorias={props?.esListaCategorias}
         esListaRespuestas={props?.esListaRespuestas}
         esListaOrdenesCompra={props?.esListaOrdenesCompra}
+        esListaUsuariosPlataforma={props?.esListaUsuariosPlataforma}
         titulo={props?.titulo === "Herramientas"}
         tit={props?.titulo}
         row={row}

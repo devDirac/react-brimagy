@@ -86,6 +86,14 @@ import VariablesGlobales from "pages/VariablesGlobales";
 import Plataformas from "pages/Plataformas";
 import ListaProductosDigitales from "pages/ListaProductosDigitales";
 import ListaProductosFisicos from "pages/ListaProductosFisicos";
+import EstadisticasHome from "pages/EstadisticasHome";
+import EstadisticasHomePage from "pages/EstadisticasHome";
+import EstadisticasProductosCanjeados from "pages/EstadisticasProductosCanjeados";
+import EstadisticaPuntosCategoria from "pages/EstadisticaPuntosCategorias";
+import EstadisticasPuntosPorPeriodo from "pages/EstadisticaPuntosPorPeriodo";
+import EstadisticasComparativaPage from "pages/EstadisticasComparativa";
+import UsuariosPlataforma from "pages/UsuariosPlataforma";
+import ReporteGeneralPage from "pages/ReporteGeneralPage";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
@@ -101,6 +109,8 @@ export default function App() {
   } = controller;
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const { pathname } = useLocation();
+  const rutasSinMenu = ["/validar-ordencompra", "/encuesta/satisfaccion_compra", "/validar-canje"];
+  const ocultarMenu = rutasSinMenu.some((r) => pathname.startsWith(r));
   const inSession = useSelector((state: StoreType) => state?.app?.user?.token || false);
   const userName = useSelector((state: StoreType) => state?.app?.user?.data?.name || false);
   const fotoUser = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
@@ -182,7 +192,7 @@ export default function App() {
     <ThemeProvider theme={darkMode ? themeDarkRTL : themeRTL}>
       <CssBaseline />
       <IntlProvider onError={onError} locale={local} messages={loadLocaleData(local)}>
-        {inSession && (
+        {inSession && !ocultarMenu && (
           <>
             <Sidenav
               key={""}
@@ -190,15 +200,14 @@ export default function App() {
               brand={
                 (transparentSidenav && !darkMode) || whiteSidenav ? brandBrimagy : brandBrimagy
               }
-              //brandName=""
               routes={routes
                 .filter((r: any) => (r?.allow || []).includes(tipoUsuario))
                 .map((a: any, key: any) => {
                   return key === 0
                     ? {
-                        ...a,
-                        ...routes_,
-                      }
+                      ...a,
+                      ...routes_,
+                    }
                     : a;
                 })}
               onMouseEnter={handleOnMouseEnter}
@@ -210,9 +219,12 @@ export default function App() {
         )}
         <Routes>
           {/* inicia rutas publicas */}
-          <Route path="/validar-canje/:codigo" element={<ValidarIdentidad />} />
+          <Route path="/validar-canje/:codigo/:plataforma" element={<ValidarIdentidad />} />
           <Route path="/validar-ordencompra/:id_ordencompra" element={<ValidarOrdenCompra />} />
-          <Route path="/encuesta/:tipo_encuesta/:id_canje" element={<EncuestaUsuario />} />
+          <Route
+            path="/encuesta/:tipo_encuesta/:id_canje/:plataforma"
+            element={<EncuestaUsuario />}
+          />
 
           <Route path="/login" element={<PublicRouter />}>
             <Route path="/login" element={<LoginPageIlustrator />} />
@@ -235,13 +247,13 @@ export default function App() {
             <Route path="/inicio" element={<MainPage />} />
             <Route path="/estadisticas" element={<MainPage />} />
             <Route path="/navegacion" element={<OpcionesMenuSeleccionadoPage />} />
-
             {/* USUARIOS */}
             <Route path="/lista-usuarios" element={<ListaUsuarios />} />
             <Route path="/nuevo-usuario" element={<NuevoUsuario />} />
             {/* CONFIGURACIÓN */}
             <Route path="/variables-globales" element={<VariablesGlobales />} />
             <Route path="/plataformas" element={<Plataformas />} />
+            <Route path="/usuarios-plataforma" element={<UsuariosPlataforma />} />
             {/* PRODUCTOS */}
             <Route path="/nuevo-producto" element={<NuevoProducto />} />
             <Route path="/productos-digitales" element={<ListaProductos />} />
@@ -257,6 +269,13 @@ export default function App() {
             <Route path="/gestion-almacen" element={<GestionAlmacen />} />
             {/* ENCUESTAS */}
             <Route path="/catalogo-encuestas" element={<CatalogoEncuestas />} />
+            {/* ESTADISTICAS */}
+            <Route path="/reporte-general-canjes" element={<ReporteGeneralPage />} />
+            <Route path="/estadistica-principal" element={<EstadisticasHomePage />} />
+            <Route path="/productos-canjeados" element={<EstadisticasProductosCanjeados />} />
+            <Route path="/puntos-categoria" element={<EstadisticaPuntosCategoria />} />
+            <Route path="/puntos-por-tipo" element={<EstadisticasPuntosPorPeriodo />} />
+            <Route path="/comparativa-puntos" element={<EstadisticasComparativaPage />} />{" "}
           </Route>
           {/* inicia pagina no encontrada */}
           <Route path="*" element={<NotFoundPage />} />

@@ -13,7 +13,7 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 
 // formik components
 import { Formik, Form } from "formik";
@@ -56,8 +56,6 @@ import {
   Typography,
   Tabs,
   Tab,
-  Tabs,
-  Tab,
 } from "@mui/material";
 import ModalComponent from "components/Modal";
 import Header from "components/Header";
@@ -80,7 +78,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import SimCardDownloadIcon from "@mui/icons-material/SimCardDownload";
-import TipsAndUpdatesIcon from "@mui/icons-material/TipsAndUpdates";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import AutoFixHighIcon from "@mui/icons-material/AutoFixHigh";
 import TableRowsIcon from "@mui/icons-material/TableRows";
@@ -110,6 +107,8 @@ import MDButton from "components/MDButton";
 import FotosPromoProductoModal from "components/DetallesVistas/FotosPromoProducto";
 import MontosDigitalModal from "components/DetallesVistas/MontosDigital";
 import FotoMontoModal from "components/DetallesVistas/FotoMonto";
+import DisabledByDefaultIcon from "@mui/icons-material/DisabledByDefault";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
 
 function TabPanel({
   children,
@@ -142,21 +141,11 @@ function ListaProductos(): JSX.Element {
     isSuperAdmin,
     handleBuscadorChange,
     buscador,
-    setBuscador,
-    navigate,
-    productosSeleccionados,
-    setProductosSeleccionados,
-    asignarPdfDatos,
-    isAlertOpenAsignar,
-    handleisAlerCloseAsignar,
-    handleisAlertOpenAsignar,
     procesando,
     isAlertOpen,
     handleisAlerClose,
     mensajeAlert,
     intl,
-    errorLogin,
-    setProcesando,
     setProductoId,
     productoId,
     eliminarProducto,
@@ -165,50 +154,6 @@ function ListaProductos(): JSX.Element {
     handleisAlertOpenEliminaProducto,
     categorias,
     proveedores,
-    nombreProductoEditar,
-    setNombreProductoEditar,
-    descripcionEditar,
-    setDescripcionEditar,
-    marcaEditar,
-    setMarcaEditar,
-    skuEditar,
-    setSkuEditar,
-    colorEditar,
-    setColorEditar,
-    tallaEditar,
-    setTallaEditar,
-    tallaEditar,
-    setTallaEditar,
-    idProveedorEditar,
-    setIdProveedorEditar,
-    idCatalogoEditar,
-    setIdCatalogoEditar,
-    costoConIvaEditar,
-    setCostoConIvaEditar,
-    costoSinIvaEditar,
-    setCostoSinIvaEditar,
-    costoPuntosConIvaEditar,
-    setCostoPuntosConIvaEditar,
-    costoPuntosSinIvaEditar,
-    setCostoPuntosSinIvaEditar,
-    feeBrimagyEditar,
-    setFeeBrimagyEditar,
-    subtotalEditar,
-    setSubtotalEditar,
-    envioBaseEditar,
-    setEnvioBaseEditar,
-    costoCajaEditar,
-    setCostoCajaEditar,
-    envioExtraEditar,
-    setEnvioExtraEditar,
-    totalEnvioEditar,
-    setTotalEnvioEditar,
-    totalEditar,
-    setTotalEditar,
-    puntosEditar,
-    setPuntosEditar,
-    factorEditar,
-    setFactorEditar,
     procesandoEditar,
     tableKey,
     productoEditar,
@@ -259,13 +204,11 @@ function ListaProductos(): JSX.Element {
     getProductosCatalogo,
     //ver bitacora del producto
     verBitacoraProducto,
-    setVerBitacoraProducto,
     isAlertOpenVerBitacoraProducto,
     handleisAlertOpenVerBitacoraProducto,
     handleisAlertCloseVerBitacoraProducto,
     getBitacoraProductoPorId,
     //color picker
-    colorNameToHex,
     esColorValido,
     anchorEl,
     setAnchorEl,
@@ -277,7 +220,6 @@ function ListaProductos(): JSX.Element {
     //colores
     crearEditarColorProducto,
     getProductoColorPorId,
-    formikColor,
     colores,
     setVerEditarColor,
     verEditarColor,
@@ -308,9 +250,6 @@ function ListaProductos(): JSX.Element {
     procesandoFotosProducto,
     fotosProductoFiles,
     setFotosProductoFiles,
-    isModalFotosProducto,
-    handleOpenFotosProducto,
-    handleCloseFotosProducto,
     isModalVistaFotosProducto,
     fotosProductoSeleccionada,
     handleOpenVistaFotosProducto,
@@ -324,9 +263,6 @@ function ListaProductos(): JSX.Element {
     procesandoFotosPromoProducto,
     fotosPromoProductoFiles,
     setFotosPromoProductoFiles,
-    isModalFotosPromoProducto,
-    handleOpenFotosPromoProducto,
-    handleCloseFotosPromoProducto,
     isModalVistaFotosPromoProducto,
     fotosPromoProductoSeleccionada,
     handleOpenVistaFotosPromoProducto,
@@ -346,7 +282,6 @@ function ListaProductos(): JSX.Element {
     //montos digital
     crearEditarMontoProducto,
     getProductoMontoPorId,
-    formikMonto,
     montos,
     setVerEditarMonto,
     verEditarMonto,
@@ -366,37 +301,21 @@ function ListaProductos(): JSX.Element {
     procesandoFotoMonto,
     fotoMontoFiles,
     setFotoMontoFiles,
-    isModalFotoMonto,
-    handleOpenFotoMonto,
-    handleCloseFotoMonto,
-    isModalVistaFotoMonto,
-    fotoMontoSeleccionada,
     handleOpenVistaFotoMonto,
-    handleCloseVistaFotoMonto,
     subirFotoMonto,
     getFotoMontoPorId,
     fotoMonto,
     desactivarFotoMonto,
     activarFotoMonto,
+    marcarNoDisponible,
+    marcarDisponible,
+    plataforma,
+    variablesGlobalesData,
+    calcularPuntosEsperados,
+    tallaArray,
+    formikEditarProducto,
   } = useListaProductos(tipoUsuario);
 
-  const independiente = () => {
-    return !productos?.length && !procesando ? (
-      <Grid container spacing={2}>
-        <Grid item xs={12} style={{ textAlign: "center" }}>
-          <h3>Sin registros</h3>
-        </Grid>
-      </Grid>
-    ) : null;
-  };
-  const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
-    "& .MuiBadge-badge": {
-      right: 0,
-      top: 5,
-      padding: "0",
-      fontSize: "10px",
-    },
-  }));
   // Handlers para la paginación
   const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
@@ -415,6 +334,28 @@ function ListaProductos(): JSX.Element {
     const endIndex = startIndex + rowsPerPage;
     return productos?.slice(startIndex, endIndex) || [];
   }, [productos, page, rowsPerPage]);
+
+  const puntosEsperados = useMemo(() => {
+    return calcularPuntosEsperados(
+      Number(formikEditarProducto.values.costo_con_iva),
+      Number(formikEditarProducto.values.costo_puntos_con_iva),
+      Number(formikEditarProducto.values.envio_extra),
+      Number(formikEditarProducto.values.valor_factor),
+      variablesGlobalesData,
+      productoEditar?.nombre_plataforma || "puntotes"
+    );
+  }, [formikEditarProducto.values, variablesGlobalesData, productoEditar]);
+
+  const truncarTexto = (texto: string, limite: number): string => {
+    if (!texto) return "";
+    return texto.length > limite ? `${texto.slice(0, limite)}...` : texto;
+  };
+
+  useEffect(() => {
+    if (productoEditar) {
+      setValueTab("one");
+    }
+  }, [productoEditar]);
 
   return (
     <DashboardLayout>
@@ -447,7 +388,9 @@ function ListaProductos(): JSX.Element {
             <Button
               variant="outlined"
               startIcon={<SimCardDownloadIcon />}
-              onClick={productos?.length > 0 ? descargarProductosExcel : descargarPlantillaExcel}
+              onClick={() => {
+                productos?.length > 0 ? descargarProductosExcel("") : descargarPlantillaExcel();
+              }}
               sx={{
                 borderColor: "#084d6e",
                 color: "#084d6e",
@@ -559,6 +502,7 @@ function ListaProductos(): JSX.Element {
                         height: "100%",
                         overflow: "hidden",
                         transition: "all 0.3s",
+                        ...(p.stock === 0 ? { border: "2px solid red" } : {}),
                         "&:hover": {
                           boxShadow: 6,
                           transform: "translateY(-4px)",
@@ -566,8 +510,20 @@ function ListaProductos(): JSX.Element {
                       }}
                     >
                       <Chip
-                        icon={p.tipo_producto === "fisico" ? <HardwareIcon /> : <ComputerIcon />}
-                        label={p.tipo_producto?.toUpperCase()}
+                        icon={
+                          p.tipo_producto === "fisico" ? (
+                            p.stock === 0 ? (
+                              <DisabledByDefaultIcon />
+                            ) : (
+                              <HardwareIcon />
+                            )
+                          ) : p.stock === 0 ? (
+                            <DisabledByDefaultIcon />
+                          ) : (
+                            <ComputerIcon />
+                          )
+                        }
+                        label={p.stock === 0 ? "NO DISPONIBLE" : p.tipo_producto?.toUpperCase()}
                         sx={{
                           position: "absolute",
                           top: 0,
@@ -715,9 +671,6 @@ function ListaProductos(): JSX.Element {
                                   const datos = {
                                     id_producto: p?.id,
                                   };
-                                  const datos = {
-                                    id_producto: p?.id,
-                                  };
                                   setProductoEditar(p);
                                   getFotoMontoPorId(datos);
                                   getProductoColorPorId(datos);
@@ -726,6 +679,9 @@ function ListaProductos(): JSX.Element {
                                   getProductoFotoPorId(datos);
                                   getProductoFotoPromoPorId(datos);
                                   handleisAlertOpenEditarProducto();
+
+                                  setPreviewFoto(null);
+                                  setFotoProductoPrincipalFile(null);
                                 }}
                               >
                                 <EditIcon fontSize="small" />
@@ -748,6 +704,34 @@ function ListaProductos(): JSX.Element {
                               </IconButton>
                             </Tooltip>
                           ) : null}
+
+                          {isSuperAdmin ? (
+                            <Tooltip
+                              title={p.stock === 0 ? "Marcar disponible" : "Marcar no disponible"}
+                            >
+                              <IconButton
+                                aria-label="no_disponible"
+                                size="small"
+                                color={p.stock === 0 ? "success" : "error"}
+                                onClick={() => {
+                                  setProductoId(p?.id);
+                                  const datos = {
+                                    id_producto: p?.id,
+                                    plataforma: plataforma,
+                                  };
+                                  p.stock === 0
+                                    ? marcarDisponible(datos)
+                                    : marcarNoDisponible(datos);
+                                }}
+                              >
+                                {p.stock === 0 ? (
+                                  <CheckBoxIcon fontSize="small" />
+                                ) : (
+                                  <DisabledByDefaultIcon fontSize="small" />
+                                )}
+                              </IconButton>
+                            </Tooltip>
+                          ) : null}
                         </Box>
 
                         {/* Columna derecha - Información */}
@@ -763,8 +747,9 @@ function ListaProductos(): JSX.Element {
                           <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
                             {p.nombre_producto}
                           </Typography>
+
                           <Typography variant="caption" gutterBottom sx={{ display: "block" }}>
-                            {p.descripcion}
+                            {truncarTexto(p.descripcion, 60)}
                           </Typography>
 
                           <MDTypography
@@ -848,7 +833,7 @@ function ListaProductos(): JSX.Element {
                         >
                           <EmojiEventsIcon />{" "}
                           <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
-                            {numericFormatter(p.puntos + "", {
+                            {numericFormatter(p.factor + "", {
                               thousandSeparator: ",",
                               decimalScale: 2,
                               fixedDecimalScale: false,
@@ -896,10 +881,7 @@ function ListaProductos(): JSX.Element {
             <DinamicTableMejorada
               actions
               key={tableKey}
-              //sinBusqueda
-              //sinExport
               esListaProductos
-              //showCheckBox
               data={productos}
               enAccion={(accion, row) => {
                 handleAccion(accion, row);
@@ -928,7 +910,6 @@ function ListaProductos(): JSX.Element {
         ) : null}
       </MDBox>
       <Footer />
-      <Backdrop sx={(theme) => ({ color: "#fff", zIndex: 9999999 })} open={procesando}>
       <Backdrop sx={(theme) => ({ color: "#fff", zIndex: 9999999 })} open={procesando}>
         <CircularProgress color="inherit" />
       </Backdrop>
@@ -993,58 +974,73 @@ function ListaProductos(): JSX.Element {
                     <Grid container spacing={2}>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="nombreEditar"
+                          id="nombre_producto"
                           fullWidth
                           label={intl.formatMessage({ id: "input_nombre" })}
                           variant="standard"
-                          name="nombreEditar"
-                          value={nombreProductoEditar || ""}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setNombreProductoEditar(e.target.value);
-                          }}
+                          name="nombre_producto"
+                          value={formikEditarProducto.values.nombre_producto}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.nombre_producto &&
+                            Boolean(formikEditarProducto.errors.nombre_producto)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.nombre_producto &&
+                            formikEditarProducto.errors.nombre_producto
+                          }
                         />
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="descripcionEditar"
+                          id="descripcion"
                           fullWidth
                           label={intl.formatMessage({ id: "input_descripcion" })}
                           variant="standard"
-                          name="descripcionEditar"
-                          value={descripcionEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setDescripcionEditar(e.target.value);
-                          }}
+                          name="descripcion"
+                          value={formikEditarProducto.values.descripcion}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.descripcion &&
+                            Boolean(formikEditarProducto.errors.descripcion)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.descripcion &&
+                            formikEditarProducto.errors.descripcion
+                          }
                         />
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="marcaEditar"
+                          id="marca"
                           fullWidth
                           label={intl.formatMessage({ id: "input_marca" })}
                           variant="standard"
-                          name="marcaEditar"
-                          value={marcaEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setMarcaEditar(e.target.value);
-                          }}
+                          name="marca"
+                          value={formikEditarProducto.values.marca}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.marca &&
+                            Boolean(formikEditarProducto.errors.marca)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.marca && formikEditarProducto.errors.marca
+                          }
                         />
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="skuEditar"
+                          id="sku"
                           fullWidth
                           label={intl.formatMessage({ id: "input_sku" })}
                           variant="standard"
-                          name="skuEditar"
-                          value={skuEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setSkuEditar(e.target.value);
-                          }}
+                          name="sku"
+                          value={formikEditarProducto.values.sku}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
                         />
                       </Grid>
                       <Grid item xs={6} sm={4}>
@@ -1055,20 +1051,15 @@ function ListaProductos(): JSX.Element {
                           label={`${intl.formatMessage({ id: "select_proveedores" })} *`}
                           variant="standard"
                           name="id_proveedor"
-                          value={idProveedorEditar}
+                          value={formikEditarProducto.values.id_proveedor}
                           disabled={!proveedores || proveedores.length === 0}
                           helperText={
                             !proveedores || proveedores.length === 0
                               ? intl.formatMessage({ id: "sin_proveedores_registrados" })
                               : ""
                           }
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setIdProveedorEditar(value);
-                          }}
-                          InputProps={{
-                            style: { padding: "5px" },
-                          }}
+                          onChange={formikEditarProducto.handleChange}
+                          InputProps={{ style: { padding: "5px" } }}
                         >
                           {proveedores?.map((option) => (
                             <MenuItem key={option.id} value={option.id}>
@@ -1079,26 +1070,25 @@ function ListaProductos(): JSX.Element {
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="id_categoria"
+                          id="id_catalogo"
                           select
                           fullWidth
                           label={`${intl.formatMessage({ id: "select_categoria_producto" })} *`}
                           variant="standard"
-                          name="id_categoria"
-                          value={idCatalogoEditar}
+                          name="id_catalogo"
+                          value={formikEditarProducto.values.id_catalogo}
                           disabled={!categorias || categorias.length === 0}
                           helperText={
-                            !categorias || categorias.length === 0
-                              ? intl.formatMessage({ id: "sin_categorias_registrados" })
-                              : ""
+                            formikEditarProducto.touched.id_catalogo &&
+                            formikEditarProducto.errors.id_catalogo
                           }
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setIdCatalogoEditar(e.target.value);
-                          }}
-                          InputProps={{
-                            style: { padding: "5px" },
-                          }}
+                          error={
+                            formikEditarProducto.touched.id_catalogo &&
+                            Boolean(formikEditarProducto.errors.id_catalogo)
+                          }
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          InputProps={{ style: { padding: "5px" } }}
                         >
                           {categorias?.map((option) => (
                             <MenuItem key={option.id} value={option.id}>
@@ -1109,198 +1099,155 @@ function ListaProductos(): JSX.Element {
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="costoConIvaEditar"
+                          id="costo_con_iva"
                           fullWidth
                           label={intl.formatMessage({ id: "input_costo_con_iva" })}
                           variant="standard"
-                          name="costoConIvaEditar"
+                          name="costo_con_iva"
                           type="number"
-                          value={costoConIvaEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setCostoConIvaEditar(e.target.value);
-                          }}
+                          value={formikEditarProducto.values.costo_con_iva}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.costo_con_iva &&
+                            Boolean(formikEditarProducto.errors.costo_con_iva)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.costo_con_iva &&
+                            formikEditarProducto.errors.costo_con_iva
+                          }
                         />
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="costoSinIvaEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_costo_sin_iva" })}
-                          variant="standard"
-                          name="costoSinIvaEditar"
-                          type="number"
-                          value={costoSinIvaEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setCostoSinIvaEditar(e.target.value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="costoPuntosConIvaEditar"
+                          id="costo_puntos_con_iva"
                           fullWidth
                           label={intl.formatMessage({ id: "input_costo_puntos_con_iva" })}
                           variant="standard"
-                          name="costoPuntosConIvaEditar"
+                          name="costo_puntos_con_iva"
                           type="number"
-                          value={costoPuntosConIvaEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setCostoPuntosConIvaEditar(e.target.value);
-                          }}
+                          value={formikEditarProducto.values.costo_puntos_con_iva}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.costo_puntos_con_iva &&
+                            Boolean(formikEditarProducto.errors.costo_puntos_con_iva)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.costo_puntos_con_iva &&
+                            formikEditarProducto.errors.costo_puntos_con_iva
+                          }
                         />
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="costoPuntosSinIvaEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_costo_puntos_sin_iva" })}
-                          variant="standard"
-                          name="costoPuntosSinIvaEditar"
-                          type="number"
-                          value={costoPuntosSinIvaEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setCostoPuntosSinIvaEditar(e.target.value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="feeBrimagyEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_fee_brimagy" })}
-                          variant="standard"
-                          name="feeBrimagyEditar"
-                          type="number"
-                          value={feeBrimagyEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setFeeBrimagyEditar(e.target.value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="subtotalEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_subtotal" })}
-                          variant="standard"
-                          name="subtotalEditar"
-                          type="number"
-                          value={subtotalEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setSubtotalEditar(e.target.value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="envioBaseEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_envio_base" })}
-                          variant="standard"
-                          name="envioBase"
-                          type="number"
-                          value={envioBaseEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setEnvioBaseEditar(e.target.value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="costoCajaEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_costo_caja" })}
-                          variant="standard"
-                          name="costoCaja"
-                          type="number"
-                          value={costoCajaEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setCostoCajaEditar(e.target.value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="envioExtraEditar"
+                          id="envio_extra"
                           fullWidth
                           label={intl.formatMessage({ id: "input_envio_extra" })}
                           variant="standard"
-                          name="envioExtra"
+                          name="envio_extra"
                           type="number"
-                          value={envioExtraEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setEnvioExtraEditar(e.target.value);
-                          }}
+                          value={formikEditarProducto.values.envio_extra}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.envio_extra &&
+                            Boolean(formikEditarProducto.errors.envio_extra)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.envio_extra &&
+                            formikEditarProducto.errors.envio_extra
+                          }
                         />
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="totalEnvioEditar"
+                          id="valor_factor"
                           fullWidth
-                          label={intl.formatMessage({ id: "input_total_envio" })}
+                          label={intl.formatMessage({ id: "input_valor_factor" })}
                           variant="standard"
-                          name="totalEnvio"
+                          name="valor_factor"
                           type="number"
-                          value={totalEnvioEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setTotalEnvioEditar(e.target.value);
-                          }}
+                          value={formikEditarProducto.values.valor_factor}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.valor_factor &&
+                            Boolean(formikEditarProducto.errors.valor_factor)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.valor_factor &&
+                            formikEditarProducto.errors.valor_factor
+                          }
                         />
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="totalEditar"
+                          id="tyc"
                           fullWidth
-                          label={intl.formatMessage({ id: "input_total" })}
+                          label={intl.formatMessage({ id: "input_tyc" })}
                           variant="standard"
-                          name="total"
-                          type="number"
-                          value={totalEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setTotalEditar(e.target.value);
-                          }}
+                          name="tyc"
+                          value={formikEditarProducto.values.tyc}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.tyc &&
+                            Boolean(formikEditarProducto.errors.tyc)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.tyc &&
+                            formikEditarProducto.errors.tyc
+                          }
                         />
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         <TextField
-                          id="puntosEditar"
+                          id="vigencia"
                           fullWidth
-                          label={intl.formatMessage({ id: "input_puntos" })}
+                          label={intl.formatMessage({ id: "input_vigencia" })}
                           variant="standard"
-                          name="puntos"
-                          type="number"
-                          value={puntosEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setPuntosEditar(e.target.value);
-                          }}
+                          name="vigencia"
+                          value={formikEditarProducto.values.vigencia}
+                          onChange={formikEditarProducto.handleChange}
+                          onBlur={formikEditarProducto.handleBlur}
+                          error={
+                            formikEditarProducto.touched.vigencia &&
+                            Boolean(formikEditarProducto.errors.vigencia)
+                          }
+                          helperText={
+                            formikEditarProducto.touched.vigencia &&
+                            formikEditarProducto.errors.vigencia
+                          }
                         />
                       </Grid>
-                      <Grid item xs={6} sm={4}>
-                        <TextField
-                          id="factorEditar"
-                          fullWidth
-                          label={intl.formatMessage({ id: "input_factor" })}
-                          variant="standard"
-                          name="factor"
-                          type="number"
-                          value={factorEditar}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setFactorEditar(e.target.value);
+                      <Grid item xs={12} sm={4}>
+                        <MDBox
+                          sx={{
+                            p: 1.5,
+                            bgcolor: "#f0f7f0",
+                            borderRadius: 1,
+                            border: "1px solid #a5eb2f",
+                            textAlign: "center",
+                            height: "100%",
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
                           }}
-                        />
+                        >
+                          <MDTypography variant="caption" color="text" sx={{ fontWeight: 600 }}>
+                            PUNTOS
+                          </MDTypography>
+                          <MDTypography variant="h6" sx={{ color: "#2f7a2f", fontWeight: 700 }}>
+                            {puntosEsperados
+                              ? numericFormatter(puntosEsperados.factor + "", {
+                                thousandSeparator: ",",
+                                decimalScale: 0,
+                                fixedDecimalScale: true,
+                              })
+                              : "—"}
+                          </MDTypography>
+                        </MDBox>
                       </Grid>
                       <Grid item xs={6} sm={4}>
                         {(previewFoto || fotoEditar) && (
@@ -1336,31 +1283,33 @@ function ListaProductos(): JSX.Element {
                           sx={{ color: "#fff", background: "#084d6e" }}
                           variant="contained"
                           endIcon={<EditIcon />}
-                          disabled={procesando}
+                          disabled={
+                            procesando || Object.keys(formikEditarProducto.errors).length > 0
+                          }
                           onClick={(e: any) => {
+                            if (Object.keys(formikEditarProducto.errors).length > 0) {
+                              return;
+                            }
+
+                            const v = formikEditarProducto.values;
                             const formData = new FormData();
                             formData.append("id_producto", productoEditar?.id);
-                            formData.append("nombre_producto", nombreProductoEditar);
-                            formData.append("descripcion", descripcionEditar);
-                            formData.append("marca", marcaEditar);
-                            formData.append("sku", skuEditar);
-                            formData.append("color", colorEditar);
-                            formData.append("talla", tallaEditar);
-                            formData.append("id_proveedor", idProveedorEditar);
-                            formData.append("id_catalogo", idCatalogoEditar);
-                            formData.append("costo_con_iva", costoConIvaEditar);
-                            formData.append("costo_sin_iva", costoSinIvaEditar);
-                            formData.append("costo_puntos_con_iva", costoPuntosConIvaEditar);
-                            formData.append("costo_puntos_sin_iva", costoPuntosSinIvaEditar);
-                            formData.append("fee_brimagy", feeBrimagyEditar);
-                            formData.append("subtotal", subtotalEditar);
-                            formData.append("envio_base", envioBaseEditar);
-                            formData.append("costo_caja", costoCajaEditar);
-                            formData.append("envio_extra", envioExtraEditar);
-                            formData.append("total_envio", totalEnvioEditar);
-                            formData.append("total", totalEditar);
-                            formData.append("puntos", puntosEditar);
-                            formData.append("factor", factorEditar);
+                            formData.append("nombre_producto", v.nombre_producto);
+                            formData.append("descripcion", v.descripcion);
+                            formData.append("marca", v.marca);
+                            formData.append("sku", v.sku);
+                            formData.append("color", v.color);
+                            formData.append("talla", v.talla);
+                            formData.append("id_proveedor", v.id_proveedor);
+                            formData.append("id_catalogo", v.id_catalogo);
+                            formData.append("costo_con_iva", v.costo_con_iva);
+                            formData.append("costo_puntos_con_iva", v.costo_puntos_con_iva);
+                            formData.append("envio_base", v.envio_base);
+                            formData.append("costo_caja", v.costo_caja);
+                            formData.append("valor_factor", v.valor_factor);
+                            formData.append("envio_extra", v.envio_extra);
+                            formData.append("tyc", v.tyc);
+                            formData.append("vigencia", v.vigencia);
                             formData.append("tipo_registro", "edicion");
                             formData.append("nombre_plataforma", productoEditar?.nombre_plataforma);
                             formData.append(
@@ -1371,7 +1320,6 @@ function ListaProductos(): JSX.Element {
                             if (fotoProductoPrincipalFile) {
                               formData.append("foto_producto", fotoProductoPrincipalFile);
                             }
-
                             editaProducto(formData);
                           }}
                         >
@@ -1406,6 +1354,7 @@ function ListaProductos(): JSX.Element {
                           handleisAlertOpenEditarColor={handleisAlertOpenEditarColor}
                           desactivarColorProducto={desactivarColorProducto}
                           activarColorProducto={activarColorProducto}
+                          plataforma={plataforma}
                         />
                       </Grid>
                     </Grid>
@@ -1422,6 +1371,7 @@ function ListaProductos(): JSX.Element {
                           handleisAlertOpenEditarTalla={handleisAlertOpenEditarTalla}
                           desactivarTallaProducto={desactivarTallaProducto}
                           activarTallaProducto={activarTallaProducto}
+                          plataforma={plataforma}
                         />
                       </Grid>
                     </Grid>
@@ -1439,6 +1389,7 @@ function ListaProductos(): JSX.Element {
                           handleOpenVistaFotosProducto={handleOpenVistaFotosProducto}
                           desactivarFotosProducto={desactivarFotosProducto}
                           activarFotosProducto={activarFotosProducto}
+                          plataforma={plataforma}
                         />
                       </Grid>
                     </Grid>
@@ -1456,6 +1407,7 @@ function ListaProductos(): JSX.Element {
                           handleOpenVistaFotosPromoProducto={handleOpenVistaFotosPromoProducto}
                           desactivarFotosPromoProducto={desactivarFotosPromoProducto}
                           activarFotosPromoProducto={activarFotosPromoProducto}
+                          plataforma={plataforma}
                         />
                       </Grid>
                     </Grid>
@@ -1474,6 +1426,7 @@ function ListaProductos(): JSX.Element {
                               handleisAlertOpenEditarMonto={handleisAlertOpenEditarMonto}
                               desactivarMontoProducto={desactivarMontoProducto}
                               activarMontoProducto={activarMontoProducto}
+                              plataforma={plataforma}
                             />
                           </Grid>
                         </Grid>
@@ -1491,6 +1444,7 @@ function ListaProductos(): JSX.Element {
                               handleOpenVistaFotoMonto={handleOpenVistaFotoMonto}
                               desactivarFotoMonto={desactivarFotoMonto}
                               activarFotoMonto={activarFotoMonto}
+                              plataforma={plataforma}
                             />
                           </Grid>
                         </Grid>
@@ -1599,6 +1553,7 @@ function ListaProductos(): JSX.Element {
                       id_color_brimagy: verEditarColor?.id_color_brimagy,
                       id_color: verEditarColor?.id,
                       color: editaColor,
+                      plataforma: plataforma,
                     };
                     crearEditarColorProducto(datos);
                   }}
@@ -1753,8 +1708,9 @@ function ListaProductos(): JSX.Element {
               <Grid item xs={6} sm={4} sx={{ position: "relative" }}>
                 <TextField
                   id="editaTalla"
+                  select
                   fullWidth
-                  label={intl.formatMessage({ id: "input_talla" })}
+                  label={`${intl.formatMessage({ id: "input_talla" })} *`}
                   variant="standard"
                   name="editaTalla"
                   value={editaTalla}
@@ -1762,7 +1718,16 @@ function ListaProductos(): JSX.Element {
                     const value = e.target.value;
                     setEditaTalla(e.target.value);
                   }}
-                />
+                  InputProps={{
+                    style: { padding: "5px" },
+                  }}
+                >
+                  {tallaArray?.map((option) => (
+                    <MenuItem key={option.id} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
               <Grid item xs={12} md={6}>
                 <Button
@@ -1776,6 +1741,7 @@ function ListaProductos(): JSX.Element {
                       id_talla_brimagy: verEditarTalla?.id_talla_brimagy,
                       id_talla: verEditarTalla?.id,
                       talla: editaTalla,
+                      plataforma: plataforma,
                     };
                     crearEditarTallaProducto(datos);
                   }}
@@ -2005,10 +1971,8 @@ function ListaProductos(): JSX.Element {
                     Registrando proveedores y categorías...
                   </>
                 ) : (
-                  `Registrar ${obtenerProveedoresFaltantes().length} proveedor(es) | ${
-                    obtenerCategoriasFaltantes().length
-                  } Categoría(s) faltantes  | ${
-                    obtenerPlataformasFaltantes().length
+                  `Registrar ${obtenerProveedoresFaltantes().length} proveedor(es) | ${obtenerCategoriasFaltantes().length
+                  } Categoría(s) faltantes  | ${obtenerPlataformasFaltantes().length
                   } Plataforma(s) faltantes`
                 )}
               </Button>
@@ -2044,23 +2008,22 @@ function ListaProductos(): JSX.Element {
                   producto_status: p.id_producto_brimagy_vacio
                     ? "⚠️ PRODUCTO NUEVO"
                     : p.id_producto_brimagy_duplicado
-                    ? "🔄 " + p.id_producto_brimagy + " (Existente)"
-                    : p.id_producto_brimagy,
+                      ? "🔄 " + p.id_producto_brimagy + " (Existente)"
+                      : p.id_producto_brimagy,
                   plataforma_status: p.plataforma_valida
                     ? "✓ " + p.plataforma
                     : "✗ " + p.plataforma,
-                  //proveedor_status: p.proveedor_valido ? "✓ " + p.proveedor : "✗ " + p.proveedor,
                   proveedor_status: p.proveedor_vacio
                     ? "⚠️ Sin proveedor"
                     : p.proveedor_valido
-                    ? "✓ " + p.proveedor
-                    : "✗ " + p.proveedor,
+                      ? "✓ " + p.proveedor
+                      : "✗ " + p.proveedor,
                   catalogo_status: p.categoria_valida ? "✓ " + p.catalogo : "✗ " + p.catalogo,
                   sku_status: p.sku_vacio
                     ? "⚠️ SKU VACÍO"
                     : p.sku_duplicado
-                    ? "🔄 " + p.sku + " (Existente)"
-                    : p.sku,
+                      ? "🔄 " + p.sku + " (Existente)"
+                      : p.sku,
                 }))}
                 columnsToShow={[
                   "nombre_producto",
@@ -2109,11 +2072,10 @@ function ListaProductos(): JSX.Element {
                   Guardando productos...
                 </>
               ) : (
-                `Guardar ${
-                  excelData?.filter(
-                    (p) =>
-                      p?.sku_vacio || (p?.proveedor_valido && p?.categoria_valida && !p?.sku_vacio)
-                  ).length || 0
+                `Guardar ${excelData?.filter(
+                  (p) =>
+                    p?.sku_vacio || (p?.proveedor_valido && p?.categoria_valida && !p?.sku_vacio)
+                ).length || 0
                 } productos válidos`
               )}
             </Button>
@@ -2223,7 +2185,9 @@ function ListaProductos(): JSX.Element {
                 const datos = {
                   puntos: buscarPorPuntos,
                   categoria: categoriaBuscar,
+                  plataforma: plataforma,
                 };
+                //console.log(datos);
                 busquedaInteligenteBrimagy(datos);
               }}
               sx={{

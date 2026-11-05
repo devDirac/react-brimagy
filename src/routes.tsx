@@ -4,12 +4,13 @@ import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import ViewListIcon from "@mui/icons-material/ViewList";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
+import BarChartIcon from "@mui/icons-material/BarChart";
 
 const routes = [
   {
     type: "collapse",
     key: "perfil",
-    allow: [1, 2, 3, 4, 5, 6],
+    allow: [1, 2, 3, 4, 5, 6, 7],
     collapse: [
       {
         name: "Perfil de usuario",
@@ -17,7 +18,7 @@ const routes = [
         route: "/perfil-usuario",
         component: null,
         iconText: "Lock",
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
       },
       {
         name: "Cerrar sesión",
@@ -25,17 +26,17 @@ const routes = [
         route: "/logoutPage",
         component: null,
         icon: <LockIcon />,
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
       },
     ],
   },
-  { type: "divider", key: "divider-0", allow: [1, 2, 3, 4, 5, 6] },
+  { type: "divider", key: "divider-0", allow: [1, 2, 3, 4, 5, 6, 7] },
   {
     type: "collapse",
     name: "Configuración Sistema",
     key: "configuracion",
     icon: <MiscellaneousServicesIcon />,
-    allow: [1, 2, 3, 4, 5, 6],
+    allow: [1, 2, 3, 4, 5, 6, 7],
     collapse: [
       {
         name: "Plataformas",
@@ -43,7 +44,15 @@ const routes = [
         icon: "ShoppingBagIcon",
         route: "/plataformas",
         component: null,
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
+      },
+      {
+        name: "Usuarios de plataforma",
+        key: "usuarios-plataforma",
+        icon: "ShoppingBagIcon",
+        route: "/usuarios-plataforma",
+        component: null,
+        allow: [7],
       },
       {
         name: "Variables Globales",
@@ -51,7 +60,64 @@ const routes = [
         icon: "ShoppingBagIcon",
         route: "/variables-globales",
         component: null,
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
+      },
+    ],
+  },
+  {
+    type: "collapse",
+    name: "Estadísticas",
+    key: "estadisticas",
+    icon: <BarChartIcon />,
+    allow: [1, 2, 3, 4, 5, 6, 7],
+    collapse: [
+      {
+        name: "Principal",
+        key: "estadistica-principal",
+        icon: "BarChartIcon",
+        route: "/estadistica-principal",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6, 7],
+      },
+      {
+        name: "Productos canjeados",
+        key: "productos-canjeados",
+        icon: "BarChartIcon",
+        route: "/productos-canjeados",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6, 7],
+      },
+      {
+        name: "Categorías por tipo",
+        key: "puntos-categoria",
+        icon: "BarChartIcon",
+        route: "/puntos-categoria",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6, 7],
+      },
+      {
+        name: "Puntos por tipo",
+        key: "puntos-por-tipo",
+        icon: "BarChartIcon",
+        route: "/puntos-por-tipo",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6, 7],
+      },
+      {
+        name: "Comparativo de puntos",
+        key: "comparativa-puntos",
+        icon: "BarChartIcon",
+        route: "/comparativa-puntos",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6, 7],
+      },
+      {
+        name: "Reporte general de canjes",
+        key: "reporte-general-canjes",
+        icon: "BarChartIcon",
+        route: "/reporte-general-canjes",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6, 7],
       },
     ],
   },
@@ -60,7 +126,7 @@ const routes = [
     name: "Usuarios",
     key: "usuarios",
     icon: <PeopleIcon />,
-    allow: [1, 2, 3, 4, 5, 6],
+    allow: [1, 2, 3, 4, 5, 6, 7],
     collapse: [
       {
         name: "Nuevo Usuario",
@@ -68,7 +134,7 @@ const routes = [
         icon: "PeopleIcon",
         route: "/nuevo-usuario",
         component: null,
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
       },
       {
         name: "Lista de Usuarios",
@@ -76,7 +142,7 @@ const routes = [
         route: "/lista-usuarios",
         component: null,
         icon: "FormatListBulletedIcon",
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
       },
     ],
   },
@@ -85,7 +151,7 @@ const routes = [
     name: "Productos",
     key: "productos",
     icon: <ShoppingBagIcon />,
-    allow: [1, 2, 3, 4, 5, 6],
+    allow: [1, 2, 3, 4, 5, 6, 7],
     collapse: [
       {
         name: "Categorías/Proveedores",
@@ -93,7 +159,7 @@ const routes = [
         icon: "ShoppingBagIcon",
         route: "/categorias-proveedores",
         component: null,
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
       },
       {
         name: "Nuevo Producto",
@@ -101,7 +167,7 @@ const routes = [
         icon: "ShoppingBagIcon",
         route: "/nuevo-producto",
         component: null,
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
       },
       {
         name: "Catálogo de Productos",
@@ -109,7 +175,7 @@ const routes = [
         route: "/catalogo-productos",
         component: null,
         icon: "FormatListBulletedIcon",
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
       },
       {
         name: "Fisicos",
@@ -117,7 +183,7 @@ const routes = [
         route: "/productos-fisicos",
         component: null,
         icon: "FormatListBulletedIcon",
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
       },
       {
         name: "Digitales",
@@ -125,7 +191,7 @@ const routes = [
         route: "/productos-digitales",
         component: null,
         icon: "FormatListBulletedIcon",
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
       },
     ],
   },
@@ -134,7 +200,7 @@ const routes = [
     name: "Canjes",
     key: "canjes",
     icon: <ShoppingBagIcon />,
-    allow: [1, 2, 3, 4, 5, 6],
+    allow: [1, 2, 3, 4, 5, 6, 7],
     collapse: [
       {
         name: "Canjes fisicos",
@@ -142,7 +208,7 @@ const routes = [
         icon: "ShoppingBagIcon",
         route: "/canjes-fisicos",
         component: null,
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
       },
       {
         name: "Canjes Digitales",
@@ -150,7 +216,7 @@ const routes = [
         icon: "ShoppingBagIcon",
         route: "/canjes-digitales",
         component: null,
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
       },
     ],
   },
@@ -159,7 +225,7 @@ const routes = [
     name: "Ordenes de Compras",
     key: "ordenes-de-compras",
     icon: <ViewListIcon />,
-    allow: [1, 2, 3, 4, 5, 6],
+    allow: [1, 2, 3, 4, 5, 6, 7],
     collapse: [
       {
         name: "Generar Orden de Compra",
@@ -167,7 +233,7 @@ const routes = [
         icon: "ViewListIcon",
         route: "/generar-orden-de-compra",
         component: null,
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
       },
     ],
   },
@@ -176,7 +242,7 @@ const routes = [
     name: "Almacen",
     key: "almacen",
     icon: <ViewListIcon />,
-    allow: [1, 2, 3, 4, 5, 6],
+    allow: [1, 2, 3, 4, 5, 6, 7],
     collapse: [
       {
         name: "Gestión de almacen",
@@ -184,7 +250,7 @@ const routes = [
         icon: "ViewListIcon",
         route: "/gestion-almacen",
         component: null,
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
       },
     ],
   },
@@ -193,7 +259,7 @@ const routes = [
     name: "Encuestas",
     key: "encuestas",
     icon: <QuestionAnswerIcon />,
-    allow: [1, 2, 3, 4, 5, 6],
+    allow: [1, 2, 3, 4, 5, 6, 7],
     collapse: [
       {
         name: "Catálogo de encuestas",
@@ -201,7 +267,7 @@ const routes = [
         icon: "QuestionAnswerIcon",
         route: "/catalogo-encuestas",
         component: null,
-        allow: [1, 2, 3, 4, 5, 6],
+        allow: [1, 2, 3, 4, 5, 6, 7],
       },
     ],
   },

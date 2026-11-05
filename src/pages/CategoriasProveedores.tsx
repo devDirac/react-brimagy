@@ -125,6 +125,8 @@ function CategoriasProveedores(): JSX.Element {
     editaGeneral,
     subcategorias,
     getFieldColor,
+    plataforma,
+    normalizarNombre,
   } = useCategoriasProveedores(tipoUsuario);
 
   const independiente = () => {
@@ -365,6 +367,8 @@ function CategoriasProveedores(): JSX.Element {
                           const datos = {
                             nombre: formikCategoria.values.nombre,
                             category_id: formikCategoria.values.category_id,
+                            plataforma: plataforma,
+                            file_path: normalizarNombre(formikCategoria.values.nombre),
                           };
                           crearCategoria(datos);
                         }}
@@ -388,6 +392,7 @@ function CategoriasProveedores(): JSX.Element {
                     <Grid item xs={12} sm={12} mt={2}>
                       {categorias.length && !procesando ? (
                         <DinamicTable
+                          key={`categorias-${plataforma}-${tableKeyCategoria}`}
                           actions
                           columnsToShow={["desc", "status"]}
                           sinExport
@@ -541,6 +546,7 @@ function CategoriasProveedores(): JSX.Element {
                       datos = {
                         id: generalEditar?.id,
                         desc: nombreEditar,
+                        plataforma: plataforma,
                       };
                     }
                     console.log(datos);

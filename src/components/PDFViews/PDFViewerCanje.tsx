@@ -4,34 +4,7 @@ import { Dialog, DialogContent, DialogTitle, IconButton, Box, Button } from "@mu
 import CloseIcon from "@mui/icons-material/Close";
 import DownloadIcon from "@mui/icons-material/Download";
 import PDFCanje from "./PDFCanje";
-
-interface Canje {
-  id: number;
-  folio: string;
-  nombre_usuario: string;
-  email: string;
-  phone: number;
-  number_of_awards: string;
-  size: string;
-  color: string;
-  category: string;
-  puntos_canjeados: string;
-  nombre_premio: string;
-  costo_premio: string;
-  sku: string;
-  calle: string;
-  numero_calle: string;
-  colonia: string;
-  codigo_postal: number;
-  municipio: string;
-  numero_interior: string;
-  between_1: string;
-  between_2: string;
-  referencia_adicional: string;
-  creacion_canje: string;
-  estado_canje: string;
-  estado_validacion: string;
-}
+import { Canje } from "../../types/canjeTypes";
 
 interface PDFViewerCanjeProps {
   open: boolean;

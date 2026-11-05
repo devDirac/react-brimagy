@@ -59,7 +59,9 @@ function DefaultLineChart({ icon, title, description, height, chart }: Props): J
         tension: 0,
         pointRadius: 3,
         borderWidth: 4,
-        backgroundColor: "transparent",
+        backgroundColor: colors[dataset.color]
+          ? `${colors[dataset.color || "dark"].main}33`
+          : `${colors.dark.main}33`,
         fill: true,
         pointBackgroundColor: colors[dataset.color]
           ? colors[dataset.color || "dark"].main

@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { saveUserHttp, getCheckEmailHttp, getCheckUsuarioHttp } from "../../actions/users";
 import { getErrorHttpMessage } from "../../utils";
 import { useIntl } from "react-intl";
+import { StoreType } from "types/genericTypes";
 
 export const useNuevoUsuario = (activeStep: number, isLastStep: boolean) => {
   const dispatch = useDispatch();
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
   const intl = useIntl();
   const navigate = useNavigate();
   const [procesando, setProcesando] = useState<boolean>(false);
@@ -53,12 +55,7 @@ export const useNuevoUsuario = (activeStep: number, isLastStep: boolean) => {
 
     if (isLastStep) {
       return baseValidationSchema.shape({
-        permiso: Yup.string()
-          .oneOf(
-            ["Super Admin", "Editor", "Usuario"],
-            intl.formatMessage({ id: "campo_permiso_valido" })
-          )
-          .required(intl.formatMessage({ id: "input_validation_requerido" })),
+        permiso: Yup.string().required(intl.formatMessage({ id: "input_validation_requerido" })),
       });
     }
 
@@ -131,5 +128,6 @@ export const useNuevoUsuario = (activeStep: number, isLastStep: boolean) => {
     guardaNuevoUsuario,
     formik,
     setProcesando,
+    plataforma,
   };
 };

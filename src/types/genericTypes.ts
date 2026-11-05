@@ -21,6 +21,7 @@ export interface AppType {
   employees: any;
   upload: string[];
   idioma: string;
+  plataforma: string;
   catalogos: any;
   espacio: any;
   ruta: any;

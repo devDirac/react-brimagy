@@ -37,6 +37,7 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
 
   const idUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.id || 0);
   const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
+  const plataforma = useSelector((state: StoreType) => state?.app?.plataforma || "puntotes");
 
   const [buscador, setBuscador] = useState("");
   const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -56,12 +57,23 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
 
   const [cantidadProducto, setCantidadProducto] = useState("");
   const [isAlertOpenCantidad, setIsAlertOpenCantidad] = useState(false);
-  const handleisAlertOpenCantidad = () => setIsAlertOpenCantidad(true);
+  const handleisAlertOpenCantidad = () => {
+    const idProveedor = Number(verProducto?.id_proveedor);
+    const proveedor = proveedoresSelect.find((p) => Number(p.id) === idProveedor);
+
+    formikCantidad.setFieldValue("id_proveedor", proveedor ? proveedor.id : "");
+    setIsAlertOpenCantidad(true);
+  };
   const handleisAlertCloseCantidad = () => setIsAlertOpenCantidad(false);
 
   const [guiaProducto, setGuiaProducto] = useState("");
+  const [tipoEnvio, setTipoEnvio] = useState<1 | 2 | null>(null);
   const [isAlertOpenGuia, setIsAlertOpenGuia] = useState(false);
-  const handleisAlertOpenGuia = () => setIsAlertOpenGuia(true);
+  const handleisAlertOpenGuia = () => {
+    setGuiaProducto(verProducto?.guia ?? "");
+    setTipoEnvio(verProducto?.tipo_envio ? (Number(verProducto.tipo_envio) as 1 | 2) : null);
+    setIsAlertOpenGuia(true);
+  };
   const handleisAlertCloseGuia = () => setIsAlertOpenGuia(false);
 
   //Para evidencias
@@ -130,6 +142,15 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
   const handleisAlertOpenProductosTecnologicos = () => setIsAlertOpenProductosTecnologicos(true);
   const handleisAlerCloseProductosTecnologicos = () => setIsAlertOpenProductosTecnologicos(false);
   const [accionProducto, setAccionProducto] = useState(true);
+
+  //FECHA DE COMPRA
+  const [fechaCompra, setFechaCompra] = useState("");
+  const [costoEnvioReal, setCostoEnvioReal] = useState("");
+
+  const [procesandoCostoEnvioReal, setProcesandoCostoEnvioReal] = useState<boolean>(false);
+  const [isAlertOpenCostoEnvioReal, setIsAlertOpenCostoEnvioReal] = useState(false);
+  const handleisAlertOpenCostoEnvioReal = () => setIsAlertOpenCostoEnvioReal(true);
+  const handleisAlertCloseCostoEnvioReal = () => setIsAlertOpenCostoEnvioReal(false);
 
   useEffect(() => {
     setAuth(token);
@@ -226,15 +247,15 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       clearTimeout(debounceTimeout);
     }
     const timeout = setTimeout(() => {
-      getProductosAlmacen(value);
+      getProductosAlmacen(value, plataforma);
     }, 500);
     setDebounceTimeout(timeout);
   };
 
-  const getEncuestasDisponibles = useCallback(async () => {
+  const getEncuestasDisponibles = useCallback(async (plataforma?: string) => {
     try {
       setProcesando(true);
-      const response = await getEncuestasDisponiblesHttp();
+      const response = await getEncuestasDisponiblesHttp(plataforma);
       setEncuestas(response);
       setProcesando(false);
     } catch (error) {
@@ -245,10 +266,10 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     }
   }, []);
 
-  const getProductosAlmacen = useCallback(async (search?: string) => {
+  const getProductosAlmacen = useCallback(async (search?: string, plataforma?: string) => {
     try {
       setProcesando(true);
-      const productos = await getProductosAlmacenHttp(search);
+      const productos = await getProductosAlmacenHttp(search, plataforma);
       setProductos(productos);
       setProcesando(false);
     } catch (error) {
@@ -277,23 +298,18 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     try {
       setProcesandoRecibirProducto(true);
       const recibirProducto: any = await recibirProductoAlmacenHttp(datos);
-      /*setVerProducto((prevProducto: any) => ({
-        ...prevProducto,
-        estatus: recibirProducto?.estatus,
-        cantidad_almacen: recibirProducto?.cantidad_recibida,
-      }));*/
 
       const datosRefresh = {
         id_orden_compra: verProducto?.id_orden_compra,
+        id_canje: verProducto?.id_canje,
         id_producto_almacen: verProducto?.id_producto_almacen,
       };
       await getProductoAlmacenPorId(datosRefresh);
 
       setMensajeAlert(
-        `${intl.formatMessage({ id: "exito_recibir_producto" })}. ${
-          recibirProducto.estatus === "en_almacen"
-            ? "Producto completamente recibido."
-            : `Pendiente: ${recibirProducto.cantidad_pendiente} unidades.`
+        `${intl.formatMessage({ id: "exito_recibir_producto" })}. ${recibirProducto.estatus === "en_almacen"
+          ? "Producto completamente recibido."
+          : `Pendiente: ${recibirProducto.cantidad_pendiente} unidades.`
         }`
       );
       formikCantidad.resetForm();
@@ -316,11 +332,14 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       setVerProducto((prevProducto: any) => ({
         ...prevProducto,
         guia: guiaProducto,
+        tipo_envio: tipoEnvio,
         estatus: "guia_asignada",
       }));
 
       setMensajeAlert(intl.formatMessage({ id: "guia_añadida_correctamente" }));
-      setCantidadProducto("");
+      setGuiaProducto("");
+      setTipoEnvio(null);
+      handleisAlertCloseGuia();
       handleisAlertOpen();
       setProcesandoGuiaProducto(false);
     } catch (error) {
@@ -357,10 +376,12 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       setVerProducto((prevProducto: any) => ({
         ...prevProducto,
         estatus: "entregado",
+        costo_envio_real: costoEnvioReal,
       }));
 
       setMensajeAlert(intl.formatMessage({ id: "producto_entregado_correctamente" }));
-      setCantidadProducto("");
+      setCostoEnvioReal("");
+      handleisAlertCloseCostoEnvioReal();
       handleisAlertOpen();
       setProcesandoRecepcionProducto(false);
     } catch (error) {
@@ -494,6 +515,7 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       const proveedorData: any = await crearProveedorHttp(datos);
       setProveedoresSelect((prev) => [...prev, proveedorData]);
       formikPrecio.setFieldValue("id_proveedor", proveedorData.id);
+      formikCantidad.setFieldValue("id_proveedor", proveedorData.id);
       formik.resetForm();
       setProcesandoProveedor(false);
       setMensajeAlert(intl.formatMessage({ id: "proveedor_creado_correctamente" }));
@@ -534,22 +556,24 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       Yup.object({
         cantidadProducto: accionProducto
           ? Yup.number()
-              .required(intl.formatMessage({ id: "input_validation_requerido" }))
-              .min(1, intl.formatMessage({ id: "input_validation_minimo" }, { min: 1 }))
-              .max(cantidadMaximaPermitida, `Máximo: ${cantidadMaximaPermitida} unidades`)
+            .required(intl.formatMessage({ id: "input_validation_requerido" }))
+            .min(1, intl.formatMessage({ id: "input_validation_minimo" }, { min: 1 }))
+            .max(cantidadMaximaPermitida, `Máximo: ${cantidadMaximaPermitida} unidades`)
           : Yup.number().notRequired(),
         id_proveedor:
           accionProducto && !verProducto?.nombre_proveedor
             ? Yup.number().required(intl.formatMessage({ id: "input_validation_requerido" }))
             : !accionProducto
-            ? Yup.number().required(intl.formatMessage({ id: "input_validation_requerido" }))
-            : Yup.number().notRequired(),
+              ? Yup.number().required(intl.formatMessage({ id: "input_validation_requerido" }))
+              : Yup.number().notRequired(),
         precio_compra: !accionProducto
           ? Yup.number().required(intl.formatMessage({ id: "input_validation_requerido" }))
           : Yup.number().notRequired(),
         imei: Yup.string().notRequired(),
         no_serie: Yup.string().notRequired(),
+        folio_factura: Yup.string().notRequired(),
         comentarios: Yup.string().notRequired(),
+        fecha_compra: Yup.string().required(),
       }),
     [accionProducto, cantidadMaximaPermitida, verProducto?.id_proveedor]
   );
@@ -561,7 +585,9 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       precio_compra: "",
       imei: "",
       no_serie: "",
+      folio_factura: "",
       comentarios: "",
+      fecha_compra: "",
     },
     validationSchema: validationSchemaCantidad,
     onSubmit: async (values) => {
@@ -578,19 +604,26 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
         precio_compra: "",
         imei: "",
         no_serie: "",
+        folio_factura: "",
         comentarios: "",
+        fecha_compra: "",
       },
     });
   };
 
   useEffect(() => {
-    getEncuestasDisponibles();
     getProveedores();
   }, []);
 
   useEffect(() => {
-    getProductosAlmacen();
-  }, [getProductosAlmacen]);
+    if (verProducto?.plataforma) {
+      getEncuestasDisponibles(verProducto.plataforma);
+    }
+  }, [verProducto?.plataforma]);
+
+  useEffect(() => {
+    getProductosAlmacen(undefined, plataforma);
+  }, [getProductosAlmacen, plataforma]);
 
   return {
     enviarEncuesta,
@@ -602,6 +635,8 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     procesandoRecepcionProducto,
     setGuiaProducto,
     guiaProducto,
+    tipoEnvio,
+    setTipoEnvio,
     isAlertOpenGuia,
     handleisAlertOpenGuia,
     handleisAlertCloseGuia,
@@ -700,5 +735,14 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     getFieldColorCantidad,
     handleAccionProducto,
     accionProducto,
+    plataforma,
+    setFechaCompra,
+    fechaCompra,
+    costoEnvioReal,
+    setCostoEnvioReal,
+    isAlertOpenCostoEnvioReal,
+    handleisAlertOpenCostoEnvioReal,
+    handleisAlertCloseCostoEnvioReal,
+    procesandoCostoEnvioReal
   };
 };

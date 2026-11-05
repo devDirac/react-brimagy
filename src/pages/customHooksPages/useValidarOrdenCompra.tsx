@@ -66,58 +66,69 @@ export const useValidarOrdenCompra = () => {
     }
   }, []);
 
-  const aceptarProductoOC = async (id_producto: number) => {
-    try {
-      setProcesandoCodigo(true);
-      const response = await aceptarProductoOCHttp({ id_producto: id_producto });
-      setOrdenCompra((prevOrden: any) => {
-        if (!prevOrden?.productos) return prevOrden;
+  const actualizarProductoAgrupado = (idsValidacion: number[], cambios: any) => {
+    setOrdenCompra((prevOrden: any) => {
+      if (!prevOrden?.productos) return prevOrden;
+      return {
+        ...prevOrden,
+        productos: prevOrden.productos.map((producto: any) => {
+          const ids: number[] = producto.ids_validacion ?? [producto.id_validacion];
+          const esElGrupo = ids.some((id) => idsValidacion.includes(Number(id)));
+          return esElGrupo ? { ...producto, ...cambios } : producto;
+        }),
+      };
+    });
+  };
 
-        return {
-          ...prevOrden,
-          productos: prevOrden.productos.map((producto: any) =>
-            producto.id === id_producto ? { ...producto, estatus_proveedor: 1 } : producto
-          ),
-        };
-      });
+  const aceptarProductoOC = async (id_orden_compra: number, ids_validacion: number[]) => {
+    try {
+      setProcesando(true);
+      const resultado: any = await aceptarProductoOCHttp({ id_orden_compra, ids_validacion });
+
+      actualizarProductoAgrupado(
+        ids_validacion,
+        resultado?.producto_agrupado ?? { estatus_proveedor: 1 }
+      );
+
       setMensajeAlert(intl.formatMessage({ id: "producto_aceptado_correctamente" }));
       handleisAlertOpen();
-      setProcesandoCodigo(false);
     } catch (error) {
-      setProcesandoCodigo(false);
       const message = getErrorHttpMessage(error);
       setMensajeAlert(message || intl.formatMessage({ id: "producto_aceptado_error" }));
       handleisAlertOpen();
+    } finally {
+      setProcesando(false);
     }
   };
 
-  const rechazarProductoOC = async (id_producto: number) => {
+  const rechazarProductoOC = async (
+    id_orden_compra: number,
+    ids_validacion: number[],
+    motivo?: string
+  ) => {
     try {
-      setProcesandoCodigo(true);
-      const response = await rechazarProductoOCHttp({ id_producto: id_producto });
-      setOrdenCompra((prevOrden: any) => {
-        if (!prevOrden?.productos) return prevOrden;
+      setProcesando(true);
+      const resultado: any = await rechazarProductoOCHttp({ id_orden_compra, ids_validacion, motivo });
 
-        return {
-          ...prevOrden,
-          productos: prevOrden.productos.map((producto: any) =>
-            producto.id === id_producto ? { ...producto, estatus_proveedor: 2 } : producto
-          ),
-        };
-      });
+      actualizarProductoAgrupado(
+        ids_validacion,
+        resultado?.producto_agrupado ?? { estatus_proveedor: 2, motivo_rechazo: motivo ?? "" }
+      );
+
       setMensajeAlert(intl.formatMessage({ id: "producto_rechazado_correctamente" }));
       handleisAlertOpen();
-      setProcesandoCodigo(false);
     } catch (error) {
-      setProcesandoCodigo(false);
       const message = getErrorHttpMessage(error);
       setMensajeAlert(message || intl.formatMessage({ id: "producto_rechazado_error" }));
       handleisAlertOpen();
+    } finally {
+      setProcesando(false);
     }
   };
+
   const enviarAprobacion = async (data: any) => {
     try {
-      setProcesandoCodigo(true);
+      setProcesando(true);
       const response = await enviarOCAprobacionHttp(data);
       setOrdenCompra((prevOrden: any) => ({
         ...prevOrden,
@@ -128,9 +139,9 @@ export const useValidarOrdenCompra = () => {
       }));
       setMensajeAlert(intl.formatMessage({ id: "orden_compra_enviada_aprobacion_exito" }));
       handleisAlertOpen();
-      setProcesandoCodigo(false);
+      setProcesando(false);
     } catch (error) {
-      setProcesandoCodigo(false);
+      setProcesando(false);
       const message = getErrorHttpMessage(error);
       setMensajeAlert(
         message || intl.formatMessage({ id: "orden_compra_enviada_aprobacion_error" })

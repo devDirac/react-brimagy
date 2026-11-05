@@ -28,6 +28,7 @@ import MDTypography from "components/MDTypography";
 interface Props {
   color?: "primary" | "secondary" | "info" | "success" | "warning" | "error" | "light" | "dark";
   title: string;
+  secondary?: string;
   count: string | number;
   percentage?: {
     color: "primary" | "secondary" | "info" | "success" | "warning" | "error" | "dark" | "white";
@@ -38,7 +39,14 @@ interface Props {
   [key: string]: any;
 }
 
-function ComplexStatisticsCard({ color, title, count, percentage, icon }: Props): JSX.Element {
+function ComplexStatisticsCard({
+  color,
+  title,
+  secondary,
+  count,
+  percentage,
+  icon,
+}: Props): JSX.Element {
   return (
     <Card>
       <MDBox display="flex" justifyContent="space-between" pt={1} px={2}>
@@ -60,8 +68,11 @@ function ComplexStatisticsCard({ color, title, count, percentage, icon }: Props)
           </Icon>
         </MDBox>
         <MDBox textAlign="right" lineHeight={1.25}>
-          <MDTypography variant="button" fontWeight="light" color="text">
+          <MDTypography variant="h6" fontWeight="light" color="text">
             {title}
+          </MDTypography>
+          <MDTypography variant="button" fontWeight="light" color="text">
+            {secondary}
           </MDTypography>
           <MDTypography variant="h4">{count}</MDTypography>
         </MDBox>
