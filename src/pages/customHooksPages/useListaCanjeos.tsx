@@ -8,6 +8,7 @@ import { setAuth } from "../../actions/auth";
 import { numericFormatter } from "react-number-format";
 import moment from "moment";
 import {
+  actualizarResumenCanjes,
   enviarValidacionHttp,
   enviarValidacionSinProveedorHttp,
   getCanjesHttp,
@@ -116,6 +117,12 @@ export const useListaCanjeos = (tipoUsuario: number) => {
   const [fecha2, setFecha2] = useState("");
 
   const esDigital = location.pathname.includes("canjes-digitales");
+  const tipoProducto = esDigital ? "digital" : "fisico";
+
+  const refrescarResumen = useCallback(
+    () => actualizarResumenCanjes(dispatch, plataforma, tipoProducto),
+    [dispatch, plataforma, tipoProducto]
+  );
 
   const canjesAgrupados = useMemo(
     () =>
@@ -180,7 +187,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
       try {
         setProcesando(true);
         const productosData = await getCanjesHttp(
-          esDigital ? "digital" : "fisico",
+          tipoProducto,
           params?.search,
           params?.fecha1 ? new Date(params.fecha1) : undefined,
           params?.fecha2 ? new Date(params.fecha2) : undefined,
@@ -226,6 +233,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
           c.id === verCanje?.id ? { ...c, estado_validacion: "notificacion_enviada" } : c
         )
       );
+      refrescarResumen();
       setMensajeAlert(intl.formatMessage({ id: "validacion_enviada_correctamente" }));
       handleisAlertOpen();
       setProcesandoIdentidad(false);
@@ -250,6 +258,7 @@ export const useListaCanjeos = (tipoUsuario: number) => {
           c.id === verCanje?.id ? { ...c, estado_validacion: "identidad_validada" } : c
         )
       );
+      refrescarResumen();
       setMensajeAlert(intl.formatMessage({ id: "canje_validado_correctamente" }));
       handleisAlertOpen();
       setProcesandoIdentidadDirecto(false);
@@ -264,6 +273,10 @@ export const useListaCanjeos = (tipoUsuario: number) => {
   useEffect(() => {
     getCanjes({ plataforma });
   }, [getCanjes, plataforma]);
+
+  useEffect(() => {
+    refrescarResumen();
+  }, [refrescarResumen]);
 
   return {
     validarIdentidad,

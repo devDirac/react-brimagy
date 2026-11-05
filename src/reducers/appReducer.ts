@@ -4,6 +4,7 @@ import { SET_IDIOMA } from "../actions/idiomas";
 import { SET_MENU_ROUTES } from "../actions/menu";
 import { SET_NOTIFICACIONES } from "../actions/notificaciones";
 import { SET_PLATAFORMA } from "../actions/configuracion";
+import { SET_RESUMEN_CANJES } from "../actions/canjes";
 
 // Estado inicial del reducer app
 const initialAppState = {
@@ -13,6 +14,8 @@ const initialAppState = {
   upload: [],
   idioma: "mx",
   ruta: null,
+  plataforma: "puntotes",
+  resumenCanjes: null,
 };
 
 const appReducer = (state = initialAppState, action: any) => {
@@ -26,7 +29,9 @@ const appReducer = (state = initialAppState, action: any) => {
     case SET_NOTIFICACIONES:
       return { ...state, ...{ notificaciones: action?.value || null } };
     case SET_PLATAFORMA:
-      return { ...state, plataforma: action?.value || "puntotes" };
+      return { ...state, plataforma: action?.value || "puntotes", resumenCanjes: null };
+    case SET_RESUMEN_CANJES:
+      return { ...state, resumenCanjes: action?.value || null };
     case RESET_STATE:
       return initialAppState;
     default:

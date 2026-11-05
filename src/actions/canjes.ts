@@ -1,6 +1,14 @@
-import { GeneralHttpResponse } from "../types/genericTypes";
 import axios from "axios";
 import env from "react-dotenv";
+import { Dispatch } from "redux";
+import { GeneralHttpResponse, ResumenCanjes } from "../types/genericTypes";
+
+export const SET_RESUMEN_CANJES = "SET_RESUMEN_CANJES";
+
+export const setResumenCanjes = (value: ResumenCanjes | null) => ({
+  type: SET_RESUMEN_CANJES,
+  value,
+});
 
 export const getCanjesHttp = async (
   tipo_producto?: string,
@@ -132,5 +140,44 @@ export const getCanjesPorProveedorHttp = async (id_proveedor?: number, plataform
   } catch (error) {
     const promise = new Promise((_, reject) => reject(error));
     return promise;
+  }
+};
+
+export const getResumenCanjesHttp = async (
+  plataforma?: string,
+  tipo_producto?: string
+): Promise<{ success: boolean; data: ResumenCanjes | null }> => {
+  try {
+    const url = new URL(`${env.API_URL}/getResumenCanjes`);
+
+    if (plataforma) url.searchParams.append("plataforma", plataforma);
+    if (tipo_producto) url.searchParams.append("tipo_producto", tipo_producto);
+
+    const response = await axios.get(url.toString());
+    const body = response?.data;
+
+    const data: ResumenCanjes | null =
+      typeof body?.total === "number" ? body : body?.data ?? null;
+
+    return { success: typeof data?.total === "number", data };
+  } catch (error) {
+    const promise = new Promise<never>((_, reject) => reject(error));
+    return promise;
+  }
+};
+
+// Pide el resumen al backend y lo guarda en Redux. Si falla, deja los contadores como estaban
+export const actualizarResumenCanjes = async (
+  dispatch: Dispatch,
+  plataforma: string,
+  tipoProducto?: string
+) => {
+  try {
+    const respuesta: any = await getResumenCanjesHttp(plataforma, tipoProducto);
+    if (respuesta?.success && respuesta?.data) {
+      dispatch(setResumenCanjes(respuesta.data));
+    }
+  } catch (error) {
+    console.error("Error al obtener el resumen de canjes", error);
   }
 };
