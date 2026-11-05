@@ -39,7 +39,6 @@ import { Proveedor as ProveedorCatalogo } from "types/canjeTypes";
 import {
   IconAward,
   IconCreditCardFilled,
-  IconLeafFilled,
   IconBarcode,
   IconTag,
   IconUser,
@@ -48,7 +47,6 @@ import {
   IconMapPin,
   IconCalendar,
 } from "@tabler/icons-react";
-import { getPlataformaUI } from "config/plataformasUI";
 import PlataformaChip from "components/PlataformaChip/PlataformaChip";
 import ModalComponent from "components/Modal";
 
@@ -745,6 +743,11 @@ const CanjeValidadoProveedorModal = ({
       ? !!verCanje?.orden_compra
       : todosProductosValidados);
 
+  const ordenCerrada = [
+    "factura_subida_correctamente_proveedor",
+    "orden_validada_por_proveedor",
+  ].includes(verCanje?.orden_compra?.estatus ?? "");
+
   if (!verCanje) return null;
   if (!verProveedor) return null;
 
@@ -867,7 +870,18 @@ const CanjeValidadoProveedorModal = ({
                       startIcon={<SendIcon />}
                       disabled={procesandoCotizarOtros}
                       onClick={() => setConfirmarEnvioGlobal(true)}
-                      sx={{ background: "#084d6e", color: "#fff" }}
+                      sx={{
+                        background: "#084d6e",
+                        color: "#fff",
+                        "&:hover": {
+                          background: "#13638a",
+                          border: "none"
+                        },
+                        "&:focus": {
+                          background: "#13638a",
+                          border: "none"
+                        }
+                      }}
                     >
                       {textosCotizacion.botonGlobal}
                     </Button>
@@ -884,18 +898,13 @@ const CanjeValidadoProveedorModal = ({
                 {canjesPaginados.map((canje) => {
                   const keyProducto = llaveValidacion(canje);
                   const idsSel = proveedoresPorProducto[keyProducto] ?? [];
-                  const ordenCerrada = [
-                    "factura_subida_correctamente_proveedor",
-                    "orden_validada_por_proveedor",
-                  ].includes(verCanje?.orden_compra?.estatus ?? "");
-
-                  const respondido = canje.estatus_proveedor === 1 || canje.estatus_proveedor === 2;
+                  const estatusProv = Number(canje.estatus_proveedor);
 
                   const mostrarSelector =
-                    canje.tipo_producto === "fisico" &&
+                    canje.tipo_producto !== "digital" &&
                     !canje.orden_ejecutada &&
-                    !ordenCerrada &&
-                    (!verCanje?.orden_compra || respondido);
+                    estatusProv !== 3 &&
+                    !ordenCerrada;
 
                   return (
                     <Grid item xs={12} md={6} key={keyProducto}>
@@ -906,7 +915,7 @@ const CanjeValidadoProveedorModal = ({
                           mostrarSelector ? (
                             <>
                               <Typography variant="caption" color="text.secondary" display="block">
-                                {canje.estatus_proveedor === 2
+                                {estatusProv === 2
                                   ? "No disponible con este proveedor: cotízalo con otro"
                                   : "Cotizar con otros proveedores"}
                               </Typography>
@@ -921,7 +930,20 @@ const CanjeValidadoProveedorModal = ({
                                     startIcon={<SendIcon />}
                                     disabled={procesandoCotizarOtros}
                                     onClick={() => ejecutarCotizacion({ [keyProducto]: idsSel })}
-                                    sx={{ fontSize: "0.7rem" }}
+                                    sx={{
+                                      fontSize: "0.7rem",
+                                      background: "#084d6e",
+                                      color: "#fff",
+                                      border: "none",
+                                      "&:hover": {
+                                        background: "#13638a",
+                                        border: "none"
+                                      },
+                                      "&:focus": {
+                                        background: "#13638a",
+                                        border: "none"
+                                      }
+                                    }}
                                   >
                                     {procesandoCotizarOtros ? (
                                       <>
@@ -1314,14 +1336,6 @@ const CanjeValidadoProveedorModal = ({
                     estatus_proveedor: esDirecto ? 1 : 0,
                     estatus_almacen: 0,
                   })),
-                  /*productos: productosFisicos.map((p) => ({
-                    id_canje: p.id_canje,
-                    id_producto: p.id,
-                    cantidad_producto: p.number_of_awards,
-                    cantidad_almacen: p.number_of_awards,
-                    estatus_almacen: 0,
-                    estatus_proveedor: esDirecto ? 1 : 0,
-                  })),*/
                   plataforma,
                   tipo_envio: esDirecto ? "directo" : "proveedor",
                 })
@@ -1356,14 +1370,6 @@ const CanjeValidadoProveedorModal = ({
                   enviarCotizacionProveedor({
                     id_usuario: idUsuario,
                     id_proveedor: verProveedor.id,
-                    /*productos: productosDigitales.map((p) => ({
-                      id_canje: p.id_canje,
-                      id_producto: p.id,
-                      cantidad_producto: p.number_of_awards,
-                      cantidad_almacen: p.number_of_awards,
-                      estatus_almacen: 0,
-                      estatus_proveedor: 1,
-                    })),*/
                     productos: productosDigitales.map((p) => ({
                       id_validacion: p.id_validacion_producto,
                       estatus_proveedor: 1,

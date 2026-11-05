@@ -545,7 +545,7 @@ function ValidarOrdenCompra(): JSX.Element {
 
                       {productosPaginados.map((producto: any) => {
                         return (
-                          <Grid item xs={12} key={producto._llave}>
+                          <Grid item xs={12} key={`producto-${producto.id_producto}`}>
                             <Box
                               sx={{
                                 p: 2,
@@ -608,6 +608,9 @@ function ValidarOrdenCompra(): JSX.Element {
                                       prefix: "$",
                                     })}
                                   </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    (+IVA 16%)
+                                  </Typography>
                                 </Grid>
                                 {ordenCompra?.orden_compra?.estatus === "cotizacion_enviada_a_proveedor" ? (
                                   <Grid item xs={6} md={1}>
@@ -618,9 +621,9 @@ function ValidarOrdenCompra(): JSX.Element {
                                       <Tooltip title={intl.formatMessage({ id: "validar_producto" })}>
                                         <span>
                                           <IconButton
-                                            disabled={procesandoCodigo || producto?.estatus_proveedor === 1}
+                                            disabled={procesando || producto?.estatus_proveedor === 1}
                                             onClick={() =>
-                                              aceptarProductoOC(ordenCompra.orden_compra.id, producto._llave)
+                                              aceptarProductoOC(ordenCompra.orden_compra.id, producto.ids_validacion)
                                             }
                                             sx={{ color: "#13e9bf", padding: "0" }}
                                           >
@@ -631,9 +634,9 @@ function ValidarOrdenCompra(): JSX.Element {
                                       <Tooltip title={intl.formatMessage({ id: "rechazar_producto" })}>
                                         <span>
                                           <IconButton
-                                            disabled={procesandoCodigo || producto?.estatus_proveedor === 2}
+                                            disabled={procesando || producto?.estatus_proveedor === 2}
                                             onClick={() =>
-                                              rechazarProductoOC(ordenCompra.orden_compra.id, producto._llave)
+                                              rechazarProductoOC(ordenCompra.orden_compra.id, producto.ids_validacion)
                                             }
                                             sx={{ color: "#f64e52", padding: "0" }}
                                           >

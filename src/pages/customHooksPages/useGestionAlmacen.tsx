@@ -57,12 +57,23 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
 
   const [cantidadProducto, setCantidadProducto] = useState("");
   const [isAlertOpenCantidad, setIsAlertOpenCantidad] = useState(false);
-  const handleisAlertOpenCantidad = () => setIsAlertOpenCantidad(true);
+  const handleisAlertOpenCantidad = () => {
+    const idProveedor = Number(verProducto?.id_proveedor);
+    const proveedor = proveedoresSelect.find((p) => Number(p.id) === idProveedor);
+
+    formikCantidad.setFieldValue("id_proveedor", proveedor ? proveedor.id : "");
+    setIsAlertOpenCantidad(true);
+  };
   const handleisAlertCloseCantidad = () => setIsAlertOpenCantidad(false);
 
   const [guiaProducto, setGuiaProducto] = useState("");
+  const [tipoEnvio, setTipoEnvio] = useState<1 | 2 | null>(null);
   const [isAlertOpenGuia, setIsAlertOpenGuia] = useState(false);
-  const handleisAlertOpenGuia = () => setIsAlertOpenGuia(true);
+  const handleisAlertOpenGuia = () => {
+    setGuiaProducto(verProducto?.guia ?? "");
+    setTipoEnvio(verProducto?.tipo_envio ? (Number(verProducto.tipo_envio) as 1 | 2) : null);
+    setIsAlertOpenGuia(true);
+  };
   const handleisAlertCloseGuia = () => setIsAlertOpenGuia(false);
 
   //Para evidencias
@@ -321,13 +332,13 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       setVerProducto((prevProducto: any) => ({
         ...prevProducto,
         guia: guiaProducto,
-        costo_envio_real: costoEnvioReal,
+        tipo_envio: tipoEnvio,
         estatus: "guia_asignada",
       }));
 
       setMensajeAlert(intl.formatMessage({ id: "guia_añadida_correctamente" }));
-      setCantidadProducto("");
-      setCostoEnvioReal("");
+      setGuiaProducto("");
+      setTipoEnvio(null);
       handleisAlertCloseGuia();
       handleisAlertOpen();
       setProcesandoGuiaProducto(false);
@@ -504,6 +515,7 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
       const proveedorData: any = await crearProveedorHttp(datos);
       setProveedoresSelect((prev) => [...prev, proveedorData]);
       formikPrecio.setFieldValue("id_proveedor", proveedorData.id);
+      formikCantidad.setFieldValue("id_proveedor", proveedorData.id);
       formik.resetForm();
       setProcesandoProveedor(false);
       setMensajeAlert(intl.formatMessage({ id: "proveedor_creado_correctamente" }));
@@ -600,9 +612,14 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
   };
 
   useEffect(() => {
-    getEncuestasDisponibles(plataforma);
     getProveedores();
   }, []);
+
+  useEffect(() => {
+    if (verProducto?.plataforma) {
+      getEncuestasDisponibles(verProducto.plataforma);
+    }
+  }, [verProducto?.plataforma]);
 
   useEffect(() => {
     getProductosAlmacen(undefined, plataforma);
@@ -618,6 +635,8 @@ export const useGestionAlmacen = (tipoUsuario: number) => {
     procesandoRecepcionProducto,
     setGuiaProducto,
     guiaProducto,
+    tipoEnvio,
+    setTipoEnvio,
     isAlertOpenGuia,
     handleisAlertOpenGuia,
     handleisAlertCloseGuia,

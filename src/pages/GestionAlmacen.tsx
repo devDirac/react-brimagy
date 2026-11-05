@@ -51,6 +51,8 @@ import {
   Tooltip,
   Typography,
   Switch,
+  ToggleButtonGroup,
+  ToggleButton,
 } from "@mui/material";
 import ModalComponent from "components/Modal";
 import Header from "components/Header";
@@ -86,62 +88,20 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import { TextFieldValidado } from "components/TextFieldValidado/TextFieldValidado";
 
+const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
+  "& .MuiBadge-badge": {
+    right: 2,
+    top: 7,
+    background: `#eb2fa5`,
+    padding: "0 4px",
+    fontSize: "10px",
+  },
+}));
+
 function GestionAlmacen(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
   const userName = useSelector((state: StoreType) => state?.app?.user?.data?.name || false);
   const fotoUser: any = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
-
-  const MaterialUISwitch = styled(Switch)(({ theme }) => ({
-    width: 62,
-    height: 34,
-    padding: 7,
-    "& .MuiSwitch-switchBase": {
-      margin: 1,
-      padding: 0,
-      transform: "translateX(6px)",
-      "&.Mui-checked": {
-        color: "#fff",
-        transform: "translateX(22px)",
-        "& .MuiSwitch-thumb:before": {
-          backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 24 24"><path fill="${encodeURIComponent(
-            "#fff"
-          )}" d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>')`,
-        },
-        "& + .MuiSwitch-track": {
-          opacity: 1,
-          backgroundColor: "#aab4be",
-        },
-      },
-      // ← clave: apuntar al track desde el switchBase unchecked
-      "&:not(.Mui-checked) + .MuiSwitch-track": {
-        opacity: "1 !important",
-        backgroundColor: "#aab4be !important",
-      },
-    },
-    "& .MuiSwitch-thumb": {
-      backgroundColor: "#001e3c",
-      width: 32,
-      height: 32,
-      "&::before": {
-        content: "''",
-        position: "absolute",
-        width: "100%",
-        height: "100%",
-        left: 0,
-        top: 0,
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center",
-        backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 24 24"><path fill="${encodeURIComponent(
-          "#fff"
-        )}" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>')`,
-      },
-    },
-    "& .MuiSwitch-track": {
-      opacity: "1 !important",
-      backgroundColor: "#aab4be !important",
-      borderRadius: 20 / 2,
-    },
-  }));
 
   // Estados para la paginación
   const [page, setPage] = useState(0);
@@ -157,6 +117,8 @@ function GestionAlmacen(): JSX.Element {
     procesandoRecepcionProducto,
     setGuiaProducto,
     guiaProducto,
+    tipoEnvio,
+    setTipoEnvio,
     isAlertOpenGuia,
     handleisAlertOpenGuia,
     handleisAlertCloseGuia,
@@ -270,24 +232,6 @@ function GestionAlmacen(): JSX.Element {
     setEvidenciasFiles(newFiles || []);
   };
 
-  const independiente = () => {
-    return !productos?.length && !procesando ? (
-      <Grid container spacing={2}>
-        <Grid item xs={12} style={{ textAlign: "center" }}>
-          <h3>Sin registros</h3>
-        </Grid>
-      </Grid>
-    ) : null;
-  };
-  const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
-    "& .MuiBadge-badge": {
-      right: 2,
-      top: 7,
-      background: `#eb2fa5`,
-      padding: "0 4px",
-      fontSize: "10px",
-    },
-  }));
   // Handlers para la paginación
   const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
@@ -310,16 +254,16 @@ function GestionAlmacen(): JSX.Element {
     SATISFACCION_COMPRA: "SATISFACCIÓN DE COMPRA",
     SATISFACCION_PLATAFORMA: "SATISFACCIÓN DE PLATAFORMA",
   };
+
+  const plataformaEstilos: Record<string, { label: string; bg: string }> = {
+    puntotes: { label: "Puntotes", bg: "#02999e" },
+    club_bohn: { label: "Club Bohn", bg: "#eb2fa5" },
+  };
+
   const traducirTipoEncuesta = (tipo_encuesta: string | null): string => {
     if (!tipo_encuesta) return "ENCUESTA NORMAL";
     const estadoUpper = tipo_encuesta.toUpperCase();
     return tipoEncuestaMap[estadoUpper] || estadoUpper;
-  };
-
-  const traducirEstadoValidacion = (estado: string | null): string => {
-    if (!estado) return "SIN ESTADO";
-    const estadoUpper = estado.toUpperCase();
-    return estadosValidacionMap[estadoUpper] || estadoUpper;
   };
 
   const productosPaginados = useMemo(() => {
@@ -426,6 +370,29 @@ function GestionAlmacen(): JSX.Element {
                             {p.marca}
                           </MDTypography>
                         </Box>
+                        <Box sx={{ display: "flex", alignItems: "center", pr: 1 }}>
+                          <Chip
+                            size="small"
+                            label={p.folio_canje ?? "Sin folio"}
+                            sx={{
+                              bgcolor: "#f97316",
+                              color: "#fff",
+                              fontWeight: 600,
+                              fontSize: "0.7rem",
+                              mr: 0.5
+                            }}
+                          />
+                          <Chip
+                            size="small"
+                            label={plataformaEstilos[p.plataforma]?.label ?? p.plataforma_nombre ?? "Sin plataforma"}
+                            sx={{
+                              bgcolor: plataformaEstilos[p.plataforma]?.bg ?? "#607d8b",
+                              color: "#fff",
+                              fontWeight: 600,
+                              fontSize: "0.7rem",
+                            }}
+                          />
+                        </Box>
                       </Box>
 
                       {/* Fila inferior - Iconos a la izquierda, Info a la derecha */}
@@ -450,7 +417,7 @@ function GestionAlmacen(): JSX.Element {
                             borderColor: "grey.200",
                           }}
                         >
-                          <Tooltip title="Ver Producto">
+                          <Tooltip title="Ver Producto" disableFocusListener>
                             <StyledBadge badgeContent={p.cantidad_almacen} color="secondary">
                               <IconButton
                                 aria-label="ver"
@@ -470,8 +437,8 @@ function GestionAlmacen(): JSX.Element {
                               </IconButton>
                             </StyledBadge>
                           </Tooltip>
-                          {p.tiene_factura && (
-                            <Tooltip title="Ver factura">
+                          {Number(p.tiene_factura) > 0 && (
+                            <Tooltip title="Ver factura" disableFocusListener>
                               <StyledBadge badgeContent={0} color="secondary">
                                 <IconButton
                                   aria-label="ver"
@@ -508,7 +475,7 @@ function GestionAlmacen(): JSX.Element {
                             overflow: "hidden",
                           }}
                         >
-                          <Tooltip title={p.nombre_producto}>
+                          <Tooltip title={p.nombre_producto} disableFocusListener>
                             <Typography
                               variant="button"
                               gutterBottom
@@ -520,7 +487,7 @@ function GestionAlmacen(): JSX.Element {
                           </Tooltip>
                           <Box sx={{ mt: "auto" }}>
                             <MDTypography variant="caption" display="block" color="text" noWrap>
-                              <strong>Canje:</strong> #{p.id_canje ?? "N/A"}
+                              <strong>Usuario:</strong> {p.nombre_usuario ?? "N/A"}
                             </MDTypography>
                             <MDTypography variant="caption" display="block" color="text" noWrap>
                               <strong>Proveedor:</strong> {p.nombre_proveedor ?? "N/A"}
@@ -715,7 +682,7 @@ function GestionAlmacen(): JSX.Element {
                     style: { padding: "5px" },
                     endAdornment: (
                       <InputAdornment position="end">
-                        <Tooltip title="Agregar proveedor">
+                        <Tooltip title="Agregar proveedor" disableFocusListener>
                           <IconButton
                             size="medium"
                             color="primary"
@@ -919,7 +886,7 @@ function GestionAlmacen(): JSX.Element {
                       comentarios: formikCantidad.values.comentarios,
                       fecha_compra: formikCantidad.values.fecha_compra,
                       id_producto: verProducto?.id_producto,
-                      plataforma: plataforma,
+                      plataforma: verProducto?.plataforma ?? plataforma,
                     };
                     addProductoAlmacen(datos);
                   }}
@@ -956,7 +923,34 @@ function GestionAlmacen(): JSX.Element {
                 Añadir guía de envío
               </Typography>
             </Grid>
-            <Grid item xs={6} sm={6}>
+
+            <Grid item xs={12}>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Tipo de envío *
+              </Typography>
+              <ToggleButtonGroup
+                exclusive
+                value={tipoEnvio}
+                onChange={(_, valor: 1 | 2 | null) => {
+                  if (valor !== null) setTipoEnvio(valor);
+                }}
+                size="small"
+                disabled={procesandoGuiaProducto}
+                sx={{
+                  "& .MuiToggleButton-root": { px: 2, textTransform: "none", fontWeight: 600 },
+                  "& .MuiToggleButton-root.Mui-selected": {
+                    background: "#a5eb2f",
+                    color: "#2f2f2f",
+                    "&:hover": { background: "#8fd41f" },
+                  },
+                }}
+              >
+                <ToggleButton value={1}>Envío por proveedor</ToggleButton>
+                <ToggleButton value={2}>Envío por Brimagy</ToggleButton>
+              </ToggleButtonGroup>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
               <TextField
                 id="guiaProducto"
                 fullWidth
@@ -964,36 +958,30 @@ function GestionAlmacen(): JSX.Element {
                 variant="standard"
                 name="guiaProducto"
                 value={guiaProducto || ""}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setGuiaProducto(value);
-                }}
+                disabled={procesandoGuiaProducto}
+                onChange={(e) => setGuiaProducto(e.target.value)}
               />
             </Grid>
-            <Grid item xs={6} sm={6} display="flex" alignContent="center" justifyContent="center">
+            <Grid item xs={12} sm={6} display="flex" alignItems="center" justifyContent="center">
               <Button
                 sx={{ color: "#fff", background: "#084d6e" }}
                 variant="contained"
                 endIcon={<AddCircleIcon />}
-                disabled={procesandoGuiaProducto}
-                onClick={(e: any) => {
+                disabled={procesandoGuiaProducto || !guiaProducto.trim() || !tipoEnvio}
+                onClick={() => {
                   const datos = {
                     id_producto_almacen: verProducto?.id_producto_almacen,
                     id_canje: verProducto?.id_canje,
                     guia_producto: guiaProducto,
+                    tipo_envio: tipoEnvio,
                   };
+                  //console.log(datos);
                   addGuiaProductoAlmacen(datos);
                 }}
               >
                 {procesandoGuiaProducto ? (
                   <>
-                    <Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
-                    />
+                    <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
                     {intl.formatMessage({ id: "general_añadiendo" })}...{" "}
                   </>
                 ) : (
@@ -1008,7 +996,7 @@ function GestionAlmacen(): JSX.Element {
       <ModalComponent
         handleClose={handleisAlertCloseCostoEnvioReal}
         isOpen={isAlertOpenCostoEnvioReal}
-        key={"alertaGuia"}
+        key={"alertaCostoEnvioReal"}
       >
         {verProducto ? (
           <Grid container spacing={2} style={{ textAlign: "center" }}>
@@ -1046,7 +1034,7 @@ function GestionAlmacen(): JSX.Element {
                   confirmarRecepcionProductoAlmacen(datos);
                 }}
               >
-                {procesandoCostoEnvioReal ? (
+                {procesandoRecepcionProducto ? (
                   <>
                     <Spinner
                       as="span"
@@ -1191,7 +1179,7 @@ function GestionAlmacen(): JSX.Element {
       <ModalComponent
         handleClose={handleCloseVistaFactura}
         isOpen={isModalVistaFactura}
-        key="vista-evidencia-individual"
+        key="vista-factura"
       >
         {facturaSeleccionada ? (
           <Grid container spacing={2}>
@@ -1369,7 +1357,7 @@ function GestionAlmacen(): JSX.Element {
                   const datos = {
                     id_canje: datosEncuestaEnviar?.id_canje,
                     tipo_encuesta: tipoEncuesta,
-                    plataforma: plataforma,
+                    plataforma: verProducto?.plataforma ?? plataforma,
                   };
                   enviarEncuesta(datos);
                 }}

@@ -37,6 +37,10 @@ import {
   Tooltip,
   IconButton,
   Autocomplete,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
+  FormHelperText,
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
@@ -67,6 +71,8 @@ interface PeriodoFormValues {
   fecha_fin_periodo: string;
 }
 
+export type TipoPremioFiltro = "fisico" | "digital" | "ambos";
+
 interface Props<T> {
   data: T[];
   columns: ColumnDef<T, any>[];
@@ -75,7 +81,7 @@ interface Props<T> {
   searchPlaceholder?: string;
   descargando?: boolean;
   rangoFechas?: boolean;
-  handleExportarExcel: (inicio?: string, fin?: string, plataforma?: string) => Promise<void>;
+  handleExportarExcel: (inicio?: string, fin?: string, plataforma?: string, tipoPremio?: TipoPremioFiltro) => Promise<void>;
   plataforma?: string;
   periodos?: Periodos[] | null;
   formik: FormikProps<PeriodoFormValues>;
@@ -158,9 +164,21 @@ function GenericGroupedTable<T extends object>({
   const [periodoUnoFinLocal, setPeriodoUnoFinLocal] = useState<string>("");
   const [errorFin, setErrorFin] = useState<string | null>(null);
 
+  const [incluirFisicos, setIncluirFisicos] = useState(true);
+  const [incluirDigitales, setIncluirDigitales] = useState(true);
+
   const [isAlertOpenExcel, setIsAlertOpenExcel] = useState(false);
   const handleisAlertOpenExcel = () => setIsAlertOpenExcel(true);
   const handleisAlertCloseExcel = () => setIsAlertOpenExcel(false);
+
+  const tipoPremioSeleccionado: TipoPremioFiltro | null =
+    incluirFisicos && incluirDigitales
+      ? "ambos"
+      : incluirFisicos
+        ? "fisico"
+        : incluirDigitales
+          ? "digital"
+          : null;
 
   const table = useReactTable({
     data,
@@ -227,32 +245,6 @@ function GenericGroupedTable<T extends object>({
           sm={4}
           sx={{ display: "flex", gap: 1, alignItems: "center", justifyContent: "flex-start" }}
         >
-          {/*{periodos && periodos.length > 0 && (
-            <Autocomplete
-              id="id_periodo"
-              fullWidth
-              options={periodos}
-              getOptionLabel={(option) =>
-                `${dayjs(option.fecha_inicio).format("DD/MM/YYYY")} - ${dayjs(
-                  option.fecha_fin
-                ).format("DD/MM/YYYY")}`
-              }
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              onChange={(_, newValue) => {
-                // TODO: al seleccionar un período, definir qué hacer (filtrar reporte, cargar fechas, etc.)
-              }}
-              noOptionsText={intl.formatMessage({ id: "general_sin_registros" })}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  variant="outlined"
-                  size="small"
-                  label={intl.formatMessage({ id: "select_periodo" })}
-                />
-              )}
-            />
-          )}*/}
-
           <Tooltip title={intl.formatMessage({ id: "general_descargar_excel" })}>
             <IconButton
               onClick={handleisAlertOpenExcel}
@@ -534,7 +526,7 @@ function GenericGroupedTable<T extends object>({
         onPageChange={(_, newPage) => setPagination((prev) => ({ ...prev, pageIndex: newPage }))}
         rowsPerPage={pagination.pageSize}
         rowsPerPageOptions={[10]}
-        onRowsPerPageChange={() => {}}
+        onRowsPerPageChange={() => { }}
         labelRowsPerPage="Filas por página"
         labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`}
         ActionsComponent={TablePaginationActions}
@@ -609,12 +601,49 @@ function GenericGroupedTable<T extends object>({
                   />
                 </LocalizationProvider>
               </Grid>
-              <Grid item xs={12} md={12}>
+              <Grid item xs={12}>
+                <FormGroup row
+                  sx={{
+                    justifyContent: "center",
+                    gap: 2,
+                    "& .MuiFormControlLabel-root": {
+                      m: 0,
+                      position: "relative",
+                      overflow: "hidden",
+                    },
+                  }}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={incluirFisicos}
+                        onChange={(e) => setIncluirFisicos(e.target.checked)}
+                        sx={{ "&.Mui-checked": { color: "#a5eb2f" } }}
+                      />
+                    }
+                    label="Físicos"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={incluirDigitales}
+                        onChange={(e) => setIncluirDigitales(e.target.checked)}
+                        sx={{ "&.Mui-checked": { color: "#a5eb2f" } }}
+                      />
+                    }
+                    label="Digitales"
+                  />
+                </FormGroup>
+                {!tipoPremioSeleccionado && (
+                  <FormHelperText error sx={{ textAlign: "center" }}>
+                    Selecciona al menos un tipo de premio
+                  </FormHelperText>
+                )}
+              </Grid>
+              <Grid item xs={12} sx={{ position: "relative", zIndex: 1 }}>
                 <Button
                   variant="contained"
-                  component="label"
                   startIcon={descargando ? <CircularProgress size={18} /> : <DownloadIcon />}
-                  disabled={descargando}
+                  disabled={descargando || !tipoPremioSeleccionado}
                   sx={{
                     background: "#a5eb2f",
                     color: "#2f2f2f",
@@ -627,7 +656,8 @@ function GenericGroupedTable<T extends object>({
                     },
                   }}
                   onClick={() => {
-                    handleExportarExcel(periodoUnoInicioLocal, periodoUnoFinLocal, plataforma);
+                    if (!tipoPremioSeleccionado) return;
+                    handleExportarExcel(periodoUnoInicioLocal, periodoUnoFinLocal, plataforma, tipoPremioSeleccionado);
                     //handleisAlertOpenExcel();
                   }}
                 >
@@ -817,7 +847,7 @@ function GenericGroupedTable<T extends object>({
           </Grid>
         </Grid>
       </ModalComponent>
-    </Paper>
+    </Paper >
   );
 }
 

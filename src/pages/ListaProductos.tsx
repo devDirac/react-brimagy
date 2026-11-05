@@ -316,23 +316,6 @@ function ListaProductos(): JSX.Element {
     formikEditarProducto,
   } = useListaProductos(tipoUsuario);
 
-  const independiente = () => {
-    return !productos?.length && !procesando ? (
-      <Grid container spacing={2}>
-        <Grid item xs={12} style={{ textAlign: "center" }}>
-          <h3>Sin registros</h3>
-        </Grid>
-      </Grid>
-    ) : null;
-  };
-  const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
-    "& .MuiBadge-badge": {
-      right: 0,
-      top: 5,
-      padding: "0",
-      fontSize: "10px",
-    },
-  }));
   // Handlers para la paginación
   const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);

@@ -74,6 +74,16 @@ import { TextFieldValidado } from "components/TextFieldValidado/TextFieldValidad
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import { styled } from "@mui/material/styles";
 
+const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
+  "& .MuiBadge-badge": {
+    right: 2,
+    top: 7,
+    background: `#eb2fa5`,
+    padding: "0 4px",
+    fontSize: "10px",
+  },
+}));
+
 function GenerarOrdenCompra(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
   const userName = useSelector((state: StoreType) => state?.app?.user?.data?.name || false);
@@ -180,15 +190,6 @@ function GenerarOrdenCompra(): JSX.Element {
     modoCotizacion,
   } = useGenerarOrdenCompra(tipoUsuario);
 
-  const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
-    "& .MuiBadge-badge": {
-      right: 2,
-      top: 7,
-      background: `#eb2fa5`,
-      padding: "0 4px",
-      fontSize: "10px",
-    },
-  }));
   // Handlers para la paginación
   const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
     setPage(newPage);
@@ -199,18 +200,6 @@ function GenerarOrdenCompra(): JSX.Element {
   ) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
-  };
-
-  const estadosValidacionMap: { [key: string]: string } = {
-    NOTIFICACION_ENVIADA: "EN ESPERA DE VALIDACIÓN DE IDENTIDAD",
-    SOLICITUD_ENVIADA: "SOLICITUD DE CÓDIGO ENVIADA",
-    IDENTIDAD_VALIDADA: "IDENTIDAD VALIDADA",
-  };
-
-  const traducirEstadoValidacion = (estado: string | null): string => {
-    if (!estado) return "SIN ESTADO";
-    const estadoUpper = estado.toUpperCase();
-    return estadosValidacionMap[estadoUpper] || estadoUpper;
   };
 
   const proveedoresPaginados = useMemo(() => {
@@ -362,7 +351,7 @@ function GenerarOrdenCompra(): JSX.Element {
                             borderColor: "grey.200",
                           }}
                         >
-                          <Tooltip title="Crear orden compra">
+                          <Tooltip title="Crear orden compra" disableFocusListener>
                             <StyledBadge badgeContent={p.total_canjes} color="secondary">
                               <IconButton
                                 aria-label="ver"
@@ -378,7 +367,7 @@ function GenerarOrdenCompra(): JSX.Element {
                               </IconButton>
                             </StyledBadge>
                           </Tooltip>
-                          <Tooltip title="Ver ordenes de Compra">
+                          <Tooltip title="Ver ordenes de Compra" disableFocusListener>
                             <StyledBadge badgeContent={p.total_ordenes_compra} color="secondary">
                               <IconButton
                                 aria-label="ver"
@@ -597,174 +586,6 @@ function GenerarOrdenCompra(): JSX.Element {
             ) : null}
           </Grid>
         </Grid>
-      </ModalComponent>
-      {/* ASIGNAR CANJE A UN PROVEEDOR */}
-      <ModalComponent
-        handleClose={handleisAlerCloseAsignarProveedor}
-        isOpen={isAlertOpenAsignarProveedor}
-        key={"alertaAsignarProveedor"}
-      >
-        {productoSeleccionado ? (
-          <FormikProvider value={formikAsignar!}>
-            <Grid container spacing={2} style={{ textAlign: "center" }}>
-              <Grid item xs={12}>
-                <br />
-                <Typography variant="button" gutterBottom noWrap sx={{ fontWeight: 600 }}>
-                  Asignar {productoSeleccionado?.nombre_premio} a un proveedor
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12} sm={accionProducto ? 6 : 4}>
-                <TextField
-                  id="id_proveedor"
-                  select
-                  fullWidth
-                  label={`${intl.formatMessage({ id: "select_proveedores" })} *`}
-                  variant="standard"
-                  name="id_proveedor"
-                  value={formikAsignar.values.id_proveedor || ""}
-                  disabled={!proveedores || proveedores.length === 0}
-                  helperText={
-                    !proveedores || proveedores.length === 0
-                      ? intl.formatMessage({ id: "sin_proveedores_registrados" })
-                      : formikAsignar.touched.id_proveedor && formikAsignar.errors.id_proveedor
-                  }
-                  error={
-                    formikAsignar.touched.id_proveedor && Boolean(formikAsignar.errors.id_proveedor)
-                  }
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    formikAsignar.setFieldValue("id_proveedor", value);
-                  }}
-                  InputProps={{
-                    style: { padding: "5px" },
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Tooltip title="Agregar proveedor">
-                          <IconButton
-                            size="medium"
-                            color="primary"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleisAlertOpenNuevoProveedor();
-                            }}
-                          >
-                            <AddBoxIcon fontSize="medium" />
-                          </IconButton>
-                        </Tooltip>
-                      </InputAdornment>
-                    ),
-                  }}
-                  onBlur={formikAsignar.handleBlur}
-                  sx={{
-                    "& .MuiInputLabel-root": {
-                      color: getFieldColor("id_proveedor"),
-                    },
-                    "& .MuiInput-underline:after": {
-                      borderBottomColor: getFieldColor("id_proveedor"),
-                    },
-                    "& .MuiInput-underline:before": {
-                      borderBottomColor: getFieldColor("id_proveedor"),
-                    },
-                    "& .MuiInputBase-input": {
-                      color: getFieldColor("id_proveedor"),
-                    },
-                  }}
-                >
-                  {proveedoresSelect?.map((option) => (
-                    <MenuItem key={option.id} value={option.id}>
-                      {option.nombre}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              {!accionProducto && (
-                <Grid item xs={12} sm={accionProducto ? 6 : 4}>
-                  <TextField
-                    id="costo_con_iva"
-                    fullWidth
-                    label={`${intl.formatMessage({ id: "input_costo_con_iva" })} *`}
-                    variant="standard"
-                    name="costo_con_iva"
-                    value={formikAsignar.values.costo_con_iva || ""}
-                    disabled={!proveedores || proveedores.length === 0}
-                    helperText={
-                      formikAsignar.touched.costo_con_iva && formikAsignar.errors.costo_con_iva
-                    }
-                    error={
-                      formikAsignar.touched.costo_con_iva &&
-                      Boolean(formikAsignar.errors.costo_con_iva)
-                    }
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      formikAsignar.setFieldValue("costo_con_iva", value);
-                    }}
-                    onBlur={formikAsignar.handleBlur}
-                    sx={{
-                      "& .MuiInputLabel-root": {
-                        color: getFieldColor("costo_con_iva"),
-                      },
-                      "& .MuiInput-underline:after": {
-                        borderBottomColor: getFieldColor("costo_con_iva"),
-                      },
-                      "& .MuiInput-underline:before": {
-                        borderBottomColor: getFieldColor("costo_con_iva"),
-                      },
-                      "& .MuiInputBase-input": {
-                        color: getFieldColor("costo_con_iva"),
-                      },
-                    }}
-                  ></TextField>
-                </Grid>
-              )}
-              <Grid
-                item
-                xs={12}
-                sm={accionProducto ? 6 : 4}
-                display="flex"
-                alignContent="center"
-                justifyContent="center"
-              >
-                <Button
-                  sx={{ color: "#fff", background: "#084d6e" }}
-                  variant="contained"
-                  endIcon={<AddCircleIcon />}
-                  disabled={procesando || !formikAsignar.dirty || !formikAsignar.isValid}
-                  onClick={(e: any) => {
-                    const datos = {
-                      id_proveedor: formikAsignar.values.id_proveedor,
-                      costo_con_iva: formikAsignar.values.costo_con_iva,
-                      id_producto: productoSeleccionado?.id_producto,
-                      id_validacion: productoSeleccionado?.id_validacion_producto,
-                      plataforma: plataforma,
-                    };
-                    accionProducto ? asignarProveedor(datos) : registrarNuevoPrecio(datos);
-                  }}
-                >
-                  {procesandoProveedor ? (
-                    <>
-                      <Spinner
-                        as="span"
-                        animation="border"
-                        size="sm"
-                        role="status"
-                        aria-hidden="true"
-                      />
-                      {accionProducto
-                        ? intl.formatMessage({ id: "general_asignando" })
-                        : intl.formatMessage({ id: "general_registrando" })}
-                      ...{" "}
-                    </>
-                  ) : accionProducto ? (
-                    intl.formatMessage({ id: "set_asignar" })
-                  ) : (
-                    intl.formatMessage({ id: "set_registrar" })
-                  )}
-                </Button>
-              </Grid>
-            </Grid>
-          </FormikProvider>
-        ) : null}
       </ModalComponent>
       {/* REGISTRAR PROVEEDOR NUEVO */}
       <ModalComponent

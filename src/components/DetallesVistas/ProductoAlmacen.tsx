@@ -71,6 +71,22 @@ interface DetalleAlmacen {
   folio_factura: string | null;
   comentarios: string | null;
   guia: string | null;
+  plataforma?: string;
+  plataforma_nombre?: string;
+  folio_canje?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  calle?: string | null;
+  numero_calle?: string | null;
+  numero_interior?: string | null;
+  colonia?: string | null;
+  municipio?: string | null;
+  estado?: string | null;
+  codigo_postal?: string | null;
+  between_1?: string | null;
+  between_2?: string | null;
+  referencia_adicional?: string | null;
+  tipo_envio?: 1 | 2 | null;
   productos: ProductoAlmacen[];
 }
 
@@ -200,6 +216,19 @@ const ProductoAlmacenModal = ({
 
   const formatearFechaCorta = (fecha?: string | null) =>
     fecha ? dayjs(fecha).locale("es").format("DD [de] MMMM [de] YYYY") : "Sin fecha";
+
+  const direccionUsuario = [
+    [verProducto.calle, verProducto.numero_calle].filter(Boolean).join(" "),
+    verProducto.numero_interior ? `Int. ${verProducto.numero_interior}` : null,
+    verProducto.colonia,
+    verProducto.municipio,
+    verProducto.estado,
+    verProducto.codigo_postal ? `C.P. ${verProducto.codigo_postal}` : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  const entreCalles = [verProducto.between_1, verProducto.between_2].filter(Boolean).join(" y ");
 
   return (
     <Box sx={{ px: 2, pb: 2, mt: 3 }}>
@@ -623,7 +652,7 @@ const ProductoAlmacenModal = ({
                         {p?.folio_factura}
                       </Typography>
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid item xs={12} md={12}>
                       <Typography variant="body2" color="text.secondary">
                         Comentarios
                       </Typography>
@@ -666,6 +695,69 @@ const ProductoAlmacenModal = ({
             />
           </MDBox>
         </Grid>
+        {/* Datos del usuario que realizó el canje */}
+        <Grid item xs={12}>
+          <Paper elevation={2} sx={{ p: 2 }}>
+            <Typography variant="h6" color="primary" gutterBottom>
+              Usuario del canje
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={4}>
+                <Typography variant="body2" color="text.secondary">
+                  Nombre
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {verProducto.nombre_usuario ?? "N/A"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Typography variant="body2" color="text.secondary">
+                  Correo
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {verProducto.email ?? "N/A"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Typography variant="body2" color="text.secondary">
+                  Teléfono
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {verProducto.phone ?? "N/A"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={8}>
+                <Typography variant="body2" color="text.secondary">
+                  Dirección de envío
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {direccionUsuario || "Sin dirección"}
+                </Typography>
+              </Grid>
+              {entreCalles && (
+                <Grid item xs={12} md={4}>
+                  <Typography variant="body2" color="text.secondary">
+                    Entre calles
+                  </Typography>
+                  <Typography variant="body2" fontWeight="medium">
+                    {entreCalles}
+                  </Typography>
+                </Grid>
+              )}
+              {verProducto.referencia_adicional && (
+                <Grid item xs={12}>
+                  <Typography variant="body2" color="text.secondary">
+                    Referencia adicional
+                  </Typography>
+                  <Typography variant="body2" fontWeight="medium">
+                    {verProducto.referencia_adicional}
+                  </Typography>
+                </Grid>
+              )}
+            </Grid>
+          </Paper>
+        </Grid>
         {/* Información del premio canjeado */}
         <Grid item xs={12}>
           <Paper elevation={2} sx={{ p: 2 }}>
@@ -674,7 +766,7 @@ const ProductoAlmacenModal = ({
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <Grid container spacing={2}>
-              <Grid item xs={12} md={4}>
+              <Grid item xs={6} md={3}>
                 <Typography variant="body2" color="text.secondary">
                   No. orden
                 </Typography>
@@ -682,7 +774,7 @@ const ProductoAlmacenModal = ({
                   {verProducto.no_orden}
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid item xs={6} md={3}>
                 <Typography variant="body2" color="text.secondary">
                   Guía
                 </Typography>
@@ -694,7 +786,19 @@ const ProductoAlmacenModal = ({
                   )}
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid item xs={6} md={3}>
+                <Typography variant="body2" color="text.secondary">
+                  Tipo de envío
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {verProducto.tipo_envio === 1
+                    ? "Por proveedor"
+                    : verProducto.tipo_envio === 2
+                      ? "Por Brimagy"
+                      : "Sin definir"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={3}>
                 <Typography variant="body2" color="text.secondary">
                   Costo de envío real
                 </Typography>
@@ -706,6 +810,22 @@ const ProductoAlmacenModal = ({
                       fixedDecimalScale: true,
                       prefix: "$",
                     })}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <Typography variant="body2" color="text.secondary">
+                  Plataforma
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {verProducto.plataforma_nombre ?? "N/A"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <Typography variant="body2" color="text.secondary">
+                  Folio canje
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {verProducto.folio_canje ?? `#${verProducto.id_canje}`}
                 </Typography>
               </Grid>
             </Grid>

@@ -41,6 +41,16 @@ import EditIcon from "@mui/icons-material/Edit";
 import DinamicTableMejorada from "components/DinamicTable/DinamicTable";
 import RespuestasEncuestaModal from "components/DetallesVistas/RespuestasEncuesta";
 
+const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
+  "& .MuiBadge-badge": {
+    right: 2,
+    top: 7,
+    background: `#eb2fa5`,
+    padding: "0 4px",
+    fontSize: "10px",
+  },
+}));
+
 function CatalogoEncuestas(): JSX.Element {
   const tipoUsuario = useSelector((state: StoreType) => state?.app?.user?.data?.tipo_usuario || 0);
   const userName = useSelector((state: StoreType) => state?.app?.user?.data?.name || false);
@@ -114,33 +124,10 @@ function CatalogoEncuestas(): JSX.Element {
     SATISFACCION_PLATAFORMA: "SATISFACCIÓN DE PLATAFORMA",
   };
 
-  const tipoPreguntaMap: { [key: string]: string } = {
-    ABIERTA: "PREGUNTA ABIERTA",
-    OPCION_MULTIPLE: "OPCIÓN MÚLTIPLE",
-    SI_NO: "PREGUNTA DE SI O NO",
-  };
-
-  const estadosPreguntaMap: { [key: string]: string } = {
-    ACTIVA: "PREGUNTA ACTIVA",
-    DESACTIVADA: "PREGUNTA INACTIVA",
-  };
-
-  const traducirEstadoPregunta = (estado: string | null): string => {
-    if (!estado) return "SIN ESTADO";
-    const estadoUpper = estado.toUpperCase();
-    return estadosPreguntaMap[estadoUpper] || estadoUpper;
-  };
-
   const traducirTipoEncuesta = (tipo_encuesta: string | null): string => {
     if (!tipo_encuesta) return "ENCUESTA NORMAL";
     const estadoUpper = tipo_encuesta.toUpperCase();
     return tipoEncuestaMap[estadoUpper] || estadoUpper;
-  };
-
-  const traducirTipoPregunta = (tipo_pregunta: string | null): string => {
-    if (!tipo_pregunta) return "PREGUNTA NORMAL";
-    const estadoUpper = tipo_pregunta.toUpperCase();
-    return tipoPreguntaMap[estadoUpper] || estadoUpper;
   };
 
   const encuestasDisponibles = () => {
@@ -152,16 +139,6 @@ function CatalogoEncuestas(): JSX.Element {
       </Grid>
     ) : null;
   };
-
-  const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
-    "& .MuiBadge-badge": {
-      right: 2,
-      top: 7,
-      background: `#eb2fa5`,
-      padding: "0 4px",
-      fontSize: "10px",
-    },
-  }));
 
   return (
     <DashboardLayout>

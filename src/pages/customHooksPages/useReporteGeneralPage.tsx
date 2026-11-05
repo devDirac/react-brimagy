@@ -13,6 +13,7 @@ import {
 import { crearPeriodoHttp, editarPeriodoHttp, getPeriodosHttp } from "actions/configuracion";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { TipoPremioFiltro } from "components/GenericGroupedTable/GenericGroupedTable";
 
 export const useReporteGeneralPage = (tipoUsuario: number) => {
   const dispatch = useDispatch();
@@ -65,7 +66,7 @@ export const useReporteGeneralPage = (tipoUsuario: number) => {
         intl.formatMessage({ id: "input_validation_requerido" })
       ),
     }),
-    onSubmit: async (values) => {},
+    onSubmit: async (values) => { },
   });
 
   const isFieldValid = (fieldName: keyof typeof formik.values) => {
@@ -124,19 +125,32 @@ export const useReporteGeneralPage = (tipoUsuario: number) => {
     []
   );
 
-  const handleExportarExcel = async (inicio?: string, fin?: string, plataforma?: string) => {
+  const handleExportarExcel = async (
+    inicio?: string,
+    fin?: string,
+    plataforma?: string,
+    tipoPremio: TipoPremioFiltro = "ambos"
+  ) => {
     try {
       setDescargando(true);
       const params: Record<string, string> = {};
       if (inicio) params.fecha_inicio = inicio;
       if (fin) params.fecha_fin = fin;
       if (plataforma) params.plataforma = plataforma;
+      params.tipo_premio = tipoPremio;
 
       const response: any = await getReporteGlobalExcelHttp(params);
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `reporte_canjes_${Date.now()}.xlsx`);
+
+      const sufijos: Record<TipoPremioFiltro, string> = {
+        fisico: "_fisicos",
+        digital: "_digitales",
+        ambos: "",
+      };
+      link.setAttribute("download", `reporte_canjes${sufijos[tipoPremio]}_${Date.now()}.xlsx`);
+
       document.body.appendChild(link);
       link.click();
       link.remove();
