@@ -63,17 +63,12 @@ export const setAuth = (token: any) => {
 };
 
 export const loginHttp = async (user: LoginAction): Promise<any> => {
-  try {
-    const response: any = await axios.post(`${env.API_URL}${"/login"}`, {
-      email: user?.email,
-      password: user?.password,
-    });
-    setAuth(response?.data?.token);
-    return response?.data;
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.post(`${env.API_URL}/login`, {
+    email: user?.email,
+    password: user?.password,
+  });
+  setAuth(response?.data?.token);
+  return response?.data;
 };
 
 export const logOut = async (): Promise<any> => {
@@ -81,28 +76,15 @@ export const logOut = async (): Promise<any> => {
 };
 
 export const recoverPasswordGenerateToken = async (user: UserD): Promise<any> => {
-  try {
-    const response: any = await axios.post(`${env.API_URL}${"/recuperaContrasena"}`, {
-      correo: user?.email,
-    });
-    return response?.data;
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.post(`${env.API_URL}/recuperaContrasena`, {
+    correo: user?.email,
+  });
+  return response?.data;
 };
 
 export const recuperaContrasenaTokenValidacion = async (token: string): Promise<any> => {
-  try {
-    const response: any = await axios.post(
-      `${env.API_URL}${"/recuperaContrasenaTokenValidacion"}`,
-      { token }
-    );
-    return response?.data;
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.post(`${env.API_URL}/recuperaContrasenaTokenValidacion`, { token });
+  return response?.data;
 };
 
 export const updatePassword = async (
@@ -110,15 +92,10 @@ export const updatePassword = async (
   contrasenaConfirm: string,
   token: string
 ): Promise<any> => {
-  try {
-    const response: any = await axios.post(`${env.API_URL}${"/actualizacionContrasena"}`, {
-      contrasena,
-      contrasenaConfirm,
-      token,
-    });
-    return response?.data;
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.post(`${env.API_URL}/actualizacionContrasena`, {
+    contrasena,
+    contrasenaConfirm,
+    token,
+  });
+  return response?.data;
 };
