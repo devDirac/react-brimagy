@@ -16,6 +16,13 @@ export interface GeneralHttpResponse {
   statusText: string;
 }
 
+export interface ResumenCanjes {
+  total: number;
+  validados: number;
+  sin_validar: number;
+  en_proceso: number;
+}
+
 export interface AppType {
   user: LoginAction;
   employees: any;
@@ -26,6 +33,7 @@ export interface AppType {
   espacio: any;
   ruta: any;
   notificaciones: any[];
+  resumenCanjes: ResumenCanjes | null;
 }
 
 export interface StoreType {

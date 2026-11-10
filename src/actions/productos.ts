@@ -1,26 +1,13 @@
-import { GeneralHttpResponse } from "../types/genericTypes";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import env from "react-dotenv";
 
 export const crearProductoHttp = async (data: FormData) => {
-  try {
-    const response: AxiosResponse = await axios.post(`${env.API_URL}/crearProducto`, data);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await axios.post(`${env.API_URL}/crearProducto`, data);
+  return response.data;
 };
 export const registrarNuevoPrecioHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.post(
-      `${env.API_URL}${"/registrarNuevoPrecio"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.post(`${env.API_URL}/registrarNuevoPrecio`, data);
+  return response?.data || [];
 };
 export const getCatalogoProductosHttp = async (
   tipo_producto?: string,
@@ -29,140 +16,90 @@ export const getCatalogoProductosHttp = async (
   fecha2?: Date,
   plataforma?: string
 ) => {
-  try {
-    const url = new URL(`${env.API_URL}/getCatalogoProductos`);
+  const url = new URL(`${env.API_URL}/getCatalogoProductos`);
 
-    if (tipo_producto) url.searchParams.append("tipo_producto", tipo_producto);
-    if (search) url.searchParams.append("search", search);
-    if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
-    if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
-    if (plataforma) url.searchParams.append("plataforma", plataforma);
+  if (tipo_producto) url.searchParams.append("tipo_producto", tipo_producto);
+  if (search) url.searchParams.append("search", search);
+  if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
+  if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
+  if (plataforma) url.searchParams.append("plataforma", plataforma);
 
-    const response = await axios.get(url.toString());
-    return response?.data || [];
-  } catch (error) {
-    return Promise.reject(error);
-  }
+  const response = await axios.get(url.toString());
+  return response?.data || [];
 };
 export const getCatalogoProductosFisicosHttp = async (
   search?: string,
   fecha1?: Date,
   fecha2?: Date
 ) => {
-  try {
-    const url = new URL(`${env.API_URL}/getCatalogoProductosFisicos`);
+  const url = new URL(`${env.API_URL}/getCatalogoProductosFisicos`);
 
-    if (search) url.searchParams.append("search", search);
-    if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
-    if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
+  if (search) url.searchParams.append("search", search);
+  if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
+  if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
 
-    const response = await axios.get(url.toString());
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.get(url.toString());
+  return response?.data || [];
 };
 export const getCatalogoProductosDigitalesHttp = async (
   search?: string,
   fecha1?: Date,
   fecha2?: Date
 ) => {
-  try {
-    const url = new URL(`${env.API_URL}/getCatalogoProductosDigitales`);
+  const url = new URL(`${env.API_URL}/getCatalogoProductosDigitales`);
 
-    if (search) url.searchParams.append("search", search);
-    if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
-    if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
+  if (search) url.searchParams.append("search", search);
+  if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
+  if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
 
-    const response = await axios.get(url.toString());
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.get(url.toString());
+  return response?.data || [];
 };
 
 export const getBusquedaInteligenteHttp = async (datos?: any) => {
-  try {
-    const response = await axios.get(`${env.API_URL}/busquedaInteligenteBrimagy`, {
-      params: {
-        puntos: datos.puntos,
-        categoria: datos.categoria,
-        plataforma: datos.plataforma,
-        tipo_producto: datos.tipo_producto,
-      },
-    });
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.get(`${env.API_URL}/busquedaInteligenteBrimagy`, {
+    params: {
+      puntos: datos.puntos,
+      categoria: datos.categoria,
+      plataforma: datos.plataforma,
+      tipo_producto: datos.tipo_producto,
+    },
+  });
+  return response?.data || [];
 };
 
 export const getBitacoraProductoPorIdHttp = async (datos?: any) => {
-  try {
-    const response = await axios.get(`${env.API_URL}/getBitacoraProductoPorId`, {
-      params: datos,
-    });
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.get(`${env.API_URL}/getBitacoraProductoPorId`, {
+    params: datos,
+  });
+  return response?.data || [];
 };
 
 export const verificarSkusHttp = async (skus: string[]) => {
-  try {
-    const response = await axios.post(`${env.API_URL}/verificarSkus`, { skus });
-    return response?.data || { skus_existentes: [] };
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.post(`${env.API_URL}/verificarSkus`, { skus });
+  return response?.data || { skus_existentes: [] };
 };
 
 export const verificarIdProductoBrimagyHttp = async (ids?: string[]) => {
-  try {
-    const response = await axios.post(`${env.API_URL}/verificarIdProductoBrimagy`, {
-      ids: ids,
-    });
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.post(`${env.API_URL}/verificarIdProductoBrimagy`, {
+    ids: ids,
+  });
+  return response?.data || [];
 };
 
 export const verificarSkuDisponibleHttp = async (sku: string) => {
-  try {
-    const response = await axios.post(`${env.API_URL}/verificarSkuDisponible`, { sku });
-    return response?.data || { disponible: true };
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.post(`${env.API_URL}/verificarSkuDisponible`, { sku });
+  return response?.data || { disponible: true };
 };
 
 export const editarProductoHttp = async (data: FormData) => {
-  try {
-    const response: AxiosResponse = await axios.post(`${env.API_URL}/editarProducto`, data);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await axios.post(`${env.API_URL}/editarProducto`, data);
+  return response.data;
 };
 
 export const eliminarProductoHttp = async (id: number) => {
-  try {
-    const response: GeneralHttpResponse = await axios.delete(
-      `${env.API_URL}${"/eliminarProducto"}?id_producto=${id}`
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.delete(`${env.API_URL}/eliminarProducto?id_producto=${id}`);
+  return response?.data || [];
 };
 
 export const getCatalogoProductosDigitalesBrimagyHttp = async (
@@ -170,339 +107,148 @@ export const getCatalogoProductosDigitalesBrimagyHttp = async (
   fecha1?: Date,
   fecha2?: Date
 ) => {
-  try {
-    const url = new URL(`${env.API_URL}/getCatalogoProductosDigitalesBrimagy`);
+  const url = new URL(`${env.API_URL}/getCatalogoProductosDigitalesBrimagy`);
 
-    if (search) url.searchParams.append("search", search);
-    if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
-    if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
+  if (search) url.searchParams.append("search", search);
+  if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
+  if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
 
-    const response = await axios.get(url.toString());
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.get(url.toString());
+  return response?.data || [];
 };
 export const getCatalogoClubBohnBrimagyHttp = async (
   search?: string,
   fecha1?: Date,
   fecha2?: Date
 ) => {
-  try {
-    const url = new URL(`${env.API_URL}/getCatalogoClubBohnBrimagy`);
+  const url = new URL(`${env.API_URL}/getCatalogoClubBohnBrimagy`);
 
-    if (search) url.searchParams.append("search", search);
-    if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
-    if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
+  if (search) url.searchParams.append("search", search);
+  if (fecha1) url.searchParams.append("fecha1", fecha1.toISOString());
+  if (fecha2) url.searchParams.append("fecha2", fecha2.toISOString());
 
-    const response = await axios.get(url.toString());
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.get(url.toString());
+  return response?.data || [];
 };
 //colores
 export const crearEditarColorProductoHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.post(
-      `${env.API_URL}${"/crearEditarColorProducto"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.post(`${env.API_URL}/crearEditarColorProducto`, data);
+  return response?.data || [];
 };
 export const getProductoColorPorIdHttp = async (datos?: any) => {
-  try {
-    const response = await axios.get(`${env.API_URL}/getProductoColorPorId`, {
-      params: datos,
-    });
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.get(`${env.API_URL}/getProductoColorPorId`, {
+    params: datos,
+  });
+  return response?.data || [];
 };
 export const desactivarColorProductoHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/desactivarColorProducto"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.put(`${env.API_URL}/desactivarColorProducto`, data);
+  return response?.data || [];
 };
 export const activarColorProductoHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/activarColorProducto"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.put(`${env.API_URL}/activarColorProducto`, data);
+  return response?.data || [];
 };
 //tallas
 export const crearEditarTallaProductoHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.post(
-      `${env.API_URL}${"/crearEditarTallaProducto"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.post(`${env.API_URL}/crearEditarTallaProducto`, data);
+  return response?.data || [];
 };
 export const getProductoTallaPorIdHttp = async (datos?: any) => {
-  try {
-    const response = await axios.get(`${env.API_URL}/getProductoTallaPorId`, {
-      params: datos,
-    });
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.get(`${env.API_URL}/getProductoTallaPorId`, {
+    params: datos,
+  });
+  return response?.data || [];
 };
 export const desactivarTallaProductoHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/desactivarTallaProducto"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.put(`${env.API_URL}/desactivarTallaProducto`, data);
+  return response?.data || [];
 };
 export const activarTallaProductoHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/activarTallaProducto"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.put(`${env.API_URL}/activarTallaProducto`, data);
+  return response?.data || [];
 };
 //fotos del producto
 export const subirFotosProductoHttp = async (data: FormData) => {
-  try {
-    const response: AxiosResponse = await axios.post(`${env.API_URL}/subirFotosProducto`, data);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await axios.post(`${env.API_URL}/subirFotosProducto`, data);
+  return response.data;
 };
 export const getProductoFotoPorIdHttp = async (datos?: any) => {
-  try {
-    const response = await axios.get(`${env.API_URL}/getProductoFotoPorId`, {
-      params: datos,
-    });
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.get(`${env.API_URL}/getProductoFotoPorId`, {
+    params: datos,
+  });
+  return response?.data || [];
 };
 export const desactivarFotosProductoHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/desactivarFotosProducto"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.put(`${env.API_URL}/desactivarFotosProducto`, data);
+  return response?.data || [];
 };
 export const activarFotosProductoHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/activarFotosProducto"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.put(`${env.API_URL}/activarFotosProducto`, data);
+  return response?.data || [];
 };
 //fotos promo del producto
 export const subirFotosPromoProductoHttp = async (data: FormData) => {
-  try {
-    const response: AxiosResponse = await axios.post(
-      `${env.API_URL}/subirFotosPromoProducto`,
-      data
-    );
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await axios.post(`${env.API_URL}/subirFotosPromoProducto`, data);
+  return response.data;
 };
 export const getProductoFotoPromoPorIdHttp = async (datos?: any) => {
-  try {
-    const response = await axios.get(`${env.API_URL}/getProductoFotoPromoPorId`, {
-      params: datos,
-    });
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.get(`${env.API_URL}/getProductoFotoPromoPorId`, {
+    params: datos,
+  });
+  return response?.data || [];
 };
 export const desactivarFotosPromoProductoHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/desactivarFotosPromoProducto"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.put(`${env.API_URL}/desactivarFotosPromoProducto`, data);
+  return response?.data || [];
 };
 export const activarFotosPromoProductoHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/activarFotosPromoProducto"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.put(`${env.API_URL}/activarFotosPromoProducto`, data);
+  return response?.data || [];
 };
 //montos
 export const crearEditarMontoProductoHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.post(
-      `${env.API_URL}${"/crearEditarMontoProducto"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.post(`${env.API_URL}/crearEditarMontoProducto`, data);
+  return response?.data || [];
 };
 export const getProductoMontoPorIdHttp = async (datos?: any) => {
-  try {
-    const response = await axios.get(`${env.API_URL}/getProductoMontoPorId`, {
-      params: datos,
-    });
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.get(`${env.API_URL}/getProductoMontoPorId`, {
+    params: datos,
+  });
+  return response?.data || [];
 };
 export const desactivarMontoProductoHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/desactivarMontoProducto"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.put(`${env.API_URL}/desactivarMontoProducto`, data);
+  return response?.data || [];
 };
 export const activarMontoProductoHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/activarMontoProducto"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.put(`${env.API_URL}/activarMontoProducto`, data);
+  return response?.data || [];
 };
 //fotos monto digital
 export const subirFotoMontoHttp = async (data: FormData) => {
-  try {
-    const response: AxiosResponse = await axios.post(`${env.API_URL}/subirFotoMonto`, data);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await axios.post(`${env.API_URL}/subirFotoMonto`, data);
+  return response.data;
 };
 export const getFotoMontoPorIdHttp = async (datos?: any) => {
-  try {
-    const response = await axios.get(`${env.API_URL}/getFotoMontoPorId`, {
-      params: datos,
-    });
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.get(`${env.API_URL}/getFotoMontoPorId`, {
+    params: datos,
+  });
+  return response?.data || [];
 };
 export const desactivarFotoMontoHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/desactivarFotoMonto"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.put(`${env.API_URL}/desactivarFotoMonto`, data);
+  return response?.data || [];
 };
 export const activarFotoMontoHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/activarFotoMonto"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.put(`${env.API_URL}/activarFotoMonto`, data);
+  return response?.data || [];
 };
 export const marcarNoDisponibleHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/marcarNoDisponible"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.put(`${env.API_URL}/marcarNoDisponible`, data);
+  return response?.data || [];
 };
 export const marcarDisponibleHttp = async (data: any) => {
-  try {
-    const response: GeneralHttpResponse = await axios.put(
-      `${env.API_URL}${"/marcarDisponible"}`,
-      data
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.put(`${env.API_URL}/marcarDisponible`, data);
+  return response?.data || [];
 };

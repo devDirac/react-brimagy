@@ -594,9 +594,8 @@ export const useListaProductos = (tipoUsuario: number) => {
     const subtotal = costo_puntos_sin_iva + valor_con_fee;
     const total_envio = envio_base + costo_caja + envio_extra_num;
     const total = subtotal + total_envio;
-    const redondeo = total % 2 !== 0 ? total + 2 : total + 1; // puntos en BD
-    //const factor = Math.round(redondeo * 15);
-    const factor = valor_factor == 0 ? Math.round(total) : Math.round(total * valor_factor); // factor en BD
+    const redondeo = total % 2 !== 0 ? total + 2 : total + 1;
+    const factor = valor_factor == 0 ? Math.round(total) : Math.round(total * valor_factor);
 
     return {
       costo_puntos_sin_iva,

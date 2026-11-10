@@ -143,6 +143,7 @@ const DetallesCanjeModal = ({
             variant="contained"
             startIcon={<IconBrandAuth0 stroke={2} />}
             disabled={
+              procesandoIdentidadDirecto ||
               productosRegistrados?.length === 0 ||
               verCanje.estado_canje === "INACTIVE" ||
               verCanje.estado_validacion === "identidad_validada"
@@ -174,6 +175,7 @@ const DetallesCanjeModal = ({
             variant="contained"
             startIcon={<IconIdBadge2 stroke={2} />}
             disabled={
+              procesandoIdentidad ||
               productosRegistrados?.length === 0 ||
               verCanje.estado_canje === "INACTIVE" ||
               verCanje.estado_validacion === "identidad_validada"

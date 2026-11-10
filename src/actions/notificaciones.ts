@@ -10,23 +10,13 @@ export const setNotificaciones = (value: any) => {
 };
 
 export const getNotificacionesPorUsuarioHTTP = async (id: number) => {
-  try {
-    const response: any = await axios.get(
-      `${env.API_URL}${"/getNotificacionesPorUsuario"}?id_usuario_para=${id}`
-    );
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.get(
+    `${env.API_URL}/getNotificacionesPorUsuario?id_usuario_para=${id}`
+  );
+  return response?.data || [];
 };
 
 export const removeNotificacionHTTP = async (id: any) => {
-  try {
-    const response: any = await axios.put(`${env.API_URL}${"/removeNotificacion"}`, { id });
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
+  const response = await axios.put(`${env.API_URL}/removeNotificacion`, { id });
+  return response?.data || [];
 };

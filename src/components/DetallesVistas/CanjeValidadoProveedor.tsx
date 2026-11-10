@@ -225,7 +225,7 @@ const Dato = ({
       {icon}
       {label}
     </Typography>
-    <Typography variant="body2" fontWeight="medium" sx={{ wordBreak: "break-word", ...sx }}>
+    <Typography variant="body2" fontWeight="medium" sx={{ fontSize: 12, wordBreak: "break-word", ...sx }}>
       {children || "N/A"}
     </Typography>
   </Box>
@@ -318,7 +318,7 @@ const ProductoCard = ({ canje, estatus, selector }: ProductoCardProps) => {
 
       {/* Producto */}
       <Box sx={{ px: 2, pt: 1.5 }}>
-        <Typography variant="subtitle1" fontWeight="bold" sx={{ lineHeight: 1.3, ...estiloValor }}>
+        <Typography variant="subtitle1" fontWeight="bold" sx={{ fontSize: 16, lineHeight: 1.3, ...estiloValor }}>
           {canje.nombre_premio ?? canje.nombre_producto}
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.75, flexWrap: "wrap" }}>

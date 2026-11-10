@@ -17,6 +17,7 @@ export const columnsNames = [
   { id: "total_format", value: "Estatus" },
   { id: "puntos_format", value: "Estatus" },
   { id: "factor_format", value: "Factor" },
+  { id: "categoria_file_path", value: "Carpeta FTP" },
 
   { id: "desc", value: "Nombre" },
 ];

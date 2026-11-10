@@ -39,6 +39,18 @@ import { InputAdornment } from "@mui/material";
 import PDFViewerOrdenCompra from "components/PDFViews/PDFViewerOrdenCompra";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
+import { getPlataformaUI } from "config/plataformasUI";
+import FolioChip from "components/FolioChip/FolioChip";
+import PlataformaChip from "components/PlataformaChip/PlataformaChip";
+
+interface DesgloseItem {
+  id_validacion: number;
+  id_canje: number;
+  folio: string | null;
+  id_plataforma: number;
+  plataforma: string;
+  cantidad: number;
+}
 
 function ValidarOrdenCompra(): JSX.Element {
 
@@ -196,6 +208,62 @@ function ValidarOrdenCompra(): JSX.Element {
 
   const formatearFecha = (fecha?: string | null) =>
     fecha ? dayjs(fecha).locale("es").format("DD [de] MMMM [de] YYYY, HH:mm") : "Sin fecha";
+
+  function ChipPlataforma({ plataforma, label }: { plataforma: string; label?: string }) {
+    const ui = getPlataformaUI(plataforma);
+    const Icono = ui.icon;
+
+    return (
+      <Chip
+        size="small"
+        icon={<Icono size={16} color={ui.iconColor ?? ui.textColor ?? "#fff"} />}
+        label={label ?? ui.label}
+        sx={{
+          bgcolor: ui.color,
+          color: ui.textColor ?? "#fff",
+          fontWeight: 600,
+          "& .MuiChip-icon": { ml: 0.75 },
+        }}
+      />
+    );
+  }
+
+  function DesgloseProducto({ desglose = [] }: { desglose?: DesgloseItem[] }): JSX.Element | null {
+    if (!desglose.length) return null;
+
+    if (desglose.length === 1) {
+      const d = desglose[0];
+      return (
+        <Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap", mt: 0.75 }}>
+          <PlataformaChip plataforma={d.plataforma} />
+          <FolioChip folio={d.folio} />
+        </Box>
+      );
+    }
+
+    const porPlataforma = desglose.reduce<Record<string, { cantidad: number; items: DesgloseItem[] }>>(
+      (acc, d) => {
+        acc[d.plataforma] ??= { cantidad: 0, items: [] };
+        acc[d.plataforma].cantidad += d.cantidad;
+        acc[d.plataforma].items.push(d);
+        return acc;
+      },
+      {}
+    );
+
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75, mt: 0.75 }}>
+        {Object.entries(porPlataforma).map(([plataforma, info]) => (
+          <Box key={plataforma} sx={{ display: "flex", gap: 0.75, flexWrap: "wrap", alignItems: "center" }}>
+            <PlataformaChip plataforma={plataforma} cantidad={info.cantidad} />
+            {info.items.map((d) => (
+              <FolioChip key={d.id_validacion} folio={d.folio} cantidad={d.cantidad} />
+            ))}
+          </Box>
+        ))}
+      </Box>
+    );
+  }
 
   return (
     <DashboardLayout withSidebar={false}>
@@ -571,6 +639,7 @@ function ValidarOrdenCompra(): JSX.Element {
                                   <Typography variant="caption" color="text.secondary" display="block">
                                     <b>SKU:</b> {producto?.sku ?? "N/A"} · <b>Marca:</b> {producto?.marca ?? "N/A"}
                                   </Typography>
+                                  <DesgloseProducto desglose={producto?.desglose} />
                                 </Grid>
 
                                 <Grid item xs={6} md={1}>

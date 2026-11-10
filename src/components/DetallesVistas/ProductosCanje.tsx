@@ -81,7 +81,7 @@ export const ProductosCanje = ({
                     page={paginaActual}
                     onChange={(_, v) => setPagina(v)}
                     renderItem={(item) => (
-                        <PaginationItem {...item} slots={{ previous: IconoSiguiente, next: IconoAnterior }} />
+                        <PaginationItem {...item} slots={{ previous: IconoAnterior, next: IconoSiguiente }} />
                     )}
                     sx={{ mt: 1, display: "flex", justifyContent: "center" }}
                 />

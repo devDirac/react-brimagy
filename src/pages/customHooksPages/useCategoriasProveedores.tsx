@@ -93,6 +93,15 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
       .replace(/\s+/g, "_");
   };
 
+  const subcategoriasTabla = useMemo(
+    () =>
+      (subcategorias ?? []).map((s: any) => ({
+        ...s,
+        categoria_file_path: s.categoria?.file_path ?? "",
+      })),
+    [subcategorias]
+  );
+
   useEffect(() => {
     if (generalEditar && tipoEditando === "proveedor") {
       setNombreEditar(generalEditar.nombre || "");
@@ -399,5 +408,6 @@ export const useCategoriasProveedores = (tipoUsuario: number) => {
     getFieldColor,
     plataforma,
     normalizarNombre,
+    subcategoriasTabla
   };
 };

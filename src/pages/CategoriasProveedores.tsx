@@ -127,6 +127,7 @@ function CategoriasProveedores(): JSX.Element {
     getFieldColor,
     plataforma,
     normalizarNombre,
+    subcategoriasTabla
   } = useCategoriasProveedores(tipoUsuario);
 
   const independiente = () => {
@@ -314,7 +315,7 @@ function CategoriasProveedores(): JSX.Element {
                           !categorias || categorias.length === 0
                             ? intl.formatMessage({ id: "sin_categorias_registradas" })
                             : formikCategoria.touched.category_id &&
-                              formikCategoria.errors.category_id
+                            formikCategoria.errors.category_id
                         }
                         error={
                           formikCategoria.touched.category_id &&
@@ -394,10 +395,10 @@ function CategoriasProveedores(): JSX.Element {
                         <DinamicTable
                           key={`categorias-${plataforma}-${tableKeyCategoria}`}
                           actions
-                          columnsToShow={["desc", "status"]}
+                          columnsOrder={["desc", "categoria_file_path", "status"]}
                           sinExport
                           esListaCategorias
-                          data={subcategorias}
+                          data={subcategoriasTabla}
                           enAccion={(accion, row) => {
                             handleAccionCallback(accion, row);
                           }}
@@ -549,8 +550,6 @@ function CategoriasProveedores(): JSX.Element {
                         plataforma: plataforma,
                       };
                     }
-                    console.log(datos);
-
                     editaGeneral(datos);
                   }}
                 >
@@ -588,13 +587,13 @@ function CategoriasProveedores(): JSX.Element {
         text={
           tipoEditando === "proveedor"
             ? intl.formatMessage({
-                id: "eliminar_proveedor_confirmar",
-              })
+              id: "eliminar_proveedor_confirmar",
+            })
             : tipoEditando === "reactivar_categoria"
-            ? intl.formatMessage({
+              ? intl.formatMessage({
                 id: "reactivar_categoria_confirmar",
               })
-            : intl.formatMessage({
+              : intl.formatMessage({
                 id: "eliminar_categoria_confirmar",
               })
         }
