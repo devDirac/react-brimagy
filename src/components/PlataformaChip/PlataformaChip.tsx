@@ -4,16 +4,17 @@ import { getPlataformaUI } from "config/plataformasUI";
 interface PlataformaChipProps extends Omit<ChipProps, "label" | "icon" | "color"> {
     plataforma?: string | null;
     iconSize?: number;
+    cantidad?: number;
 }
 
-const PlataformaChip = ({ plataforma, iconSize = 14, sx, ...rest }: PlataformaChipProps) => {
+const PlataformaChip = ({ plataforma, iconSize = 14, cantidad, sx, ...rest }: PlataformaChipProps) => {
     const { label, color, textColor = "#fff", iconColor, icon: Icono } = getPlataformaUI(plataforma);
 
     return (
         <Chip
             size="small"
             icon={<Icono size={iconSize} stroke={2} />}
-            label={label}
+            label={cantidad != null ? `${label} · ${cantidad}` : label}
             {...rest}
             sx={{
                 bgcolor: color,
