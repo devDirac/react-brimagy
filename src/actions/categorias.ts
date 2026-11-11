@@ -21,15 +21,6 @@ export const getCategoriasPrincipalHttp = async (plataforma?: string) => {
   const response = await axios.get(url.toString());
   return response?.data || [];
 };
-export const getCategoriasPrincipalHttp = async () => {
-  try {
-    const response = await axios.get(`${env.API_URL}${"/getCategoriasPrincipal"}`);
-    return response?.data || [];
-  } catch (error) {
-    const promise = new Promise((_, reject) => reject(error));
-    return promise;
-  }
-};
 
 export const editarCategoriaHttp = async (data: any) => {
   const response = await axios.put(`${env.API_URL}/editarCategoria`, data);

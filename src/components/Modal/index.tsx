@@ -38,7 +38,7 @@ const ModalComponent: React.FC<ModalProps> = (props: ModalProps) => {
         open={props?.isOpen || false}
         onClose={props?.handleClose}
         maxWidth={props?.size || "md"}
-        fullWidth={_.isEmpty(props?.size)}
+        fullWidth={props?.anchoCompleto ?? _.isEmpty(props?.size)}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
         PaperProps={{

@@ -10,4 +10,5 @@ export interface ModalProps {
   titleBoton?: string;
   esFullScreen?: boolean;
   esError?: boolean;
+  anchoCompleto?: boolean;
 }

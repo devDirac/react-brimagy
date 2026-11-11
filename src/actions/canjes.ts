@@ -103,6 +103,21 @@ export const getResumenCanjesHttp = async (
   return { success: typeof data?.total === "number", data };
 };
 
+export const getCanjesPorEstatusHttp = async (
+  estatus: string,
+  plataforma?: string,
+  tipo_producto?: string
+) => {
+  const url = new URL(`${env.API_URL}/getCanjesPorEstatus`);
+
+  url.searchParams.append("estatus", estatus);
+  if (plataforma) url.searchParams.append("plataforma", plataforma);
+  if (tipo_producto) url.searchParams.append("tipo_producto", tipo_producto);
+
+  const response = await axios.get(url.toString());
+  return response?.data || [];
+};
+
 // Pide el resumen al backend y lo guarda en Redux. Si falla, deja los contadores como estaban
 export const actualizarResumenCanjes = async (
   dispatch: Dispatch,

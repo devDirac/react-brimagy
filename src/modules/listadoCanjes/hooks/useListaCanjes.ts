@@ -176,9 +176,16 @@ export const useListaCanjes = () => {
       mensajeError: "canje_validado_error",
     });
 
+  // Recarga con los filtros actuales
+  const recargar = useCallback(
+    () => getCanjes({ search: buscador, fecha1, fecha2 }),
+    [getCanjes, buscador, fecha1, fecha2]
+  );
+
   return {
     intl,
     procesando,
+    recargar,
     canjes: canjesAgrupados,
     visualizacion,
     cambiarVisualizacion,

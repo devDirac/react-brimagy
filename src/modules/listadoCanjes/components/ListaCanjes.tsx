@@ -20,7 +20,7 @@ function ListaCanjes(): JSX.Element {
   const userName = useSelector((state: StoreType) => state?.app?.user?.data?.name || false);
   const fotoUser: any = useSelector((state: StoreType) => state?.app?.user?.data?.foto || logo);
 
-  const { intl, procesando, canjes, visualizacion, cambiarVisualizacion, busqueda, detalle, alerta } =
+  const { intl, procesando, recargar, canjes, visualizacion, cambiarVisualizacion, busqueda, detalle, alerta } =
     useListaCanjes();
 
   const hayCanjes = canjes.length > 0;
@@ -28,7 +28,7 @@ function ListaCanjes(): JSX.Element {
   return (
     <DashboardLayout>
       <DashboardNavbar />
-      <Header tipoUsuario={tipoUsuario} nombreUsuario={userName} fotoPerfil={fotoUser} />
+      <Header tipoUsuario={tipoUsuario} nombreUsuario={userName} fotoPerfil={fotoUser} onCanjeValidado={recargar} />
 
       <MDBox py={3} mb={20}>
         <BarraHerramientas
