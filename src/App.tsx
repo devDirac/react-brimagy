@@ -94,6 +94,7 @@ import EstadisticasPuntosPorPeriodo from "pages/EstadisticaPuntosPorPeriodo";
 import EstadisticasComparativaPage from "pages/EstadisticasComparativa";
 import UsuariosPlataforma from "pages/UsuariosPlataforma";
 import ReporteGeneralPage from "pages/ReporteGeneralPage";
+import ReporteAlmacenPage from "pages/ReporteAlmacen";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
@@ -267,6 +268,7 @@ export default function App() {
             <Route path="/generar-orden-de-compra" element={<GenerarOrdenCompra />} />
             {/* ALMACEN */}
             <Route path="/gestion-almacen" element={<GestionAlmacen />} />
+            <Route path="/reporte-almacen" element={<ReporteAlmacenPage />} />
             {/* ENCUESTAS */}
             <Route path="/catalogo-encuestas" element={<CatalogoEncuestas />} />
             {/* ESTADISTICAS */}

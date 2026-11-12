@@ -5,22 +5,6 @@ import { getErrorHttpMessage } from "../../utils";
 import { StoreType } from "../../types/genericTypes";
 import { useIntl } from "react-intl";
 import { setAuth } from "../../actions/auth";
-import { useFormik } from "formik";
-import * as Yup from "yup";
-import {
-  addGuiaProductoAlmacenHttp,
-  confirmarRecepcionProductoAlmacenHttp,
-  enviarProductoAlmacenHttp,
-  getProductoAlmacenPorIdHttp,
-  getProductosAlmacenHttp,
-  recibirProductoAlmacenHttp,
-  registrarMeiNoSerieHttp,
-  registrarNuevoPrecioAlmacenHttp,
-} from "actions/almacen";
-import { subirEvidenciasHttp } from "actions/evidencias";
-import { addFechaPagoFacturaHttp } from "actions/factura";
-import { enviarEncuestaUsuarioHttp, getEncuestasDisponiblesHttp } from "actions/encuestas";
-import { crearProveedorHttp, getProveedoresHttp } from "actions/proveedores";
 import { getEstadisticasHomeHttp } from "actions/estadisticas";
 
 export const useEstadisticasHome = (tipoUsuario: number) => {

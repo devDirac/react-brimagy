@@ -41,3 +41,14 @@ export const registrarMeiNoSerieHttp = async (data: any) => {
   const response = await axios.put(`${env.API_URL}/registrarMeiNoSerie`, data);
   return response?.data || [];
 };
+
+//RESUMEN DE ALMACÉN
+export const getReporteSemanalAlmacenHttp = async (
+  plataforma: string,
+  idPeriodo?: number | null
+) => {
+  const response = await axios.get(`${env.API_URL}/getReporteSemanalAlmacen`, {
+    params: { plataforma, ...(idPeriodo ? { id_periodo: idPeriodo } : {}) },
+  });
+  return response?.data || null;
+};

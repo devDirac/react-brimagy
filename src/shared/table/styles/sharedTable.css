@@ -1,0 +1,26 @@
+.sharedtabla-encabezado-fijo {
+  scrollbar-width: none;
+}
+
+.sharedtabla-encabezado-fijo::-webkit-scrollbar {
+  display: none;
+}
+
+.sharedtabla-pulgar {
+  transition: background-color 140ms linear;
+}
+
+.sharedtabla-pulgar:hover {
+  background-color: #5f748c !important;
+}
+
+.sharedtabla-pulgar:active {
+  background-color: #46586f !important;
+}
+.sharedtabla-fila-hover-light:hover {
+  background-color: #f8fafc;
+}
+
+.sharedtabla-fila-hover-dark:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}

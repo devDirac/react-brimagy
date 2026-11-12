@@ -91,14 +91,13 @@ const ModalCanjesPorEstatus = ({
         <>
             <ModalComponent handleClose={onCerrar} isOpen size="xl" anchoCompleto key="canjesPorEstatus">
                 <Box sx={{ width: "100%" }}>
-                    {/* Título de la sección (cambia con la pestaña) */}
                     <Box
                         sx={{
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
                             gap: 1,
-                            mb: 2,
+                            my: 2,
                         }}
                     >
                         <Box sx={{ display: "flex", color: config.bg, "& svg": { width: 24, height: 24 } }}>

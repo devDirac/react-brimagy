@@ -252,6 +252,14 @@ const routes = [
         component: null,
         allow: [1, 2, 3, 4, 5, 6, 7],
       },
+      {
+        name: "Reporte de almacen",
+        key: "reporte-almacen",
+        icon: "ViewListIcon",
+        route: "/reporte-almacen",
+        component: null,
+        allow: [1, 2, 3, 4, 5, 6, 7],
+      },
     ],
   },
   {
