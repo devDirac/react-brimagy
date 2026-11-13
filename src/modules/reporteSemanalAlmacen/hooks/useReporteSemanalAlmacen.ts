@@ -4,11 +4,9 @@ import { useIntl } from "react-intl";
 import { getErrorHttpMessage } from "utils";
 import type { StoreType } from "types/genericTypes";
 import { setAuth } from "actions/auth";
-import { getReporteSemanalAlmacenHttp } from "actions/almacen";
-import { getPeriodosHttp } from "actions/configuracion";
+import { getPeriodosReporteHttp, getReporteSemanalAlmacenHttp } from "actions/almacen";
 import type {
     OpcionPeriodo,
-    PlataformaReporte,
     ReporteSemanalAlmacen,
     SemanaSeleccionada,
 } from "../types/reporteSemanalAlmacen.types";
@@ -23,28 +21,21 @@ import {
 import { SEMANA_TODAS } from "../constants/reporteSemanalAlmacen.constants";
 
 /**
- * Datos del reporte: periodos de la plataforma, reporte del periodo elegido,
- * semana activa, búsqueda y los bloques por proveedor que pinta la vista.
+ * Datos del reporte general (todas las plataformas): periodos, reporte del periodo
+ * elegido, semana activa, búsqueda y los bloques por proveedor que pinta la vista.
  */
 export const useReporteSemanalAlmacen = (textoSinProveedor: string) => {
-    // useIntl cambia de identidad en cada render de App (IntlProvider recibe un objeto
-    // de mensajes nuevo y App se re-renderiza con el scroll). Se guarda en un ref para
-    // que no dispare de nuevo la consulta ni resetee la semana elegida.
     const intl = useIntl();
     const intlRef = useRef(intl);
     intlRef.current = intl;
 
     const token = useSelector((state: StoreType) => state?.app?.user?.token || "");
-    const plataforma = useSelector(
-        (state: StoreType) => (state?.app?.plataforma || "puntotes") as PlataformaReporte
-    );
 
     useEffect(() => {
         setAuth(token);
     }, [token]);
 
     const [periodos, setPeriodos] = useState<OpcionPeriodo[]>([]);
-    /** null = periodo activo de la plataforma */
     const [idPeriodo, setIdPeriodo] = useState<number | null>(null);
     const [reporte, setReporte] = useState<ReporteSemanalAlmacen | null>(null);
     const [semana, setSemana] = useState<SemanaSeleccionada>(SEMANA_TODAS);
@@ -52,16 +43,13 @@ export const useReporteSemanalAlmacen = (textoSinProveedor: string) => {
     const [cargando, setCargando] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Al cambiar de plataforma: periodo activo y todo el periodo
+    // Los periodos de todas las plataformas se cargan una sola vez
     useEffect(() => {
-        setIdPeriodo(null);
-        setSemana(SEMANA_TODAS);
-        getPeriodosHttp(plataforma)
+        getPeriodosReporteHttp()
             .then((respuesta) => setPeriodos(normalizarPeriodos(respuesta)))
             .catch(() => setPeriodos([]));
-    }, [plataforma]);
+    }, []);
 
-    /** Al elegir otro periodo se vuelve a "Todo el periodo". */
     const cambiarPeriodo = useCallback((id: number | null) => {
         setIdPeriodo(id);
         setSemana(SEMANA_TODAS);
@@ -71,11 +59,8 @@ export const useReporteSemanalAlmacen = (textoSinProveedor: string) => {
         try {
             setCargando(true);
             setError(null);
-            const datos = normalizarReporteSemanal(
-                await getReporteSemanalAlmacenHttp(plataforma, idPeriodo)
-            );
+            const datos = normalizarReporteSemanal(await getReporteSemanalAlmacenHttp(idPeriodo));
             setReporte(datos);
-            // Respeta la semana elegida; solo si ya no existe vuelve a todo el periodo
             setSemana((actual) =>
                 actual === SEMANA_TODAS || datos.semanas.some((s) => s.numero === actual)
                     ? actual
@@ -93,7 +78,7 @@ export const useReporteSemanalAlmacen = (textoSinProveedor: string) => {
         } finally {
             setCargando(false);
         }
-    }, [plataforma, idPeriodo]);
+    }, [idPeriodo]);
 
     useEffect(() => {
         cargarReporte();
@@ -107,7 +92,6 @@ export const useReporteSemanalAlmacen = (textoSinProveedor: string) => {
     const totales = useMemo(() => sumarTotales(grupos.map((g) => g.totales)), [grupos]);
 
     return {
-        plataforma,
         periodos,
         idPeriodo: idPeriodo ?? reporte?.periodo.id ?? null,
         cambiarPeriodo,

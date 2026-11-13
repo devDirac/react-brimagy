@@ -9,6 +9,7 @@ import type {
 import { ANCHOS_REPORTE, COLORES_TIPO_ENVIO } from "../constants/reporteSemanalAlmacen.constants";
 import { fecha, moneda, textoOVacio } from "../utils/reporteSemanalAlmacenFormato.utils";
 import { IconAward, IconBarcode, IconBrandAppgallery } from "@tabler/icons-react";
+import PlataformaChip from "components/PlataformaChip/PlataformaChip";
 
 type Columna = ColumnDef<FilaReporteSemanal, unknown>;
 
@@ -57,6 +58,7 @@ export const construirColumnasReporteSemanal = (textos: TextosReporteSemanal): C
                     <Typography variant="h4" fontWeight={600} sx={{ fontSize: 13.5, display: "block" }}>
                         <SharedTextoRecortado texto={fila.nombreProducto.toUpperCase() || "N/A"} />
                     </Typography>
+                    <PlataformaChip plataforma={fila.plataforma} sx={{ mr: 0.5 }} />
                     {fila.folioCanje && (
                         <Chip
                             size="small"
@@ -96,7 +98,10 @@ export const construirColumnasReporteSemanal = (textos: TextosReporteSemanal): C
         accessorKey: "cantidadGestionada",
         header: textos.cantidadGestionada,
         meta: { ancho: ANCHOS_REPORTE.cantidad, alineacion: "center" },
-        cell: ({ row }) => celdaNumero(row.original.cantidadGestionada, row.original.esTotal),
+        cell: ({ row }) =>
+            row.original.esContinuacion
+                ? null
+                : celdaNumero(row.original.cantidadGestionada, row.original.esTotal),
     },
     {
         accessorKey: "entrega",

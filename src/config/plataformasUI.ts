@@ -20,8 +20,8 @@ export interface PlataformaUI {
 export const PLATAFORMAS_UI: Record<string, PlataformaUI> = {
     puntotes: {
         label: "Puntotes",
-        color: "#ffdb59",
-        textColor: "#000",
+        color: "#f7a8e3",
+        textColor: "#120515",
         icon: IconFridge,
     },
     "club bohn": {

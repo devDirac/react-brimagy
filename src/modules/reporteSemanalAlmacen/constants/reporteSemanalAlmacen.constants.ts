@@ -24,3 +24,7 @@ export const ANCHO_MINIMO_REPORTE =
     ANCHOS_REPORTE.cantidad * 3 +
     ANCHOS_REPORTE.notas +
     ANCHOS_REPORTE.fecha;
+
+/** Paginación de los bloques de proveedores. */
+export const TAMANO_PAGINA_PROVEEDORES = 5;
+export const OPCIONES_PAGINA_PROVEEDORES: readonly number[] = [5, 10, 20, 50];

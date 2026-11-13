@@ -1,5 +1,6 @@
 import { memo } from "react";
-import { MenuItem, TextField } from "@mui/material";
+import { CircularProgress, IconButton, MenuItem, TextField, Tooltip } from "@mui/material";
+import { IconFileTypeXls } from "@tabler/icons-react";
 import type {
     OpcionPeriodo,
     ReporteSemanalAlmacen,
@@ -19,6 +20,9 @@ interface ReporteSemanalFiltrosProps {
     textoActivo: string;
     textoSemana: string;
     textoTodas: string;
+    textoExcel: string;
+    onDescargarExcel: () => void;
+    descargando?: boolean;
     deshabilitado?: boolean;
 }
 
@@ -27,7 +31,6 @@ const estiloSelect = (ancho: number) => ({
     "& .MuiInputBase-root": { height: 40, fontSize: 13 },
 });
 
-/** Selects compactos de periodo y semana; van en la barra de acciones de la tabla. */
 const ReporteSemanalFiltrosBase = ({
     periodos,
     idPeriodo,
@@ -39,6 +42,9 @@ const ReporteSemanalFiltrosBase = ({
     textoActivo,
     textoSemana,
     textoTodas,
+    textoExcel,
+    onDescargarExcel,
+    descargando = false,
     deshabilitado = false,
 }: ReporteSemanalFiltrosProps): JSX.Element => (
     <>
@@ -82,6 +88,24 @@ const ReporteSemanalFiltrosBase = ({
                 </MenuItem>
             ))}
         </TextField>
+
+        <Tooltip title={textoExcel}>
+            <span>
+                <IconButton
+                    onClick={onDescargarExcel}
+                    disabled={deshabilitado || descargando || !reporte}
+                    sx={{
+                        borderRadius: 2,
+                        background: "#a5eb2f",
+                        color: "#2f2f2f",
+                        "&:hover": { background: "#2f2f2f", color: "#fff" },
+                        "&:focus:not(:hover)": { background: "#a5eb2f" },
+                    }}
+                >
+                    {descargando ? <CircularProgress size={22} /> : <IconFileTypeXls stroke={2} />}
+                </IconButton>
+            </span>
+        </Tooltip>
     </>
 );
 

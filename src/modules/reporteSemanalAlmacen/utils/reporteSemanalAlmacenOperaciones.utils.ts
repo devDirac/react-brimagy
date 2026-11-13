@@ -22,7 +22,7 @@ export const calcularTotales = (filas: FilaReporteSemanal[]): TotalesReporteSema
             registros: acc.registros + 1,
             cantidadGestionada: acc.cantidadGestionada + f.cantidadGestionada,
             entrega: acc.entrega + f.entrega,
-            faltante: acc.faltante + f.faltante,
+            faltante: acc.faltante + (f.esUltimo ? f.faltante : 0),
             total: Math.round((acc.total + f.total) * 100) / 100,
         }),
         TOTALES_VACIOS
@@ -42,7 +42,7 @@ export const sumarTotales = (lista: TotalesReporteSemanal[]): TotalesReporteSema
 
 /** Texto en el que busca el buscador general. */
 const textoBuscable = (f: FilaReporteSemanal): string =>
-    [f.nombreProveedor, f.nombreProducto, f.sku, f.marca, f.folioCanje, f.noOrden, f.notas, f.folioFactura].join(" ");
+    [f.nombreProveedor, f.plataforma, f.nombreProducto, f.sku, f.marca, f.folioCanje, f.noOrden, f.notas, f.folioFactura].join(" ");
 
 /**
  * Agrupa las filas por semana y, dentro de cada semana, por proveedor.
@@ -94,6 +94,8 @@ export const crearFilaTotal = (
     folioCanje: "",
     noOrden: "",
     semana: null,
+    idPlataforma: null,
+    plataforma: "",
     idProveedor: null,
     nombreProveedor: "",
     nombreProducto: etiqueta,
@@ -103,6 +105,8 @@ export const crearFilaTotal = (
     cantidadGestionada: totales.cantidadGestionada,
     entrega: totales.entrega,
     faltante: totales.faltante,
+    esContinuacion: false,
+    esUltimo: true,
     tipoEnvio: null,
     notas: "",
     fechaFactura: "",

@@ -43,12 +43,25 @@ export const registrarMeiNoSerieHttp = async (data: any) => {
 };
 
 //RESUMEN DE ALMACÉN
-export const getReporteSemanalAlmacenHttp = async (
-  plataforma: string,
-  idPeriodo?: number | null
-) => {
+export const getReporteSemanalAlmacenHttp = async (idPeriodo?: number | null) => {
   const response = await axios.get(`${env.API_URL}/getReporteSemanalAlmacen`, {
-    params: { plataforma, ...(idPeriodo ? { id_periodo: idPeriodo } : {}) },
+    params: idPeriodo ? { id_periodo: idPeriodo } : {},
   });
   return response?.data || null;
+};
+
+export const getPeriodosReporteHttp = async () => {
+  const response = await axios.get(`${env.API_URL}/getPeriodosReporte`);
+  return response?.data || [];
+};
+
+export const getReporteSemanalAlmacenExcelHttp = async (params: {
+  id_periodo?: number;
+  semana?: number;
+}) => {
+  const response = await axios.get(`${env.API_URL}/exportarReporteSemanalAlmacenExcel`, {
+    params,
+    responseType: "blob",
+  });
+  return response;
 };

@@ -1,5 +1,3 @@
-export type PlataformaReporte = "puntotes" | "club_bohn";
-
 export type SemanaSeleccionada = number | "todas";
 
 export interface FilaReporteSemanal {
@@ -9,6 +7,8 @@ export interface FilaReporteSemanal {
     folioCanje: string;
     noOrden: string;
     semana: number | null;
+    idPlataforma: number | null;
+    plataforma: string;
     idProveedor: number | null;
     nombreProveedor: string;
     nombreProducto: string;
@@ -18,6 +18,10 @@ export interface FilaReporteSemanal {
     cantidadGestionada: number;
     entrega: number;
     faltante: number;
+    /** Renglón extra de un pedido recibido con otro precio: sin pedido */
+    esContinuacion: boolean;
+    /** Último renglón del producto: solo su faltante cuenta en los totales */
+    esUltimo: boolean;
     tipoEnvio: number | null;
     notas: string;
     fechaFactura: string;
@@ -47,6 +51,7 @@ export interface SemanaReporte {
 
 export interface PeriodoReporte {
     id: number;
+    plataforma: string;
     fechaInicio: string;
     fechaFin: string;
     activo: boolean;
@@ -54,7 +59,6 @@ export interface PeriodoReporte {
 }
 
 export interface ReporteSemanalAlmacen {
-    plataforma: string;
     periodo: PeriodoReporte;
     semanas: SemanaReporte[];
     totales: TotalesReporteSemanal;
@@ -71,6 +75,7 @@ export interface GrupoProveedor {
 
 export interface OpcionPeriodo {
     id: number;
+    plataforma: string;
     fechaInicio: string;
     fechaFin: string;
     activo: boolean;
@@ -100,4 +105,6 @@ export interface TextosReporteSemanal {
     totalVista: string;
     registros: string;
     folio: string;
+    excel: string;
+    excelError: string;
 }

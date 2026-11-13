@@ -16,12 +16,14 @@ const aLista = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
 const aObjeto = (v: unknown): Record<string, unknown> => (esObjeto(v) ? v : {});
 
 const normalizarFila = (r: Record<string, unknown>): FilaReporteSemanal => ({
-    id: `${aNumero(r.id_canje)}-${aNumero(r.id_producto)}`,
+    id: String(aNumero(r.id_producto_almacen)),
     idProductoAlmacen: aNumero(r.id_producto_almacen),
     idCanje: aNumero(r.id_canje),
     folioCanje: aTexto(r.folio_canje),
     noOrden: aTexto(r.no_orden),
     semana: aNumeroONulo(r.semana),
+    idPlataforma: aNumeroONulo(r.id_plataforma),
+    plataforma: aTexto(r.plataforma),
     idProveedor: aNumeroONulo(r.id_proveedor),
     nombreProveedor: aTexto(r.nombre_proveedor),
     nombreProducto: aTexto(r.nombre_producto),
@@ -31,6 +33,8 @@ const normalizarFila = (r: Record<string, unknown>): FilaReporteSemanal => ({
     cantidadGestionada: aNumero(r.cantidad_gestionada),
     entrega: aNumero(r.entrega),
     faltante: aNumero(r.faltante),
+    esContinuacion: r.es_continuacion === true,
+    esUltimo: r.es_ultimo !== false,
     tipoEnvio: aNumeroONulo(r.tipo_envio),
     notas: aTexto(r.notas),
     fechaFactura: aTexto(r.fecha_factura),
@@ -63,6 +67,7 @@ const normalizarSemana = (s: Record<string, unknown>): SemanaReporte => ({
 
 const normalizarPeriodo = (p: Record<string, unknown>): PeriodoReporte => ({
     id: aNumero(p.id),
+    plataforma: aTexto(p.plataforma),
     fechaInicio: aTexto(p.fecha_inicio),
     fechaFin: aTexto(p.fecha_fin),
     activo: p.activo === true || aNumero(p.activo) === 1,
@@ -72,21 +77,20 @@ const normalizarPeriodo = (p: Record<string, unknown>): PeriodoReporte => ({
 export const normalizarReporteSemanal = (respuesta: unknown): ReporteSemanalAlmacen => {
     const r = aObjeto(respuesta);
     return {
-        plataforma: aTexto(r.plataforma),
         periodo: normalizarPeriodo(aObjeto(r.periodo)),
         semanas: aLista(r.semanas).filter(esObjeto).map(normalizarSemana),
         totales: normalizarTotales(r.totales),
     };
 };
 
-/** Convierte la respuesta de getPeriodos; los más recientes primero. */
+/** Convierte la respuesta de getPeriodosReporte (todas las plataformas; ya viene ordenada). */
 export const normalizarPeriodos = (respuesta: unknown): OpcionPeriodo[] =>
     aLista(respuesta)
         .filter(esObjeto)
         .map((p) => ({
             id: aNumero(p.id),
+            plataforma: aTexto(p.plataforma),
             fechaInicio: aTexto(p.fecha_inicio),
             fechaFin: aTexto(p.fecha_fin),
             activo: aNumero(p.activo) === 1,
-        }))
-        .sort((a, b) => b.id - a.id);
+        }));

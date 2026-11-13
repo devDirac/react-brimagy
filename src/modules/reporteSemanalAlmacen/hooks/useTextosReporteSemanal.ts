@@ -32,6 +32,8 @@ export const useTextosReporteSemanal = (): TextosReporteSemanal => {
             totalVista: t("reporte_semanal_total_vista", "Total"),
             registros: t("reporte_semanal_registros", "registros"),
             folio: t("reporte_semanal_folio", "Folio"),
+            excel: t("general_descargar_excel", "Descargar excel"),
+            excelError: t("get_excel_error", "Error al obtener el excel"),
         };
     }, [intl.locale]);
 };
